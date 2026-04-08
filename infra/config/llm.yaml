@@ -1,0 +1,56 @@
+# Lumina LLM 池 — skill_config 与 Layer3 工具名对齐（Development_plan_v2）
+llm_pool:
+  gpt-4o-mini:
+    provider: openai
+    model: gpt-4o-mini
+    api_key: ${OPENAI_API_KEY:-}
+    temperature: 0.3
+    max_tokens: 2048
+    tags: [cheap, fast]
+
+  deepseek-v3:
+    provider: deepseek
+    model: deepseek-chat
+    api_key: ${DEEPSEEK_API_KEY:sk-cef65d7e728d43d79a4a23d642faa6d0}
+    api_base: ${DEEPSEEK_API_BASE:https://api.deepseek.com}
+    temperature: 0.5
+    max_tokens: 4096
+    tags: [cheap]
+
+  claude-sonnet:
+    provider: anthropic
+    model: claude-3-5-sonnet-20241022
+    api_key: ${ANTHROPIC_API_KEY:-}
+    temperature: 0.7
+    max_tokens: 8192
+    tags: [creative]
+
+default_llm: deepseek-v3
+default_strategy: cost_aware
+
+skill_config:
+  account_diagnosis:
+    llm: deepseek-v3
+  text_generator:
+    llm: deepseek-v3
+  generate_text:
+    llm: deepseek-v3
+  generate_script:
+    llm: deepseek-v3
+  select_topic:
+    llm: deepseek-v3
+  methodology_retrieval:
+    llm: deepseek-v3
+  retrieve_methodology:
+    llm: deepseek-v3
+  qa_knowledge:
+    llm: deepseek-v3
+  debug_chat:
+    llm: deepseek-v3
+  orchestra_chat:
+    llm: deepseek-v3
+  orchestra_nlg:
+    llm: deepseek-v3
+
+fallback_enabled: true
+fallback_order: [deepseek-v3, gpt-4o-mini]

@@ -1,0 +1,11 @@
+methodology_id: "positioning"
+name: "定位理论（骨架）"
+applicable_scenarios: ["brand", "awareness"]
+steps:
+  - step_id: "differentiation"
+    agent_role: "strategy"
+    skill_call:
+      name: "retrieve_methodology"
+      params:
+        query: "差异化定位"
+        industry: "general"

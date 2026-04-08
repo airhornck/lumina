@@ -1,0 +1,215 @@
+# Agent 集群配置
+
+# ========== 单账号精细化运营 Agent 组 ==========
+single_account_agents:
+  content_strategist:
+    name: "内容策略师"
+    name_en: "ContentStrategist"
+    description: "负责账号定位与内容规划"
+    skills:
+      - skill-content-strategist
+    llm_config:
+      strategy: explicit
+      model: deepseek-v3
+    triggers:
+      - strategy
+      - topic_selection
+      - positioning
+    priority: 1
+  
+  creative_studio:
+    name: "创意工厂"
+    name_en: "CreativeStudio"
+    description: "负责多模态内容生成"
+    skills:
+      - skill-creative-studio
+    llm_config:
+      strategy: explicit
+      model: claude-sonnet-4
+    triggers:
+      - content_creation
+      - script_creation
+    priority: 1
+  
+  growth_hacker:
+    name: "投放优化师"
+    name_en: "GrowthHacker"
+    description: "负责流量获取与优化"
+    skills:
+      - skill-growth-hacker
+    triggers:
+      - traffic_analysis
+      - growth_strategy
+    priority: 2
+  
+  data_analyst:
+    name: "数据分析师"
+    name_en: "DataAnalyst"
+    description: "负责数据复盘与诊断"
+    skills:
+      - skill-data-analyst
+    llm_config:
+      strategy: explicit
+      model: deepseek-r1
+    triggers:
+      - diagnosis
+      - data_analysis
+      - traffic_analysis
+    priority: 1
+  
+  community_manager:
+    name: "用户运营官"
+    name_en: "CommunityManager"
+    description: "负责私域沉淀与互动"
+    skills:
+      - skill-community-manager
+    triggers:
+      - community_management
+      - fan_engagement
+    priority: 3
+  
+  compliance_officer:
+    name: "合规审查员"
+    name_en: "ComplianceOfficer"
+    description: "负责内容安全与风控"
+    skills:
+      - skill-compliance-officer
+    triggers:
+      - risk_check
+      - compliance_review
+    priority: 2
+
+# ========== 多账号矩阵协同 Agent 组 ==========
+matrix_agents:
+  matrix_commander:
+    name: "矩阵指挥官"
+    name_en: "MatrixCommander"
+    description: "负责矩阵整体策略规划"
+    skills:
+      - skill-matrix-commander
+    llm_config:
+      strategy: explicit
+      model: claude-sonnet-4
+    triggers:
+      - matrix_setup
+      - matrix_strategy
+    priority: 1
+  
+  bulk_creative:
+    name: "批量创意工厂"
+    name_en: "BulkCreative"
+    description: "负责一稿多改批量生成"
+    skills:
+      - skill-bulk-creative
+      - skill-creative-studio
+    triggers:
+      - bulk_creation
+      - content_variation
+    priority: 1
+  
+  account_keeper:
+    name: "账号维护工"
+    name_en: "AccountKeeper"
+    description: "负责多账号登录态维护"
+    skills:
+      - skill-account-keeper
+    triggers:
+      - account_maintenance
+      - batch_login
+    priority: 2
+  
+  traffic_broker:
+    name: "流量互导员"
+    name_en: "TrafficBroker"
+    description: "负责矩阵内部流量调度"
+    skills:
+      - skill-traffic-broker
+    triggers:
+      - traffic_routing
+      - cross_promotion
+    priority: 2
+  
+  knowledge_miner:
+    name: "知识提取器"
+    name_en: "KnowledgeMiner"
+    description: "负责成功案例模式识别"
+    skills:
+      - skill-knowledge-miner
+    triggers:
+      - case_analysis
+      - pattern_extraction
+    priority: 3
+  
+  sop_evolver:
+    name: "SOP进化师"
+    name_en: "SOPEvolver"
+    description: "负责运营流程自我优化"
+    skills:
+      - skill-sop-evolver
+    triggers:
+      - sop_optimization
+      - process_evolution
+    priority: 3
+
+# ========== 通用工具 Agent ==========
+utility_agents:
+  rpa_executor:
+    name: "RPA执行器"
+    name_en: "RPAExecutor"
+    description: "执行浏览器自动化任务"
+    skills:
+      - skill-rpa-executor
+    triggers:
+      - browser_automation
+      - content_publish
+      - data_collection
+  
+  intent_parser:
+    name: "意图解析器"
+    name_en: "IntentParser"
+    description: "解析用户意图"
+    skills:
+      - apps.intent
+    internal: true
+
+# ========== Agent 编排规则 ==========
+orchestration:
+  # 意图到 Agent 的映射
+  intent_agent_map:
+    # 单账号意图
+    diagnosis: ["data_analyst", "content_strategist"]
+    content_creation: ["creative_studio", "compliance_officer"]
+    script_creation: ["creative_studio"]
+    strategy: ["content_strategist"]
+    traffic_analysis: ["data_analyst", "growth_hacker"]
+    risk_check: ["compliance_officer"]
+    
+    # 矩阵意图
+    matrix_setup: ["matrix_commander", "account_keeper"]
+    bulk_creation: ["bulk_creative"]
+    content_variation: ["bulk_creative"]
+    traffic_routing: ["traffic_broker"]
+    
+    # 通用意图
+    casual: ["intent_parser"]
+    ambiguous: ["intent_parser"]
+  
+  # 执行模式
+  execution_modes:
+    parallel:
+      - diagnosis
+      - traffic_analysis
+    sequential:
+      - content_creation
+      - script_creation
+    mixed:
+      - matrix_setup
+  
+  # 失败重试配置
+  retry_policy:
+    max_retries: 3
+    backoff_factor: 2
+    retryable_errors:
+      - timeout
+      - rate_limit
+      - service_unavailable

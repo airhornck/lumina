@@ -1,0 +1,13 @@
+platform_id: "xiaohongshu"
+content_dna:
+  - element: "hook_position"
+    value: "0-3s"
+    validation_skill: "validate_hook_timing"
+  - element: "title_length"
+    value: "12-20字推荐"
+audit_rules:
+  - category: "medical"
+    forbidden_terms: ["疗效", "治疗", "治愈"]
+    audit_skill: "check_medical_compliance"
+  - category: "comparison"
+    forbidden_terms: ["最好", "第一", "极致"]

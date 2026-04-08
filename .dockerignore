@@ -1,0 +1,30 @@
+# Git / IDE
+.git
+.gitignore
+.cursor
+.vscode
+.idea
+
+# Python
+__pycache__
+*.py[cod]
+.pytest_cache
+.mypy_cache
+.ruff_cache
+*.egg-info
+.venv
+venv
+env
+
+# 本地密钥（通过 env_file 注入，勿打进镜像层）
+.env
+.env.*
+!.env.example
+
+# 体积大、API 镜像不需要
+vendor/openclaw
+node_modules
+
+# 文档与杂项（可选保留 tests 用于镜像内 pytest）
+*.md
+!README.md

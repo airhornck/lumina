@@ -1,0 +1,41 @@
+# 本地开发：挂载源码 + uvicorn --reload 热加载
+# 用法：docker compose up --build
+# 文档：docs/DOCKER_LOCAL.md
+
+services:
+  lumina-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lumina-api
+    ports:
+      - "${LUMINA_PORT:-8000}:8000"
+    working_dir: /app
+    volumes:
+      # 整仓挂载：改 Python/静态页立即触发重载
+      - .:/app
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      LLM_CONFIG_PATH: /app/infra/config/llm.yaml
+      # 在 Docker Desktop（尤其 Windows）下卷挂载时，强制轮询以便 --reload 稳定触发
+      WATCHFILES_FORCE_POLLING: "${WATCHFILES_FORCE_POLLING:-true}"
+    command:
+      - uvicorn
+      - api.main:app
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8000"
+      - --reload
+      - --reload-dir
+      - /app
+      - --app-dir
+      - apps/api/src
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 25s

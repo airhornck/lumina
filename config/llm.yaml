@@ -1,0 +1,151 @@
+# LLM Management Hub 配置
+# 两步配置法：先建池，后分配
+
+# ========== 第一步：配置 LLM 池 ==========
+llm_pool:
+  # Claude-4 - 高质量创意模型
+  claude-sonnet-4:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    api_key: ${ANTHROPIC_API_KEY}
+    temperature: 0.5
+    max_tokens: 8192
+    timeout: 60
+    tags: ["high-quality", "creative", "reasoning", "expensive"]
+    cost_per_1k_input: 0.003
+    cost_per_1k_output: 0.015
+  
+  # GPT-4o - 通用高质量
+  gpt-4o:
+    provider: openai
+    model: gpt-4o
+    api_key: ${OPENAI_API_KEY}
+    temperature: 0.5
+    max_tokens: 4096
+    timeout: 60
+    tags: ["high-quality", "fast", "versatile"]
+    cost_per_1k_input: 0.005
+    cost_per_1k_output: 0.015
+  
+  # GPT-4o-mini - 低成本分类
+  gpt-4o-mini:
+    provider: openai
+    model: gpt-4o-mini
+    api_key: ${OPENAI_API_KEY}
+    temperature: 0.1
+    max_tokens: 2048
+    timeout: 30
+    tags: ["cheap", "fast", "classification"]
+    cost_per_1k_input: 0.00015
+    cost_per_1k_output: 0.0006
+  
+  # DeepSeek-V3 - 主力中文模型
+  deepseek-v3:
+    provider: deepseek
+    model: deepseek-chat
+    api_key: ${DEEPSEEK_API_KEY}
+    api_base: https://api.deepseek.com
+    temperature: 0.5
+    max_tokens: 4096
+    timeout: 60
+    tags: ["cheap", "fast", "chinese-optimized", "default"]
+    cost_per_1k_input: 0.0002
+    cost_per_1k_output: 0.0004
+  
+  # DeepSeek-R1 - 推理模型
+  deepseek-r1:
+    provider: deepseek
+    model: deepseek-reasoner
+    api_key: ${DEEPSEEK_API_KEY}
+    api_base: https://api.deepseek.com
+    temperature: 0.3
+    max_tokens: 4096
+    timeout: 120
+    tags: ["reasoning", "analysis", "chinese-optimized", "cheap"]
+    cost_per_1k_input: 0.0004
+    cost_per_1k_output: 0.0016
+
+# ========== 第二步：配置分配策略 ==========
+
+# 默认 LLM
+default_llm: "deepseek-v3"
+
+# Skill 级别配置
+skill_config:
+  # Intent 分类 - 成本低优先
+  intent_classification:
+    llm: "gpt-4o-mini"
+    temperature: 0.1
+    max_tokens: 1024
+  
+  # 创意工厂 - 需要高质量创意
+  creative_studio:
+    llm: "claude-sonnet-4"
+    temperature: 0.8
+    max_tokens: 4096
+  
+  # 内容策略师 - 平衡质量与成本
+  content_strategist:
+    llm: "deepseek-v3"
+    temperature: 0.7
+    max_tokens: 4096
+  
+  # 账号诊断 - 需要推理能力
+  account_diagnosis:
+    llm: "deepseek-r1"
+    temperature: 0.3
+    max_tokens: 4096
+  
+  # 数据分析师 - 分析型任务
+  data_analyst:
+    llm: "deepseek-r1"
+    temperature: 0.3
+    max_tokens: 4096
+  
+  # 矩阵指挥官 - 战略规划
+  matrix_commander:
+    llm: "claude-sonnet-4"
+    temperature: 0.7
+    max_tokens: 4096
+  
+  # 批量创意 - 成本优先
+  bulk_creative:
+    llm: "deepseek-v3"
+    temperature: 0.8
+    max_tokens: 4096
+  
+  # 通用对话 - 平衡
+  orchestra_chat:
+    llm: "deepseek-v3"
+    temperature: 0.75
+    max_tokens: 1024
+
+# 组件级别配置
+component_config:
+  # L3 Intent 分类器
+  intent_l3:
+    llm: "gpt-4o-mini"
+    temperature: 0.1
+  
+  # 澄清引擎
+  clarification:
+    llm: "deepseek-v3"
+    temperature: 0.7
+
+# 策略定义
+strategies:
+  cost_aware:
+    description: "成本优先策略"
+    priority: ["deepseek-v3", "gpt-4o-mini", "deepseek-r1"]
+  
+  quality_first:
+    description: "质量优先策略"
+    priority: ["claude-sonnet-4", "gpt-4o", "deepseek-r1"]
+  
+  latency_first:
+    description: "延迟优先策略"
+    priority: ["gpt-4o-mini", "deepseek-v3", "gpt-4o"]
+  
+  reasoning:
+    description: "推理优先策略"
+    priority: ["deepseek-r1", "claude-sonnet-4", "gpt-4o"]

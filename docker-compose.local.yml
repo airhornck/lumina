@@ -1,0 +1,161 @@
+# Lumina 本地开发环境 Docker Compose
+# 包含：API 服务、Redis、PostgreSQL、Playwright 浏览器
+# 
+# 使用方法:
+# 1. 复制 .env.example 为 .env，填写 API Keys
+# 2. docker compose -f docker-compose.local.yml up --build
+# 3. 访问 http://localhost:8000/health
+
+version: "3.8"
+
+services:
+  # Lumina API 主服务
+  lumina-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+    container_name: lumina-api
+    ports:
+      - "${LUMINA_PORT:-8000}:8000"
+    working_dir: /app
+    volumes:
+      # 挂载源码实现热加载
+      - .:/app
+      # 持久化数据
+      - lumina_data:/app/data
+      - lumina_sessions:/app/data/sessions
+    env_file:
+      - .env
+    environment:
+      # 数据库连接
+      DATABASE_URL: postgresql://lumina:lumina@postgres:5432/lumina
+      REDIS_URL: redis://redis:6379/0
+      # LLM 配置路径
+      LLM_CONFIG_PATH: /app/config/llm.yaml
+      INTENT_RULES_PATH: /app/config/intent_rules.yaml
+      AGENTS_CONFIG_PATH: /app/config/agents.yaml
+      # 开发模式
+      DEBUG: "true"
+      LOG_LEVEL: INFO
+      # Windows 下文件监听
+      WATCHFILES_FORCE_POLLING: "${WATCHFILES_FORCE_POLLING:-true}"
+    command:
+      - uvicorn
+      - api.main:app
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8000"
+      - --reload
+      - --reload-dir
+      - /app
+      - --app-dir
+      - apps/api/src
+      - --log-level
+      - info
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - lumina-network
+
+  # PostgreSQL 数据库
+  postgres:
+    image: postgres:16-alpine
+    container_name: lumina-postgres
+    environment:
+      POSTGRES_USER: lumina
+      POSTGRES_PASSWORD: lumina
+      POSTGRES_DB: lumina
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lumina"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - lumina-network
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: lumina-redis
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - lumina-network
+
+  # Playwright 浏览器服务（用于 RPA）
+  browser-grid:
+    image: mcr.microsoft.com/playwright:v1.40.0-jammy
+    container_name: lumina-browser
+    command: ["node", "-e", "console.log('Browser grid ready')"]
+    environment:
+      - DISPLAY=:99
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    networks:
+      - lumina-network
+    profiles:
+      - with-browser  # 使用 --profile with-browser 启动
+
+  # 可选：pgAdmin 数据库管理
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: lumina-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@lumina.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - lumina-network
+    profiles:
+      - with-pgadmin
+
+  # 可选：Redis Insight
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: lumina-redis-insight
+    ports:
+      - "5540:5540"
+    volumes:
+      - redis_insight_data:/data
+    depends_on:
+      - redis
+    networks:
+      - lumina-network
+    profiles:
+      - with-redis-insight
+
+volumes:
+  lumina_data:
+  lumina_sessions:
+  postgres_data:
+  redis_data:
+  redis_insight_data:
+
+networks:
+  lumina-network:
+    driver: bridge

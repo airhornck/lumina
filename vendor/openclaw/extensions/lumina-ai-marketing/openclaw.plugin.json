@@ -1,0 +1,10 @@
+{
+  "id": "lumina-ai-marketing",
+  "name": "Lumina Marketing Intelligence Hub",
+  "description": "OpenClaw bridge: tool marketing_intelligence_hub → POST /api/v1/marketing/hub (Orchestra). LUMINA_PYTHON_URL.",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}

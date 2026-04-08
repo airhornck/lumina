@@ -1,0 +1,25 @@
+methodology_id: "aida_advanced"
+name: "AIDA 增强版"
+applicable_scenarios: ["conversion", "awareness", "retention"]
+success_cases: ["美妆种草笔记转化提升"]
+prompt_templates:
+  attention: "前 3 秒制造信息缺口"
+  desire: "社会认同与稀缺并存"
+steps:
+  - step_id: "attention"
+    theory: "zeigarnik_effect"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "钩子强化"
+        content_dna: {}
+        methodology_hint: "AIDA-Attention"
+  - step_id: "desire"
+    theory: "social_proof"
+    agent_role: "strategy"
+    skill_call:
+      name: "match_cases"
+      params:
+        content_type: "note"
+        industry: "general"

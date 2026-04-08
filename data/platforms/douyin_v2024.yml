@@ -1,0 +1,7 @@
+platform_id: "douyin"
+content_dna:
+  - element: "hook_position"
+    value: "0-3s"
+audit_rules:
+  - category: "medical"
+    forbidden_terms: ["治愈", "根治"]

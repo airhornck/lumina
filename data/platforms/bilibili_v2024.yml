@@ -1,0 +1,7 @@
+platform_id: "bilibili"
+content_dna:
+  - element: "opening"
+    value: "前30秒交代价值点"
+audit_rules:
+  - category: "sensitive"
+    forbidden_terms: ["政治敏感词占位"]

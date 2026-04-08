@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lumina"
+version = "0.2.0"
+description = "Lumina AI 营销助手 — OpenClaw 基座 + 多 Agent 中枢 + MCP Skill Hub + 双库（Development_plan_v2）"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+
+dependencies = [
+    "fastapi>=0.100.0",
+    "uvicorn[standard]>=0.23.0",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0",
+    "httpx>=0.24.0",
+    "litellm>=1.40.0",
+    "python-dotenv>=1.0.0",
+    "fastmcp>=3.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+]
+
+[tool.setuptools.packages.find]
+where = [
+    "apps/api/src",
+    "apps/orchestra/src",
+    "apps/skill-hub/src",
+    "packages/llm-hub/src",
+    "packages/knowledge-base/src",
+    "packages/lumina-skills/src",
+    "packages/skill-hub-client/src",
+    "packages/sop-engine/src",
+    "packages/agent-core/src",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = [
+    "apps/api/src",
+    "apps/orchestra/src",
+    "apps/skill-hub/src",
+    "packages/llm-hub/src",
+    "packages/knowledge-base/src",
+    "packages/lumina-skills/src",
+    "packages/skill-hub-client/src",
+    "packages/sop-engine/src",
+    "packages/agent-core/src",
+]
