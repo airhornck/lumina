@@ -7,6 +7,18 @@ RPA 执行器 Skill - MCP Server
 from fastmcp import FastMCP
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
+import sys
+import os
+
+# 添加 apps/rpa 到路径以便导入
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "apps", "rpa", "src"))
+
+try:
+    from rpa.browser_grid import BrowserGrid
+    from rpa.account_crawler import AccountCrawler, RateLimiter, convert_to_diagnosis_format
+    RPA_AVAILABLE = True
+except ImportError:
+    RPA_AVAILABLE = False
 
 mcp = FastMCP("rpa_executor")
 
@@ -46,7 +58,8 @@ async def execute_task(input: RPATaskInput) -> RPATaskOutput:
         "publish": handle_publish,
         "collect": handle_collect,
         "interact": handle_interact,
-        "login": handle_login
+        "login": handle_login,
+        "crawl_account": handle_crawl_account,
     }
     
     handler = task_handlers.get(input.task_type, handle_generic)
@@ -132,6 +145,92 @@ async def handle_generic(input: RPATaskInput) -> Dict[str, Any]:
         "status": "completed",
         "params_received": list(input.params.keys())
     }
+
+
+async def handle_crawl_account(input: RPATaskInput) -> Dict[str, Any]:
+    """
+    处理账号抓取任务
+    
+    使用无头浏览器抓取抖音、小红书等平台账号数据
+    """
+    if not RPA_AVAILABLE:
+        return {
+            "action": "crawl_account",
+            "status": "failed",
+            "error": "RPA 模块不可用，请确保已安装 playwright 和依赖",
+            "hint": "运行: pip install playwright && playwright install chromium"
+        }
+    
+    params = input.params
+    account_url = params.get("account_url")
+    platform = params.get("platform", input.platform)
+    account_name = params.get("account_name") or params.get("account_id")
+    user_id = params.get("user_id") or input.user_id
+    max_contents = params.get("max_contents", 10)
+    
+    if not account_url and not account_name:
+        return {
+            "action": "crawl_account",
+            "status": "failed",
+            "error": "必须提供 account_url 或 account_name"
+        }
+    
+    # 初始化浏览器网格和抓取器
+    browser_grid = BrowserGrid(max_instances=5, headless=True)
+    rate_limiter = RateLimiter(
+        default_delay=3.0,
+        platform_delays={"douyin": 4.0, "xiaohongshu": 3.5},
+        max_requests_per_minute=8,
+    )
+    crawler = AccountCrawler(browser_grid, rate_limiter)
+    
+    try:
+        # 执行抓取
+        crawled_data = await crawler.crawl_account(
+            account_url=account_url,
+            platform=platform,
+            account_id=account_name or "unknown",
+            user_id=user_id,
+            max_contents=max_contents,
+        )
+        
+        # 转换为诊断格式
+        diagnosis_data = convert_to_diagnosis_format(crawled_data)
+        
+        return {
+            "action": "crawl_account",
+            "status": crawled_data.crawl_status,
+            "platform": platform,
+            "account": {
+                "nickname": crawled_data.nickname,
+                "account_id": crawled_data.account_id,
+                "bio": crawled_data.bio,
+            },
+            "metrics": {
+                "followers": crawled_data.followers,
+                "following": crawled_data.following,
+                "likes": crawled_data.likes,
+                "content_count": crawled_data.content_count,
+            },
+            "contents_sample": crawled_data.recent_contents[:5],
+            "diagnosis_ready": diagnosis_data,
+            "crawled_at": crawled_data.crawled_at,
+            "error": crawled_data.error_message,
+        }
+        
+    except Exception as e:
+        return {
+            "action": "crawl_account",
+            "status": "failed",
+            "error": str(e),
+            "platform": platform,
+        }
+    finally:
+        # 确保关闭浏览器
+        try:
+            await browser_grid.close()
+        except Exception:
+            pass
 
 
 @mcp.tool()

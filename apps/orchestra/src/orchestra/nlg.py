@@ -54,6 +54,10 @@ async def format_orchestra_reply(
     if not isinstance(result, dict):
         return str(result)[:4000]
 
+    # 对于需要登录的情况，直接使用模板回复（不走 LLM，确保提示清晰一致）
+    if result.get("login_required") or result.get("data_source") == "login_required":
+        return _template_reply(intent_kind, user_input, result)
+
     try:
         from llm_hub import get_client
 
@@ -87,6 +91,33 @@ async def _llm_format(client: Any, kind: str, user_input: str, result: dict) -> 
 def _template_reply(kind: str, user_input: str, result: dict) -> str:
     uid = (user_input or "").strip()[:80]
     if kind == "diagnosis":
+        # 检查是否需要登录
+        if result.get("login_required") or result.get("data_source") == "login_required":
+            platform = result.get("platform", "")
+            platform_name = "抖音" if platform == "douyin" else ("小红书" if platform == "xiaohongshu" else platform)
+            suggestions = result.get("suggestions", [])
+            
+            reply_lines = [
+                f"要分析 {platform_name} 账号「{uid}」，我需要先获取您的账号数据。",
+                "",
+                "**您可以选择以下方式：**",
+                "",
+            ]
+            
+            for i, suggestion in enumerate(suggestions, 1):
+                reply_lines.append(f"{i}. {suggestion}")
+            
+            reply_lines.extend([
+                "",
+                f"💡 **推荐方式**：直接说「**登录{platform_name}**」，我会生成二维码，您用 {platform_name} APP 扫码授权后，我就能自动获取您的账号数据进行专业分析。",
+            ])
+            
+            if result.get("error_detail"):
+                reply_lines.extend(["", f"（错误详情：{result['error_detail'][:100]}）"])
+            
+            return "\n".join(reply_lines)
+        
+        # 正常诊断结果
         score = result.get("health_score")
         issues = result.get("key_issues") or []
         sug = result.get("improvement_suggestions") or []

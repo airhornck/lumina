@@ -19,6 +19,8 @@ dependencies = [
     "litellm>=1.40.0",
     "python-dotenv>=1.0.0",
     "fastmcp>=3.0.0",
+    "playwright>=1.40.0",
+    "aiohttp>=3.9.0",
 ]
 
 [project.optional-dependencies]
@@ -32,6 +34,7 @@ where = [
     "apps/api/src",
     "apps/orchestra/src",
     "apps/skill-hub/src",
+    "apps/rpa/src",
     "packages/llm-hub/src",
     "packages/knowledge-base/src",
     "packages/lumina-skills/src",
@@ -47,6 +50,7 @@ pythonpath = [
     "apps/api/src",
     "apps/orchestra/src",
     "apps/skill-hub/src",
+    "apps/rpa/src",
     "packages/llm-hub/src",
     "packages/knowledge-base/src",
     "packages/lumina-skills/src",

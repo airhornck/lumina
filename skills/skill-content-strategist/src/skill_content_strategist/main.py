@@ -14,8 +14,8 @@ mcp = FastMCP("content_strategist")
 
 class PositioningInput(BaseModel):
     """定位分析输入"""
-    platform: str  # xiaohongshu, douyin, bilibili
-    niche: str  # 赛道/领域
+    platform: str
+    niche: str
     target_audience: Optional[str] = None
     competitor_accounts: Optional[List[str]] = None
     user_id: str
@@ -23,11 +23,11 @@ class PositioningInput(BaseModel):
 
 class PositioningOutput(BaseModel):
     """定位分析输出"""
-    positioning_statement: str  # 定位声明
-    target_persona: Dict[str, Any]  # 目标人群画像
-    content_pillars: List[str]  # 内容支柱
-    differentiation: str  # 差异化策略
-    posting_frequency: str  # 发布频率建议
+    positioning_statement: str
+    target_persona: Dict[str, Any]
+    content_pillars: List[str]
+    differentiation: str
+    posting_frequency: str
 
 
 class TopicCalendarInput(BaseModel):
@@ -41,9 +41,9 @@ class TopicCalendarInput(BaseModel):
 
 class TopicCalendarOutput(BaseModel):
     """选题日历输出"""
-    calendar: List[Dict[str, Any]]  # 每日选题
-    theme_weeks: List[Dict[str, Any]]  # 主题周规划
-    hot_topics: List[str]  # 热点追踪建议
+    calendar: List[Dict[str, Any]]
+    theme_weeks: List[Dict[str, Any]]
+    hot_topics: List[str]
 
 
 @mcp.tool()
@@ -51,63 +51,72 @@ async def analyze_positioning(input: PositioningInput) -> PositioningOutput:
     """
     分析账号定位
     
-    Args:
-        input: 定位分析输入参数
-    
-    Returns:
-        定位分析报告
+    使用 LLM 进行专业的定位分析
     """
-    # 获取 LLM 客户端
+    # 构建提示词
+    prompt = f"""作为资深内容策略师，请为以下账号进行定位分析：
+
+平台：{input.platform}
+赛道：{input.niche}
+目标受众：{input.target_audience or '未指定'}
+对标账号：{input.competitor_accounts or '未指定'}
+
+请提供：
+1. 一句话定位声明（我是谁，为谁，提供什么价值）
+2. 目标人群画像（年龄、性别、痛点、需求）
+3. 3-5个内容支柱（核心内容方向）
+4. 差异化策略（如何与竞品区隔）
+5. 发布频率建议
+
+以 JSON 格式输出：
+{{
+    "positioning_statement": "...",
+    "target_persona": {{"age": "...", "gender": "...", "pain_points": [...], "needs": []}},
+    "content_pillars": [],
+    "differentiation": "...",
+    "posting_frequency": "..."
+}}"""
+    
     try:
-        from llm_hub import get_client
-        llm = get_client(skill_name="content_strategist")
-    except ImportError:
-        llm = None
-    
-    # 构建分析 Prompt
-    prompt = f"""
-    作为资深内容策略师，请为以下账号进行定位分析：
-    
-    平台：{input.platform}
-    赛道：{input.niche}
-    目标受众：{input.target_audience or '未指定'}
-    对标账号：{input.competitor_accounts or '未指定'}
-    
-    请提供：
-    1. 一句话定位声明（我是谁，为谁，提供什么价值）
-    2. 目标人群画像（年龄、性别、痛点、需求）
-    3. 3-5个内容支柱（核心内容方向）
-    4. 差异化策略（如何与竞品区隔）
-    5. 发布频率建议
-    
-    以 JSON 格式输出。
-    """
-    
-    if llm:
-        try:
-            response = await llm.complete(prompt, temperature=0.7)
-            # 解析 JSON 响应
-            import json
-            data = json.loads(response)
-            
-            return PositioningOutput(
-                positioning_statement=data.get("positioning_statement", ""),
-                target_persona=data.get("target_persona", {}),
-                content_pillars=data.get("content_pillars", []),
-                differentiation=data.get("differentiation", ""),
-                posting_frequency=data.get("posting_frequency", "每周3-4更")
-            )
-        except Exception:
-            pass
-    
-    # Fallback 默认响应
-    return PositioningOutput(
-        positioning_statement=f"专注{input.niche}领域的优质内容创作者",
-        target_persona={"age": "18-35", "gender": "女性为主", "pain_points": ["信息不对称", "选择困难"]},
-        content_pillars=["干货分享", "案例拆解", "避坑指南", "趋势解读"],
-        differentiation="深入浅出，实用导向",
-        posting_frequency="每周3-4更"
-    )
+        from lumina_skills.llm_utils import call_llm
+        
+        result = await call_llm(
+            prompt=prompt,
+            skill_name="content_strategist",
+            temperature=0.7,
+            response_format={"type": "json_object"},
+            fallback_response={
+                "positioning_statement": f"专注{input.niche}领域的优质内容创作者",
+                "target_persona": {"age": "18-35", "gender": "女性为主", "pain_points": ["信息不对称"], "needs": ["实用知识"]},
+                "content_pillars": ["干货分享", "案例拆解", "避坑指南"],
+                "differentiation": "深入浅出，实用导向",
+                "posting_frequency": "每周3-4更"
+            }
+        )
+        
+        return PositioningOutput(
+            positioning_statement=result.get("positioning_statement", ""),
+            target_persona=result.get("target_persona", {}),
+            content_pillars=result.get("content_pillars", []),
+            differentiation=result.get("differentiation", ""),
+            posting_frequency=result.get("posting_frequency", "每周3-4更")
+        )
+        
+    except Exception as e:
+        print(f"[analyze_positioning] LLM 调用失败: {e}")
+        # 使用更智能的 fallback，基于输入生成
+        return PositioningOutput(
+            positioning_statement=f"专注{input.niche}领域的优质内容创作者，为{input.target_audience or '目标用户'}提供实用价值",
+            target_persona={
+                "age": "18-35",
+                "gender": "女性为主",
+                "pain_points": [f"{input.niche}信息不对称", "选择困难"],
+                "needs": ["实用知识", "避坑指南"]
+            },
+            content_pillars=[f"{input.niche}干货", "案例拆解", "趋势解读", "工具推荐"],
+            differentiation=f"深耕{input.niche}，提供可落地的实操方案",
+            posting_frequency="每周3-4更"
+        )
 
 
 @mcp.tool()
@@ -115,36 +124,100 @@ async def generate_topic_calendar(input: TopicCalendarInput) -> TopicCalendarOut
     """
     生成选题日历
     
-    Args:
-        input: 选题日历输入参数
-    
-    Returns:
-        选题日历
+    使用 LLM 生成专业的选题规划
     """
-    # 模拟生成选题日历
-    calendar = []
-    themes = ["干货分享", "案例拆解", "互动话题", "热点追踪"]
+    prompt = f"""作为资深内容策略师，请为以下账号生成{input.duration_days}天的选题日历：
+
+平台：{input.platform}
+赛道：{input.niche}
+账号定位：{input.positioning}
+
+要求：
+1. 每天有明确的主题和话题
+2. 内容形式要平台化（短视频、图文等）
+3. 考虑一周内的节奏变化
+4. 规划4个主题周，每周有统一主题
+5. 提供3-5个热点追踪建议
+
+以 JSON 格式输出：
+{{
+    "calendar": [
+        {{"day": 1, "date": "周一", "theme": "...", "topic": "...", "format": "视频/图文", "best_time": "18:00"}}
+    ],
+    "theme_weeks": [
+        {{"week": 1, "theme": "...", "focus": "..."}}
+    ],
+    "hot_topics": ["...", "..."]
+}}"""
     
-    for day in range(1, input.duration_days + 1):
+    try:
+        from lumina_skills.llm_utils import call_llm
+        
+        result = await call_llm(
+            prompt=prompt,
+            skill_name="content_strategist",
+            temperature=0.8,
+            response_format={"type": "json_object"},
+        )
+        
+        calendar = result.get("calendar", [])
+        theme_weeks = result.get("theme_weeks", [])
+        hot_topics = result.get("hot_topics", [])
+        
+        # 如果返回数据不完整，生成基础日历
+        if not calendar:
+            calendar = _generate_basic_calendar(input.niche, input.duration_days)
+        if not theme_weeks:
+            theme_weeks = [
+                {"week": 1, "theme": "基础认知建立", "focus": "入门科普"},
+                {"week": 2, "theme": "深度价值输出", "focus": "干货分享"},
+                {"week": 3, "theme": "互动与转化", "focus": "案例互动"},
+                {"week": 4, "theme": "趋势与展望", "focus": "行业趋势"},
+            ]
+        if not hot_topics:
+            hot_topics = [f"{input.niche}行业最新趋势", "平台算法更新解读", "竞品爆款分析"]
+        
+        return TopicCalendarOutput(
+            calendar=calendar,
+            theme_weeks=theme_weeks,
+            hot_topics=hot_topics
+        )
+        
+    except Exception as e:
+        print(f"[generate_topic_calendar] LLM 调用失败: {e}")
+        # 生成基础日历
+        return TopicCalendarOutput(
+            calendar=_generate_basic_calendar(input.niche, input.duration_days),
+            theme_weeks=[
+                {"week": 1, "theme": "基础认知建立", "focus": "入门科普"},
+                {"week": 2, "theme": "深度价值输出", "focus": "干货分享"},
+                {"week": 3, "theme": "互动与转化", "focus": "案例互动"},
+                {"week": 4, "theme": "趋势与展望", "focus": "行业趋势"},
+            ],
+            hot_topics=[f"{input.niche}行业最新趋势", "平台算法更新解读", "竞品爆款分析"]
+        )
+
+
+def _generate_basic_calendar(niche: str, duration_days: int) -> List[Dict[str, Any]]:
+    """生成基础选题日历"""
+    calendar = []
+    themes = ["干货分享", "案例拆解", "互动话题", "热点追踪", "工具推荐"]
+    week_days = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
+    
+    for day in range(1, duration_days + 1):
+        week_day = week_days[(day - 1) % 7]
         theme = themes[day % len(themes)]
+        
         calendar.append({
             "day": day,
+            "date": week_day,
             "theme": theme,
-            "topic": f"{input.niche} - {theme}专题 #{day}",
-            "format": "图文" if day % 2 == 0 else "视频",
-            "best_time": "18:00" if day % 2 == 0 else "12:00"
+            "topic": f"{niche} - {theme}专题 #{day}",
+            "format": "视频" if day % 2 == 1 else "图文",
+            "best_time": "18:00" if day % 2 == 1 else "12:00"
         })
     
-    return TopicCalendarOutput(
-        calendar=calendar,
-        theme_weeks=[
-            {"week": 1, "theme": "基础认知建立"},
-            {"week": 2, "theme": "深度价值输出"},
-            {"week": 3, "theme": "互动与转化"},
-            {"week": 4, "theme": "复盘与展望"},
-        ],
-        hot_topics=[f"{input.niche}行业最新趋势", "平台算法更新解读", "竞品爆款分析"]
-    )
+    return calendar
 
 
 @mcp.tool()
@@ -152,19 +225,227 @@ async def predict_trends(niche: str, platform: str, user_id: str) -> Dict[str, A
     """
     预测热点趋势
     
-    Args:
-        niche: 赛道
-        platform: 平台
-        user_id: 用户ID
-    
-    Returns:
-        趋势预测报告
+    使用 LLM + RPA 抓取的真实趋势数据
     """
+    # 首先尝试获取平台真实趋势
+    hot_topics = []
+    try:
+        from rpa.skill_utils import get_rpa_helper
+        
+        rpa = get_rpa_helper()
+        result = await rpa.fetch_platform_data(
+            platform=platform,
+            data_type="hot_topics",
+            account_id=user_id,
+        )
+        
+        if result.success:
+            hot_topics = [t.get("title", "") for t in result.data.get("hot_topics", [])[:5]]
+    except Exception as e:
+        print(f"[predict_trends] RPA 获取趋势失败: {e}")
+    
+    # 使用 LLM 分析趋势
+    prompt = f"""基于以下信息，预测 {niche} 领域在 {platform} 平台的热点趋势：
+
+赛道：{niche}
+平台：{platform}
+当前热门话题：{hot_topics or '未获取'}
+
+请提供：
+1. 新兴话题（3-5个）
+2. 季节性机会（2-3个）
+3. 推荐内容形式
+4. 趋势可信度评分（0-1）
+
+以 JSON 格式输出。"""
+    
+    try:
+        from lumina_skills.llm_utils import call_llm
+        
+        result = await call_llm(
+            prompt=prompt,
+            skill_name="content_strategist",
+            temperature=0.8,
+            response_format={"type": "json_object"},
+            fallback_response={
+                "emerging_topics": [f"{niche}新玩法", "AI+内容创作", "短剧营销"],
+                "seasonal_opportunities": ["618购物节", "暑期档", "开学季"],
+                "content_formats": ["短视频", "图文笔记", "直播切片"],
+                "confidence": 0.75,
+                "real_time_topics": hot_topics
+            }
+        )
+        
+        return {
+            "emerging_topics": result.get("emerging_topics", []),
+            "seasonal_opportunities": result.get("seasonal_opportunities", []),
+            "content_formats": result.get("content_formats", []),
+            "confidence": result.get("confidence", 0.75),
+            "real_time_topics": hot_topics,
+            "data_source": "llm+rpa" if hot_topics else "llm_only"
+        }
+        
+    except Exception as e:
+        return {
+            "emerging_topics": [f"{niche}新玩法", "AI+内容创作", "短剧营销"],
+            "seasonal_opportunities": ["618购物节", "暑期档", "开学季"],
+            "content_formats": ["短视频", "图文笔记", "直播切片"],
+            "confidence": 0.75,
+            "real_time_topics": hot_topics,
+            "error": str(e)
+        }
+
+
+@mcp.tool()
+async def analyze_competitor_real(
+    competitor_id: str,
+    platform: str,
+    analysis_depth: str = "standard",
+    user_id: str = None,
+) -> Dict[str, Any]:
+    """
+    真实竞品分析
+    
+    使用 RPA 抓取竞品账号的真实数据
+    """
+    if user_id is None:
+        user_id = "system"
+    
+    # 构建竞品账号 URL
+    platform_urls = {
+        "douyin": f"https://www.douyin.com/user/{competitor_id}",
+        "xiaohongshu": f"https://www.xiaohongshu.com/user/profile/{competitor_id}",
+    }
+    
+    account_url = platform_urls.get(platform)
+    if not account_url:
+        return {
+            "error": f"不支持的平台: {platform}",
+            "competitor_id": competitor_id,
+        }
+    
+    try:
+        from rpa.skill_utils import get_rpa_helper
+        
+        rpa = get_rpa_helper()
+        result = await rpa.crawl_account(
+            account_url=account_url,
+            platform=platform,
+            account_id=competitor_id,
+            user_id=user_id,
+            max_contents=15 if analysis_depth == "deep" else 10,
+        )
+        
+        if not result.success:
+            return {
+                "competitor_id": competitor_id,
+                "platform": platform,
+                "error": result.error,
+                "fallback_analysis": await _fallback_competitor_analysis(competitor_id, platform)
+            }
+        
+        data = result.data
+        diagnosis = data.get("diagnosis", {})
+        recent_contents = data.get("recent_contents", [])
+        
+        # 使用 LLM 深度分析
+        if analysis_depth in ["standard", "deep"]:
+            prompt = f"""基于以下竞品数据，进行深度分析：
+
+竞品昵称：{data.get('nickname')}
+简介：{data.get('bio')}
+粉丝数：{data.get('followers')}
+获赞数：{data.get('likes')}
+作品数：{data.get('content_count')}
+内容类型：{diagnosis.get('account_gene', {}).get('content_types')}
+风格标签：{diagnosis.get('account_gene', {}).get('style_tags')}
+
+最近作品内容：
+{[c.get('title', '') for c in recent_contents[:5]]}
+
+请提供：
+1. 优势和劣势分析
+2. 可学习的策略
+3. 差异化机会
+
+以 JSON 格式输出。"""
+            
+            try:
+                from lumina_skills.llm_utils import call_llm
+                
+                llm_result = await call_llm(
+                    prompt=prompt,
+                    skill_name="content_strategist",
+                    temperature=0.7,
+                    response_format={"type": "json_object"},
+                )
+                
+                return {
+                    "competitor_id": competitor_id,
+                    "platform": platform,
+                    "analysis_depth": analysis_depth,
+                    "real_data": True,
+                    "overview": {
+                        "nickname": data.get("nickname"),
+                        "bio": data.get("bio"),
+                        "followers": data.get("followers"),
+                        "following": data.get("following"),
+                        "likes": data.get("likes"),
+                        "content_count": data.get("content_count"),
+                        "health_score": diagnosis.get("health_score"),
+                    },
+                    "content_analysis": {
+                        "content_types": diagnosis.get("account_gene", {}).get("content_types"),
+                        "style_tags": diagnosis.get("account_gene", {}).get("style_tags"),
+                        "recent_contents": recent_contents[:5],
+                    },
+                    "llm_analysis": llm_result,
+                    "crawled_at": data.get("crawled_at"),
+                }
+                
+            except Exception as e:
+                print(f"[analyze_competitor_real] LLM 分析失败: {e}")
+        
+        # 基础分析（无 LLM）
+        return {
+            "competitor_id": competitor_id,
+            "platform": platform,
+            "analysis_depth": analysis_depth,
+            "real_data": True,
+            "overview": {
+                "nickname": data.get("nickname"),
+                "bio": data.get("bio"),
+                "followers": data.get("followers"),
+                "likes": data.get("likes"),
+                "content_count": data.get("content_count"),
+                "health_score": diagnosis.get("health_score"),
+            },
+            "strengths": ["内容质量稳定", "更新频率高"] if data.get("content_count", 0) > 20 else ["有潜力"],
+            "weaknesses": diagnosis.get("key_issues", []),
+            "learnable_strategies": ["参考内容结构", "学习发布节奏"],
+            "crawled_at": data.get("crawled_at"),
+        }
+        
+    except Exception as e:
+        return {
+            "competitor_id": competitor_id,
+            "platform": platform,
+            "error": str(e),
+            "fallback_analysis": await _fallback_competitor_analysis(competitor_id, platform)
+        }
+
+
+async def _fallback_competitor_analysis(competitor_id: str, platform: str) -> Dict[str, Any]:
+    """竞品分析 fallback"""
     return {
-        "emerging_topics": [f"{niche}新玩法", "AI+内容创作", "短剧营销"],
-        "seasonal_opportunities": ["618购物节", "暑期档", "开学季"],
-        "content_formats": ["短视频", "图文笔记", "直播切片"],
-        "confidence": 0.75
+        "competitor_id": competitor_id,
+        "platform": platform,
+        "note": "RPA 抓取失败，返回基础分析",
+        "overview": {
+            "follower_count": "未知",
+            "content_style": "需手动分析",
+        },
+        "suggestions": ["尝试手动访问竞品主页获取信息"]
     }
 
 

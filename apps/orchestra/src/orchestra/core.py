@@ -120,6 +120,37 @@ def _is_account_creation_or_howto(text: str) -> bool:
     return False
 
 
+# 登录意图匹配
+_QR_LOGIN_INTENT = re.compile(
+    r"(?:扫码|二维码)?\s*(?:登录|登陆|授权)\s*(抖音|小红书|b站|bilibili|视频号|快手)?|"
+    r"(?:我要?|帮我?|想|需要)?\s*(?:登录|登陆|授权)\s*(抖音|小红书|b站|bilibili|视频号|快手)?|"
+    r"(?:抖音|小红书|b站|bilibili|视频号|快手)\s*(?:登录|登陆|授权)",
+    re.I,
+)
+
+
+def _extract_login_platform(text: str) -> Optional[str]:
+    """从登录请求中提取平台名称"""
+    t = (text or "").strip()
+    if not t:
+        return None
+    
+    platform_mapping = {
+        "抖音": "douyin",
+        "小红书": "xiaohongshu",
+        "b站": "bilibili",
+        "bilibili": "bilibili",
+        "视频号": "shipinhao",
+        "快手": "kuaishou",
+    }
+    
+    for cn_name, en_name in platform_mapping.items():
+        if cn_name in t:
+            return en_name
+    
+    return None
+
+
 def _is_diagnosis_intent(text: str) -> bool:
     """明确的「看号/体检」类诉求；单独的「账号」二字不命中。"""
     t = (text or "").strip()
@@ -258,6 +289,9 @@ class MarketingOrchestra:
             return {"kind": "conversation", "sop_id": None}
         if _is_clarify_feedback(t):
             return {"kind": "clarify_feedback", "sop_id": None}
+        # 检测登录意图（如"登录抖音"、"扫码登录小红书"）
+        if _QR_LOGIN_INTENT.search(t):
+            return {"kind": "qr_login", "sop_id": None}
         # 检测是否为诊断意图的跟进回复（补充账号信息）
         if _is_diagnosis_followup(t, session_history):
             return {"kind": "diagnosis", "sop_id": None}
@@ -394,6 +428,10 @@ class MarketingOrchestra:
         platform = context.get("platform") or "xiaohongshu"
         kind = intent.get("kind")
 
+        if kind == "qr_login":
+            platform = _extract_login_platform(user_input) or platform
+            return await self._request_qr_code_login(platform, uid)
+
         if kind == "clarify_feedback":
             return {
                 "ok": True,
@@ -418,16 +456,44 @@ class MarketingOrchestra:
             extracted_platform = None
             extracted_account = None
             
+            print(f"[diagnosis] 初始URL: {url}, 用户输入: {user_input[:50]}...")
+            
+            # 检查是否已有保存的登录凭证
+            if platform:
+                try:
+                    from rpa.qrcode_login import get_qr_login_manager
+                    manager = get_qr_login_manager()
+                    cred = await manager.get_user_credential(uid, platform)
+                    
+                    if cred:
+                        print(f"[diagnosis] 找到已保存的登录凭证: {cred.account_name}")
+                        # 已有凭证，直接进行诊断
+                        return await self._do_diagnosis(
+                            url=url,
+                            platform=platform,
+                            uid=uid,
+                            account_name=extracted_account,
+                            cookies=cred.cookies,
+                        )
+                    else:
+                        print(f"[diagnosis] 未找到 {platform} 的登录凭证")
+                except Exception as e:
+                    print(f"[diagnosis] 检查凭证失败: {e}")
+            
             # 如果 context 中没有有效的 account_url，尝试从用户输入中提取
             if _is_demo_account_url(url):
-                # 尝试从用户输入中提取平台和账号信息
+                print("[diagnosis] URL为空或无效，尝试从输入提取账号信息")
                 extracted_platform, extracted_account = self._extract_account_info_from_input(user_input)
+                print(f"[diagnosis] 提取结果: platform={extracted_platform}, account={extracted_account}")
                 if extracted_platform and extracted_account:
-                    # 构造一个伪 URL 用于诊断
                     url = f"https://{extracted_platform}/{extracted_account}"
                     platform = extracted_platform
             
             if _is_demo_account_url(url):
+                # 没有URL，也没有登录凭证，提供二维码登录选项
+                if platform and not context.get("skip_qr_login"):
+                    return await self._request_qr_code_login(platform, uid)
+                
                 return {
                     "ok": True,
                     "result": {
@@ -437,8 +503,8 @@ class MarketingOrchestra:
                         "reply": (
                             "要做**账号诊断**，需要先锁定是哪个账号：请发 **主页链接**，"
                             "或说明 **平台 + 可搜索到的昵称**。\n\n"
-                            "当前能力侧未接自动爬取时，我会根据你补充的信息给结构化建议；"
-                            "在缺少账号信息前，我不会再用演示数据假装已完成诊断。"
+                            "您也可以：发送「登录抖音」或「登录小红书」，"
+                            "我会提供二维码让您扫码登录，之后就能自动获取您的账号数据。"
                         ),
                     },
                 }
@@ -446,14 +512,12 @@ class MarketingOrchestra:
             # 如果提取了新的平台信息，使用它
             if extracted_platform:
                 platform = extracted_platform
-                
-            return await self.skill_hub_client.call(
-                "diagnose_account",
-                {
-                    "account_url": url,
-                    "platform": platform,
-                    "user_id": uid,
-                },
+            
+            return await self._do_diagnosis(
+                url=url,
+                platform=platform,
+                uid=uid,
+                account_name=extracted_account,
             )
         if kind == "traffic":
             if not _context_has_user_metrics(context):
@@ -575,6 +639,110 @@ class MarketingOrchestra:
                 "user_id": uid,
             },
         )
+
+    async def _request_qr_code_login(self, platform: str, uid: str) -> Dict[str, Any]:
+        """
+        请求二维码登录
+        
+        生成二维码并返回给前端展示
+        """
+        try:
+            from rpa.qrcode_login import get_qr_login_manager
+            
+            manager = get_qr_login_manager()
+            result = await manager.check_and_refresh_login(uid, platform)
+            
+            if result["type"] == "already_logged_in":
+                # 已有登录，直接诊断
+                return await self._do_diagnosis(
+                    url="",
+                    platform=platform,
+                    uid=uid,
+                    account_name="",
+                    cookies=result["credential"]["cookies"],
+                )
+            
+            # 需要扫码登录
+            session = result["session"]
+            
+            return {
+                "ok": True,
+                "result": {
+                    "type": "qr_code_login",
+                    "platform": platform,
+                    "session_id": session["session_id"],
+                    "qr_code_base64": session["qr_code"],
+                    "expires_in": session["expires_in"],
+                    "reply": f"请使用 {platform} APP 扫描下方二维码登录，登录后我就能获取您的账号数据进行诊断分析。",
+                    "instructions": [
+                        f"1. 打开 {platform} APP",
+                        "2. 点击右上角扫一扫",
+                        "3. 扫描下方二维码",
+                        "4. 在手机上确认登录",
+                    ],
+                    "waiting_for": "login",
+                },
+            }
+            
+        except Exception as e:
+            print(f"[_request_qr_code_login] 失败: {e}")
+            # 失败时返回普通提示
+            return {
+                "ok": True,
+                "result": {
+                    "type": "clarification",
+                    "reason": "login_failed",
+                    "reply": f"登录 {platform} 失败，请直接提供您的账号主页链接进行分析。",
+                },
+            }
+
+    async def _do_diagnosis(
+        self,
+        url: str,
+        platform: str,
+        uid: str,
+        account_name: Optional[str] = None,
+        cookies: Optional[List[Dict[str, Any]]] = None,
+    ) -> Dict[str, Any]:
+        """
+        执行账号诊断
+        
+        如果有 cookies，使用 cookies 进行认证诊断
+        如果需要登录，返回引导用户登录的响应
+        """
+        diagnose_params = {
+            "account_url": url,
+            "platform": platform,
+            "user_id": uid,
+            "account_name": account_name,
+        }
+        
+        # 如果有 cookies，添加到参数中
+        if cookies:
+            diagnose_params["cookies"] = cookies
+        
+        result = await self.skill_hub_client.call(
+            "diagnose_account",
+            diagnose_params,
+        )
+        
+        # 检查结果是否需要登录
+        if isinstance(result, dict):
+            result_data = result.get("result", result)
+            if result_data.get("login_required") or result_data.get("data_source") == "login_required":
+                # 需要登录，返回引导用户登录的响应
+                platform_name = "抖音" if platform == "douyin" else ("小红书" if platform == "xiaohongshu" else platform)
+                return {
+                    "ok": True,
+                    "result": {
+                        "type": "diagnosis",
+                        "login_required": True,
+                        "platform": platform,
+                        **result_data,
+                    },
+                }
+        
+        return result
 
     async def _natural_conversation_reply(
         self, user_input: str, context: Dict[str, Any]

@@ -86,7 +86,8 @@ class BrowserGrid:
         self,
         account_id: str,
         platform: str,
-        location: Optional[str] = None
+        location: Optional[str] = None,
+        cookies: Optional[List[Dict[str, Any]]] = None
     ) -> BrowserSession:
         """
         创建浏览器会话
@@ -95,6 +96,7 @@ class BrowserGrid:
             account_id: 账号ID
             platform: 平台类型
             location: 代理位置
+            cookies: 可选的 Cookie 列表（如果提供则优先使用）
         
         Returns:
             浏览器会话
@@ -143,10 +145,12 @@ class BrowserGrid:
             timezone_id=fingerprint.timezone,
         )
         
-        # 加载 Cookie
-        cookies = await self.session_mgr.load_cookies(account_id)
-        if cookies:
-            await context.add_cookies(cookies)
+        # 加载 Cookie（优先使用传入的 cookies）
+        cookies_to_use = cookies
+        if cookies_to_use is None:
+            cookies_to_use = await self.session_mgr.load_cookies(account_id)
+        if cookies_to_use:
+            await context.add_cookies(cookies_to_use)
         
         # 创建页面并应用反检测
         page = await context.new_page()
