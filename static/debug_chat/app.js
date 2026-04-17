@@ -6,7 +6,18 @@
   const LS_THEME = "lumina_debug_theme";
   const LS_CTX = "lumina_debug_context_json";
 
+  const CAPABILITIES = [
+    { id: "system_chat", label: "系统对话(编排API)", apiService: "system-chat" },
+    { id: "content_direction_ranking", label: "内容方向榜单", apiService: "content-ranking" },
+    { id: "positioning_case_library", label: "定位决策案例库", apiService: "positioning", mode: "case" },
+    { id: "content_positioning_matrix", label: "内容定位矩阵", apiService: "positioning", mode: "matrix" },
+    { id: "weekly_decision_snapshot", label: "每周决策快照", apiService: "weekly-snapshot" },
+  ];
+
   const SYSTEM_CHAT = "system_chat";
+  const POSITIONING_CASE = "positioning_case_library";
+  const POSITIONING_MATRIX = "content_positioning_matrix";
+  const POSITIONING_IDS = new Set([POSITIONING_CASE, POSITIONING_MATRIX]);
 
   const $ = (id) => document.getElementById(id);
 
@@ -15,9 +26,11 @@
   const memCountEl = $("memCount");
   const statusEl = $("status");
   const inputEl = $("input");
-  const capabilityEl = $("capability");
+  const capabilityEl = $("service");
+  const positioningModeEl = $("positioningMode");
   const platformEl = $("platform");
   const contextFieldWrap = $("contextFieldWrap");
+  const positioningModeWrap = $("positioningModeWrap");
   const contextJsonEl = $("contextJson");
 
   let abortCtrl = null;
@@ -35,13 +48,19 @@
   }
 
   function randomId(prefix) {
-    if (crypto.randomUUID) return prefix + crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+    try {
+      if (typeof crypto !== "undefined" && crypto.randomUUID) {
+        return prefix + crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+      }
+    } catch (e) {}
     return prefix + Math.random().toString(36).slice(2, 14);
   }
 
   function ensureIds() {
-    if (!$("userId").value.trim()) $("userId").value = localStorage.getItem(LS_USER) || randomId("u_");
-    if (!$("convId").value.trim()) $("convId").value = localStorage.getItem(LS_CONV) || randomId("c_");
+    const uidInput = $("userId");
+    const cidInput = $("convId");
+    if (!uidInput.value.trim()) uidInput.value = localStorage.getItem(LS_USER) || randomId("u_");
+    if (!cidInput.value.trim()) cidInput.value = localStorage.getItem(LS_CONV) || randomId("c_");
     persistIds();
   }
 
@@ -53,17 +72,23 @@
     localStorage.setItem(LS_CTX, contextJsonEl.value);
   }
 
-  function updateContextFieldVisibility() {
-    const on = capabilityEl.value === SYSTEM_CHAT;
-    contextFieldWrap.classList.toggle("hidden", !on);
+  function getSelectedCapability() {
+    return CAPABILITIES.find((c) => c.id === capabilityEl.value) || CAPABILITIES[0];
   }
 
-  async function loadCapabilities() {
-    const r = await fetch("/api/v1/debug/chat/capabilities");
-    const data = await r.json();
+  function updateFieldVisibility() {
+    const cap = getSelectedCapability();
+    contextFieldWrap.classList.toggle("hidden", cap.id !== SYSTEM_CHAT);
+    positioningModeWrap.classList.toggle("hidden", !POSITIONING_IDS.has(cap.id));
+    if (POSITIONING_IDS.has(cap.id) && positioningModeEl) {
+      positioningModeEl.value = cap.mode || "case";
+    }
+  }
+
+  function initCapabilities() {
     capabilityEl.innerHTML = "";
     const saved = localStorage.getItem(LS_CAP);
-    for (const c of data.capabilities || []) {
+    for (const c of CAPABILITIES) {
       const opt = document.createElement("option");
       opt.value = c.id;
       opt.textContent = `${c.label} (${c.id})`;
@@ -72,18 +97,25 @@
     if (saved && [...capabilityEl.options].some((o) => o.value === saved)) {
       capabilityEl.value = saved;
     }
-    updateContextFieldVisibility();
+    updateFieldVisibility();
   }
 
   async function refreshMemory() {
     ensureIds();
     const uid = $("userId").value.trim();
     const cid = $("convId").value.trim();
-    const url = `/api/v1/debug/chat/memory?user_id=${encodeURIComponent(uid)}&conversation_id=${encodeURIComponent(cid)}`;
-    const r = await fetch(url);
-    const data = await r.json();
-    memJsonEl.textContent = JSON.stringify(data.messages || [], null, 2);
-    memCountEl.textContent = `${data.count ?? 0} 条`;
+    const cap = getSelectedCapability();
+    const svc = cap.apiService;
+    const url = `/api/v1/services/${encodeURIComponent(svc)}/memory?user_id=${encodeURIComponent(uid)}&conversation_id=${encodeURIComponent(cid)}`;
+    try {
+      const r = await fetch(url);
+      const data = await r.json();
+      memJsonEl.textContent = JSON.stringify(data.messages || [], null, 2);
+      memCountEl.textContent = `${data.count ?? 0} 条`;
+    } catch (e) {
+      memJsonEl.textContent = JSON.stringify({ error: String(e) }, null, 2);
+      memCountEl.textContent = "0 条";
+    }
   }
 
   function appendBubble(role, text, meta) {
@@ -116,7 +148,10 @@
     if (abortCtrl) abortCtrl.abort();
     abortCtrl = new AbortController();
 
-    appendBubble("user", text, `user · ${capabilityEl.selectedOptions[0]?.textContent || ""}`);
+    const cap = getSelectedCapability();
+    const svc = cap.apiService;
+    const svcLabel = capabilityEl.selectedOptions[0]?.textContent || svc;
+    appendBubble("user", text, `user · ${svcLabel}`);
     inputEl.value = "";
 
     const asstBody = appendBubble("assistant", "", "assistant · 生成中…");
@@ -127,7 +162,6 @@
     setStatus("流式接收中…");
 
     const payload = {
-      capability: capabilityEl.value,
       user_id: $("userId").value.trim(),
       conversation_id: $("convId").value.trim(),
       message: text,
@@ -135,17 +169,17 @@
     const plat = platformEl.value.trim();
     if (plat) payload.platform = plat;
 
-    if (capabilityEl.value === SYSTEM_CHAT) {
+    if (cap.id === SYSTEM_CHAT) {
       const raw = contextJsonEl.value.trim();
       if (raw) {
         try {
-          payload.hub_context = JSON.parse(raw);
+          payload.context = JSON.parse(raw);
           if (
-            payload.hub_context === null ||
-            typeof payload.hub_context !== "object" ||
-            Array.isArray(payload.hub_context)
+            payload.context === null ||
+            typeof payload.context !== "object" ||
+            Array.isArray(payload.context)
           ) {
-            throw new Error("hub_context 须为 JSON 对象");
+            throw new Error("context 须为 JSON 对象");
           }
         } catch (e) {
           asstBody.textContent = "编排上下文 JSON 无效：" + e.message;
@@ -156,12 +190,16 @@
           return;
         }
       } else {
-        payload.hub_context = {};
+        payload.context = {};
       }
     }
 
+    if (POSITIONING_IDS.has(cap.id)) {
+      payload.mode = cap.mode || positioningModeEl.value;
+    }
+
     try {
-      const res = await fetch("/api/v1/debug/chat/stream", {
+      const res = await fetch(`/api/v1/services/${encodeURIComponent(svc)}/stream`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -206,8 +244,9 @@
           } else if (ev.type === "done") {
             setStatus("完成");
           } else if (ev.type === "start") {
-            let meta = `assistant · ${ev.capability || ""}`;
+            let meta = `assistant · ${ev.service || ""}`;
             if (ev.via) meta += ` · ${ev.via}`;
+            if (ev.mode) meta += ` · ${ev.mode}`;
             asstBody.parentElement.querySelector(".meta").textContent = meta;
           }
         }
@@ -248,8 +287,10 @@
     ensureIds();
     const uid = $("userId").value.trim();
     const cid = $("convId").value.trim();
+    const cap = getSelectedCapability();
+    const svc = cap.apiService;
     await fetch(
-      `/api/v1/debug/chat/memory?user_id=${encodeURIComponent(uid)}&conversation_id=${encodeURIComponent(cid)}`,
+      `/api/v1/services/${encodeURIComponent(svc)}/memory?user_id=${encodeURIComponent(uid)}&conversation_id=${encodeURIComponent(cid)}`,
       { method: "DELETE" }
     );
     messagesEl.innerHTML = "";
@@ -258,9 +299,12 @@
   });
   $("btnRefreshMem").addEventListener("click", () => refreshMemory());
   capabilityEl.addEventListener("change", () => {
-    updateContextFieldVisibility();
+    updateFieldVisibility();
     persistIds();
+    messagesEl.innerHTML = "";
+    refreshMemory();
   });
+  positioningModeEl.addEventListener("change", persistIds);
   contextJsonEl.addEventListener("blur", persistIds);
   platformEl.addEventListener("change", persistIds);
   $("userId").addEventListener("blur", persistIds);
@@ -281,12 +325,9 @@
   platformEl.value = localStorage.getItem(LS_PLATFORM) || "";
   contextJsonEl.value = localStorage.getItem(LS_CTX) || "";
 
-  loadCapabilities()
-    .then(() => {
-      ensureIds();
-      return refreshMemory();
-    })
-    .catch((e) => {
-      memJsonEl.textContent = JSON.stringify({ error: String(e) }, null, 2);
-    });
+  initCapabilities();
+  ensureIds();
+  refreshMemory().catch((e) => {
+    memJsonEl.textContent = JSON.stringify({ error: String(e) }, null, 2);
+  });
 })();

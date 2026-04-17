@@ -1,0 +1,73 @@
+KIND: methodology
+REPLY:
+**进度**：已按方法论 SOP 顺序跑完 **2** 个节点。
+（你的输入摘要：用 AIDA 方法论帮我写一条文案，推广职场穿搭课程）
+
+**各步状态**：
+- `attention` → 工具 `generate_text`：✓ 已返回
+- `desire` → 工具 `match_cases`：✓ 已返回
+
+所有步骤均已成功返回。需要口语解读可再说「用一段话总结上面结果」。
+SOP_OK_COUNT: 2
+SOP_FAIL_COUNT: 0
+NODE_RESULTS:
+{
+  "attention": {
+    "ok": true,
+    "result": {
+      "title": "钩子强化｜xiaohongshu",
+      "content": "（占位）AIDA-Attention 结构下围绕「钩子强化」展开，DNA=['platform_spec_snippet']。",
+      "hashtags": [
+        "钩子强化",
+        "xiaohongshu"
+      ],
+      "hook_analysis": {
+        "type": "placeholder",
+        "position": "opening",
+        "strength": 0.5
+      },
+      "platform_optimization": {
+        "tips": [
+          "{'element': 'hook_position', 'value': '0-3s', 'validation_skill': 'validate_hook_timing'}",
+          "{'element': 'title_length', 'value': '12-20字推荐'}"
+        ]
+      },
+      "methodology_used": "aida_advanced",
+      "user_id": "u_individual_sop_004"
+    }
+  },
+  "desire": {
+    "ok": true,
+    "result": {
+      "matched_cases": [
+        {
+          "case_id": "demo_0",
+          "title": "general/note 案例 0",
+          "similarity_score": 0.9,
+          "key_success_factors": [
+            "强钩子",
+            "清晰 CTA"
+          ]
+        },
+        {
+          "case_id": "demo_1",
+          "title": "general/note 案例 1",
+          "similarity_score": 0.85,
+          "key_success_factors": [
+            "强钩子",
+            "清晰 CTA"
+          ]
+        },
+        {
+          "case_id": "demo_2",
+          "title": "general/note 案例 2",
+          "similarity_score": 0.8,
+          "key_success_factors": [
+            "强钩子",
+            "清晰 CTA"
+          ]
+        },
+        {
+          "case_id": "demo_3",
+          "title": "general/note 案例 3",
+          "similarit

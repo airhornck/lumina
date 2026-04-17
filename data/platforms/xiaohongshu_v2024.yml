@@ -11,3 +11,56 @@ audit_rules:
     audit_skill: "check_medical_compliance"
   - category: "comparison"
     forbidden_terms: ["最好", "第一", "极致"]
+
+content_formats:
+  图文:
+    pic_num:
+      max: 18
+      min: 1
+      default: "6-9"
+    title:
+      max_chars: 20
+      min_chars: 1
+      default: "15-20"
+    content:
+      max_chars: 1000
+      min_chars: 1
+      default: "300-800"
+    tags:
+      max_count: 10
+    pic_size:
+      max: "32MB"
+    pic_format:
+      supported: ["png", "jpg", "jpeg", "webp"]
+    pic_resolution:
+      ratio: "3:4至2:1之间"
+      min: "720*960"
+  视频:
+    title:
+      max_chars: 64
+      min_chars: 1
+      default: "15-20"
+    video_size:
+      max: "20GB"
+    video_duration:
+      max: "60分钟"
+      default: "30秒-1分钟"
+    video_format:
+      recommended: ["mp4", "mov"]
+    video_resolution:
+      recommended: "720P(1280*720)及以上"
+    content:
+      default: "100-300"
+    tags:
+      max_count: 10
+  仅文字:
+    content_all:
+      max_chars: 10000
+      default: "1500-3000"
+    title:
+      default: "20-30"
+    content_layout:
+      paragraphs: "5-8"
+      lines_per_paragraph: 8
+    tags:
+      max_count: 10

@@ -1,0 +1,36 @@
+methodology_id: "hook_story_offer"
+name: "钩子-故事-Offer"
+applicable_scenarios: ["conversion", "lead_generation", "product_launch"]
+success_cases: ["知识付费引流笔记", "直播预告短视频"]
+prompt_templates:
+  hook: "用冲突、数字或反常识制造信息缺口，让受众不得不停留"
+  story: "讲述一个真实的转变过程（Before→After），建立信任"
+  offer: "明确给出下一步行动和可量化的收益，降低决策阻力"
+steps:
+  - step_id: "hook"
+    theory: "information_gap"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "强钩子"
+        content_dna: {}
+        methodology_hint: "HookStoryOffer-Hook"
+  - step_id: "story"
+    theory: "social_proof"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "转变故事"
+        content_dna: {}
+        methodology_hint: "HookStoryOffer-Story"
+  - step_id: "offer"
+    theory: "call_to_action"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "行动号召"
+        content_dna: {}
+        methodology_hint: "HookStoryOffer-Offer"

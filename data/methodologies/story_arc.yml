@@ -1,0 +1,38 @@
+methodology_id: "story_arc"
+name: "故事弧线"
+applicable_scenarios: ["awareness", "engagement", "brand_story"]
+success_cases: ["个人IP成长故事爆款", "品牌起源故事高互动"]
+prompt_templates:
+  setup: "建立世界观与人物：让读者在3秒内知道「谁」和「在哪」"
+  inciting_incident: "打破平衡的事件：一个具体的冲突、意外或转折点"
+  rising_action: "过程曲折：尝试→失败→再尝试，叠加情绪张力"
+  climax: "高潮释放：给出关键结果、反转或顿悟"
+  resolution: "收尾共鸣：回扣开头，给出可迁移的经验或情感落点"
+steps:
+  - step_id: "setup"
+    theory: "narrative_transportation"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "故事开场"
+        content_dna: {}
+        methodology_hint: "StoryArc-Setup"
+  - step_id: "climax"
+    theory: "peak_end_rule"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "高潮反转"
+        content_dna: {}
+        methodology_hint: "StoryArc-Climax"
+  - step_id: "resolution"
+    theory: "self_relevance"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "收尾共鸣"
+        content_dna: {}
+        methodology_hint: "StoryArc-Resolution"

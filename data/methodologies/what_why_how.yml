@@ -1,0 +1,36 @@
+methodology_id: "what_why_how"
+name: "What-Why-How"
+applicable_scenarios: ["education", "awareness", "authority_building"]
+success_cases: ["知识科普账号涨粉", "行业概念解释爆款"]
+prompt_templates:
+  what: "用一句话+一个类比，让外行也能听懂「是什么」"
+  why: "给出3个必须关心的理由，关联到读者的利益或情绪"
+  how: "提供可落地的3步操作，或一个快速上手的工具/清单"
+steps:
+  - step_id: "what"
+    theory: "cognitive_fluency"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "定义解释"
+        content_dna: {}
+        methodology_hint: "WhatWhyHow-What"
+  - step_id: "why"
+    theory: "relevance_heuristic"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "重要性论证"
+        content_dna: {}
+        methodology_hint: "WhatWhyHow-Why"
+  - step_id: "how"
+    theory: "procedural_knowledge"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "操作指南"
+        content_dna: {}
+        methodology_hint: "WhatWhyHow-How"

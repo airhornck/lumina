@@ -1,0 +1,27 @@
+methodology_id: "trend_ride"
+name: "热点借势"
+applicable_scenarios: ["awareness", "viral", "timing"]
+success_cases: ["节日热点笔记破圈", "平台挑战赛跟拍爆款"]
+prompt_templates:
+  trend_spotting: "快速识别与账号定位相关的热点：不看全量，只看「可切入」的"
+  angle_bridge: "找到热点与垂直赛道的桥梁：用专业视角重新解读"
+  speed_hook: "前3秒必须出现热点关键词或视觉符号，降低识别成本"
+  value_anchor: "在情绪共鸣后立刻落回到实用价值，避免纯追热点的空洞感"
+steps:
+  - step_id: "trend_spotting"
+    theory: "selective_attention"
+    agent_role: "strategy"
+    skill_call:
+      name: "select_topic"
+      params:
+        industry: "general"
+        account_stage: "growth"
+  - step_id: "angle_bridge"
+    theory: "relevance_filter"
+    agent_role: "strategy"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "热点角度嫁接"
+        content_dna: {}
+        methodology_hint: "TrendRide-AngleBridge"

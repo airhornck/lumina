@@ -200,8 +200,8 @@ async def check_account_health_batch(
 async def daily_maintenance(
     account_ids: List[str],
     platforms: List[str],
+    user_id: str,
     maintenance_type: str = "light",
-    user_id: str
 ) -> Dict[str, Any]:
     """
     执行日常养号操作

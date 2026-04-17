@@ -5,3 +5,24 @@ content_dna:
 audit_rules:
   - category: "sensitive"
     forbidden_terms: ["政治敏感词占位"]
+
+content_formats:
+  仅文字:
+    title:
+      max_chars: 40
+      default: "30以内"
+    template_id:
+      options: [3, 4, 5]
+      default: 5
+      description: "3=封面三图、4=封面单图/无封面、5=平台默认封面"
+    summary:
+      range: "250-300"
+    content:
+      min_chars: 200
+      max_chars: 40000
+    tags:
+      max_count: 10
+  图文:
+    note: "暂未配置详细规则"
+  视频:
+    note: "暂未配置详细规则"

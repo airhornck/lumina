@@ -11,7 +11,7 @@
       <header class="top">
         <div class="brand">
           <span class="logo">Lumina</span>
-          <span class="sub">流式调试 · 系统编排 + 四专项 · 记忆隔离</span>
+          <span class="sub">流式调试 · 4 个独立服务 · 记忆隔离</span>
         </div>
         <button type="button" class="btn ghost" id="btn-theme" title="切换主题">主题</button>
       </header>
@@ -32,16 +32,23 @@
             <button type="button" class="btn small" id="btnNewConv">新对话</button>
           </div>
 
-          <h2>能力接口</h2>
+          <h2>服务接口</h2>
           <p class="hint">
-            「系统对话」走 <code>/api/v1/marketing/hub</code> 同源编排（JSON 流式输出）；其余四项为专项系统提示 + LLM
-            流式。记忆均按 User + 对话 ID 隔离。
+            选择下方服务调用对应的新 API。记忆按 User + 对话 ID + Service 三元组隔离。
           </p>
-          <select id="capability" class="select"></select>
+          <select id="service" class="select"></select>
+
+          <label class="field hidden" id="positioningModeWrap">
+            <span>定位模式</span>
+            <select id="positioningMode" class="select">
+              <option value="case">定位决策案例库 (case)</option>
+              <option value="matrix">内容定位矩阵 (matrix)</option>
+            </select>
+          </label>
 
           <label class="field hidden" id="contextFieldWrap">
             <span>编排上下文 JSON（可选，仅系统对话）</span>
-            <textarea id="contextJson" rows="4" class="mono" placeholder='hub_context JSON，例如 {"industry":"美妆","metrics":{"views":1200}}'></textarea>
+            <textarea id="contextJson" rows="4" class="mono" placeholder='context JSON，例如 {"industry":"美妆","metrics":{"views":1200}}'></textarea>
           </label>
 
           <label class="field">
@@ -50,7 +57,7 @@
           </label>
 
           <div class="row stack">
-            <button type="button" class="btn danger outline" id="btnClearMem">清空本对话记忆</button>
+            <button type="button" class="btn danger outline" id="btnClearMem">清空本服务记忆</button>
             <button type="button" class="btn outline" id="btnRefreshMem">刷新记忆面板</button>
           </div>
         </aside>
@@ -80,6 +87,6 @@
         </aside>
       </div>
     </div>
-    <script src="app.js"></script>
+    <script src="app.js?v=2"></script>
   </body>
 </html>

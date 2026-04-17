@@ -1,0 +1,55 @@
+---
+INPUT: 根据最近的爆款数据，进化我们的选题策略
+KIND: traffic
+REPLY: 要做**流量结构分析**，需要你的真实数据（或手抄后台数字）。请补充例如：**近 7 天** 曝光/阅读、点赞、收藏、评论、分享、主页访问等——有几项写几项。
+
+API 调试时可在请求的 `context` 里传 `metrics`，例如 `{"views": 12000, "likes": 480, "shares": 12}`。
+
+若暂时没有数据、只要通用思路，请直接说「先给通用优化清单」，我按通用框架回复，不伪造漏斗数字。
+
+---
+INPUT: 抓取这个竞品账号的数据：隔壁火锅店
+KIND: traffic
+REPLY: 要做**流量结构分析**，需要你的真实数据（或手抄后台数字）。请补充例如：**近 7 天** 曝光/阅读、点赞、收藏、评论、分享、主页访问等——有几项写几项。
+
+API 调试时可在请求的 `context` 里传 `metrics`，例如 `{"views": 12000, "likes": 480, "shares": 12}`。
+
+若暂时没有数据、只要通用思路，请直接说「先给通用优化清单」，我按通用框架回复，不伪造漏斗数字。
+
+---
+INPUT: 有人评论衣服哪里买，帮我回复
+KIND: general
+REPLY: **进度**：已处理你的请求（类型：general）。
+**摘要**：{"type": "community_guide", "reply": "关于社群互动，这里有几个实用建议：\n1）及时回复评论能显著提升账号活跃度和粉丝粘性；\n2）对购买类评论（如'哪里买'），可引导到置顶链接或私信；\n3）粉丝分层可按活跃度（潜水/互动/转化）制定不同触达策略。\n如果你有具体的评论内容或粉丝数据，我可以帮你写更精准的回复或分层方案。"}
+
+---
+INPUT: 帮我分析一下粉丝画像，分分层
+KIND: conversation
+REPLY: 你好，我是 Lumina 营销助手～可以帮你做账号诊断、选题方向、文案/脚本、内容风险检查等。直接说说你现在最想解决的一个问题就行。
+
+---
+INPUT: 说全网最低价会不会被限流
+KIND: risk
+REPLY: **进度**：已完成内容风险扫描。
+**风险等级**：medium；涉及：extreme_pricing
+**命中词**：全网最低(extreme_pricing), 最低价(extreme_pricing)
+**修改建议**：删除或改写敏感词；避免使用绝对化用语，可改用'很受欢迎'、'性价比高'等相对表述
+
+---
+INPUT: 用 AIDA 方法论帮我写一条文案，推广职场穿搭课程
+KIND: methodology
+REPLY: **进度**：已按方法论 SOP 顺序跑完 **2** 个节点。
+（你的输入摘要：用 AIDA 方法论帮我写一条文案，推广职场穿搭课程）
+
+**各步状态**：
+- `attention` → 工具 `generate_text`：✗ 未完成
+- `desire` → 工具 `match_cases`：✗ 未完成
+
+详细 JSON 见 `sop.node_results`；需要口语解读可再说「用一段话总结上面结果」。
+
+---
+INPUT: 用钩子-故事-offer结构写个脚本，讲职场新人穿搭
+KIND: script
+REPLY: **进度**：已处理你的请求（类型：script）。
+**摘要**：{"hook_script": "【curiosity】3 秒内抓住注意力：用钩子-故事-offer结构写个脚本，讲职场新人穿搭…", "full_script": "口播稿占位，时长约 60s，平台 xiaohongshu。方法论：story_arc", "shot_list": [{"timestamp": "0-3s", "visual": "特写", "audio": "钩子", "text": "用钩子-故事-offer结构写个脚本，讲"}, {"timestamp": "3-15s", "visual": "演示", "audio": "展开", "text": "主体"}], "bgm_suggestion": "轻快电子（占位）", "caption_highlights": ["字幕关键词1", "字幕关键词2"], "methodology_used": "story_arc", "user_id": "u_ind_sop_005"}
+

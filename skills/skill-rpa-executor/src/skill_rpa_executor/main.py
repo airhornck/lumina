@@ -235,9 +235,9 @@ async def handle_crawl_account(input: RPATaskInput) -> Dict[str, Any]:
 
 @mcp.tool()
 async def batch_execute(
+    user_id: str,
     tasks: List[Dict[str, Any]],
     parallel: bool = True,
-    user_id: str
 ) -> Dict[str, Any]:
     """
     批量执行任务

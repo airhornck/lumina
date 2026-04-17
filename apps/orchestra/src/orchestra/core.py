@@ -11,6 +11,67 @@ from skill_hub_client import SkillHubClient
 from sop_engine import compile_methodology_dag
 
 
+# ========== 矩阵 Agent Skill 兼容导入 ==========
+def _import_matrix_skills():
+    """动态导入矩阵 Agent Skills（若未在 sys.path 中则自动添加）。"""
+    from pathlib import Path
+    import sys
+
+    root = Path(__file__).resolve().parents[3]
+    skills_to_path = {
+        "skill_matrix_commander": root / "skills" / "skill-matrix-commander" / "src",
+        "skill_bulk_creative": root / "skills" / "skill-bulk-creative" / "src",
+        "skill_account_keeper": root / "skills" / "skill-account-keeper" / "src",
+        "skill_traffic_broker": root / "skills" / "skill-traffic-broker" / "src",
+    }
+    for p in skills_to_path.values():
+        sp = str(p)
+        if sp not in sys.path:
+            sys.path.insert(0, sp)
+
+    imports = {}
+    try:
+        from skill_matrix_commander.main import (
+            MatrixSetupInput,
+            plan_matrix_strategy,
+        )
+        imports["plan_matrix_strategy"] = (plan_matrix_strategy, MatrixSetupInput)
+    except Exception:
+        pass
+    try:
+        from skill_traffic_broker.main import (
+            TrafficRouteInput,
+            design_traffic_route,
+            calculate_traffic_value,
+        )
+        imports["design_traffic_route"] = (design_traffic_route, TrafficRouteInput)
+        imports["calculate_traffic_value"] = (calculate_traffic_value, None)
+    except Exception:
+        pass
+    try:
+        from skill_bulk_creative.main import (
+            BulkVariationInput,
+            generate_variations,
+        )
+        imports["generate_variations"] = (generate_variations, BulkVariationInput)
+    except Exception:
+        pass
+    try:
+        from skill_account_keeper.main import (
+            BatchLoginInput,
+            batch_login,
+            check_account_health_batch,
+        )
+        imports["batch_login"] = (batch_login, BatchLoginInput)
+        imports["check_account_health_batch"] = (check_account_health_batch, None)
+    except Exception:
+        pass
+    return imports
+
+
+_MATRIX_SKILLS = _import_matrix_skills()
+
+
 _CASUAL_GREETING = re.compile(
     r"^(你好|您好|哈喽|嗨|在吗|在么|有人吗|早上好|下午好|晚上好|早啊|晚安|"
     r"谢谢|多谢|感谢|谢了|不客气|拜拜|再见|好的|嗯嗯|嗯|好哒|ok|OK|哈喽|"
@@ -290,11 +351,21 @@ class MarketingOrchestra:
         if _is_clarify_feedback(t):
             return {"kind": "clarify_feedback", "sop_id": None}
         # 检测登录意图（如"登录抖音"、"扫码登录小红书"）
-        if _QR_LOGIN_INTENT.search(t):
+        # 排除批量登录场景（批量登录应由 account_keeper 处理）
+        if not re.search(r"批量", t) and _QR_LOGIN_INTENT.search(t):
             return {"kind": "qr_login", "sop_id": None}
         # 检测是否为诊断意图的跟进回复（补充账号信息）
         if _is_diagnosis_followup(t, session_history):
             return {"kind": "diagnosis", "sop_id": None}
+        # 矩阵/批量/导流相关意图优先于单账号 traffic/script/diagnosis
+        if re.search(r"矩阵.*(流量|导流|互导)|流量.*互导|设计.*导流.*路径|主号.*卫星号.*导流", t):
+            return {"kind": "general", "sop_id": None}
+        if re.search(r"一稿多改|改写.*多平台|改写成适合.*平台.*版本|适配.*平台", t):
+            return {"kind": "content", "sop_id": None}
+        if re.search(r"批量.*检查.*健康|检查.*所有账号.*健康|所有账号.*健康.*检查", t):
+            return {"kind": "general", "sop_id": None}
+        if re.search(r"计算.*(流量|互导).*价值|估算.*(流量|互导).*价值", t):
+            return {"kind": "general", "sop_id": None}
         # 先判「流量/曝光」再判「账号」，避免「有账号但流量差」被误路由成仅诊断
         if re.search(
             r"流量|曝光|播放|阅读|上不去|没人看|不涨粉|掉粉|下滑|漏斗|ctr|互动率",
@@ -306,32 +377,216 @@ class MarketingOrchestra:
             return {"kind": "conversation", "sop_id": None}
         if _is_diagnosis_intent(t):
             return {"kind": "diagnosis", "sop_id": None}
+        # 先判 cases（避免"爆款数据"被后面的"数据"规则拦截为 traffic）
+        if re.search(r"案例|对标|拆解|爆款.*模式|可复用|归因|爆款.*数据", t):
+            return {"kind": "cases", "sop_id": None}
+        if re.search(r"竞品.*数据|数据.*竞品|抓取.*数据", t):
+            return {"kind": "competitor", "sop_id": None}
         if re.search(r"数据|指标", t):
             return {"kind": "traffic", "sop_id": None}
-        if re.search(r"风险|违规|审核", t):
+        if re.search(r"风险|违规|审核|限流|封号|屏蔽|下架", t):
             return {"kind": "risk", "sop_id": None}
-        if re.search(r"文案|生成|标题", t):
-            return {"kind": "content", "sop_id": None}
-        if re.search(r"脚本|分镜|视频", t):
-            return {"kind": "script", "sop_id": None}
-        if re.search(r"选题|日历|热点", t):
-            return {"kind": "topic", "sop_id": None}
-        if re.search(r"方法论|SOP|步骤", t):
+        if re.search(r"方法论|SOP|步骤|框架|模型", t):
             return {"kind": "methodology", "sop_id": "aida_advanced"}
-        if re.search(r"案例|对标", t):
-            return {"kind": "cases", "sop_id": None}
+        # A/B测试、投放相关优先于 content
+        if re.search(r"A/B|对照组|实验组", t):
+            return {"kind": "traffic", "sop_id": None}
+        if re.search(r"文案|生成.*(标题|正文)|标题|笔记|撰写|推文|推广.*文案|种草.*文案", t) and not re.search(r"选题|日历", t):
+            return {"kind": "content", "sop_id": None}
+        if re.search(r"脚本|分镜|口播|拍摄", t):
+            return {"kind": "script", "sop_id": None}
+        if re.search(r"视频", t) and not re.search(r"拆解|分析|爆款|对标", t):
+            return {"kind": "script", "sop_id": None}
+        if re.search(r"选题|日历|热点|定位|人设|赛道|方向选择|IP打造|怎么做账号|账号怎么|生成.*选题|生成.*日历", t):
+            return {"kind": "topic", "sop_id": None}
         if re.search(r"新闻|资讯|行业", t):
             return {"kind": "news", "sop_id": None}
-        if re.search(r"竞品|对手", t):
+        if re.search(r"竞品|对手|抓取.*账号|抓取.*数据", t):
             return {"kind": "competitor", "sop_id": None}
         if re.search(r"图表|可视化", t):
             return {"kind": "viz", "sop_id": None}
-        if re.search(r"知识库|问答|什么是", t):
+        if re.search(r"知识库|问答|什么是|为什么.*流量|怎么做.*账号", t):
             return {"kind": "qa", "sop_id": None}
+        if re.search(r"矩阵|多账号.*规划|批量.*管理|主号|卫星号|协同", t):
+            return {"kind": "general", "sop_id": None}
+        if re.search(r"评论|回复粉丝|私域|社群|粉丝分层|粉丝画像|互动回复", t):
+            return {"kind": "general", "sop_id": None}
+        if re.search(r"投放|广告|千川|本地推|推广策略|竞价|ROI", t):
+            return {"kind": "traffic", "sop_id": None}
+        if re.search(r"账号.*健康|健康.*账号|批量.*检查|检查.*批量|封号|限流.*检查", t):
+            return {"kind": "diagnosis", "sop_id": None}
         # 默认不再落到「general→方法论检索」，避免天气/闲聊等被误匹配 AIDA
         if _METHODOLOGY_BROWSE.search(t):
             return {"kind": "general", "sop_id": None}
         return {"kind": "conversation", "sop_id": None}
+
+    async def _resolve_matrix_intent(
+        self, user_input: str, platform: str, uid: str
+    ) -> Optional[Dict[str, Any]]:
+        """
+        检测 general 意图下的矩阵/批量/导流诉求，并调用对应的矩阵 Agent Skill。
+        若未匹配到矩阵意图，返回 None，由上层继续 fallback。
+        """
+        t = (user_input or "").strip()
+        if not _MATRIX_SKILLS:
+            return None
+
+        def _wrap(result, agents):
+            data = result.model_dump() if hasattr(result, "model_dump") else dict(result) if result else {}
+            data["agent_calls"] = agents
+            return {"ok": True, "result": data}
+
+        # 1. 矩阵规划
+        if re.search(r"矩阵.*规划|帮我规划.*矩阵|账号矩阵|主号.*卫星号.*规划|矩阵.*搭建", t):
+            fn, InCls = _MATRIX_SKILLS.get("plan_matrix_strategy", (None, None))
+            if fn and InCls:
+                niches = {
+                    "职场": "职场发展", "穿搭": "时尚穿搭", "美食": "美食探店",
+                    "美妆": "美妆护肤", "健身": "健身运动", "家居": "家居生活",
+                    "母婴": "母婴育儿", "数码": "数码科技", "汽车": "汽车",
+                    "旅行": "旅行", "火锅": "美食餐饮",
+                }
+                niche = "general"
+                for k, v in niches.items():
+                    if k in t:
+                        niche = v
+                        break
+                target_platforms = [platform]
+                for cn, en in {
+                    "抖音": "douyin", "小红书": "xiaohongshu",
+                    "B站": "bilibili", "bilibili": "bilibili",
+                    "视频号": "shipinhao", "快手": "kuaishou",
+                }.items():
+                    if cn in t and en not in target_platforms:
+                        target_platforms.append(en)
+                result = await fn(
+                    InCls(
+                        master_account="master",
+                        niche=niche,
+                        target_platforms=target_platforms,
+                        satellite_count=5,
+                        budget_level="medium",
+                        user_id=uid,
+                    )
+                )
+                return _wrap(result, ["matrix_commander"])
+
+        # 2. 流量互导路径设计
+        if re.search(r"导流.*路径|流量.*互导|从.*导流到.*|主号.*卫星号.*导流|设计.*导流", t):
+            fn, InCls = _MATRIX_SKILLS.get("design_traffic_route", (None, None))
+            if fn and InCls:
+                src = "source_main"
+                tgt = "target_sat"
+                route_method = "comment"
+                for cn, en in {
+                    "抖音": "douyin", "小红书": "xiaohongshu",
+                    "B站": "bilibili", "bilibili": "bilibili",
+                }.items():
+                    if cn in t:
+                        if "主号" in t or "抖音" in t:
+                            src = f"{en}_main"
+                        else:
+                            tgt = f"{en}_sat"
+                result = await fn(
+                    InCls(
+                        source_account=src,
+                        target_account=tgt,
+                        content_id="content_001",
+                        route_method=route_method,
+                        user_id=uid,
+                    )
+                )
+                return _wrap(result, ["matrix_commander", "traffic_broker"])
+
+        # 3. 一稿多改 / 跨平台适配
+        if re.search(r"一稿多改|改写.*多平台|抖音.*小红书.*B站.*版本|适配.*平台|改写成适合.*平台", t):
+            fn, InCls = _MATRIX_SKILLS.get("generate_variations", (None, None))
+            if fn and InCls:
+                platforms_found = []
+                for cn, en in {
+                    "抖音": "douyin", "小红书": "xiaohongshu",
+                    "B站": "bilibili", "bilibili": "bilibili",
+                }.items():
+                    if cn in t and en not in platforms_found:
+                        platforms_found.append(en)
+                if not platforms_found:
+                    platforms_found = [platform]
+                target_accounts = []
+                niche = "general"
+                for k in ["职场", "穿搭", "美食", "美妆", "健身"]:
+                    if k in t:
+                        niche = k
+                        break
+                for i, pf in enumerate(platforms_found):
+                    target_accounts.append({
+                        "type": ["细分领域", "场景化", "地域化"][i % 3],
+                        "niche": f"{niche}_{pf}",
+                        "platform": pf,
+                    })
+                result = await fn(
+                    InCls(
+                        master_content={"text": t, "type": "script"},
+                        target_accounts=target_accounts,
+                        variation_strategy="auto",
+                        user_id=uid,
+                    )
+                )
+                return _wrap(result, ["bulk_creative", "creative_studio"])
+
+        # 4. 批量登录
+        if re.search(r"批量登录.*账号|登录.*多个账号", t):
+            fn, InCls = _MATRIX_SKILLS.get("batch_login", (None, None))
+            if fn and InCls:
+                pf = platform
+                for cn, en in {"抖音": "douyin", "小红书": "xiaohongshu"}.items():
+                    if cn in t:
+                        pf = en
+                        break
+                accounts = [
+                    {"id": f"account_{i+1}", "platform": pf, "credentials": {}}
+                    for i in range(3)
+                ]
+                result = await fn(
+                    InCls(
+                        accounts=accounts,
+                        platforms=[pf],
+                        use_proxy=True,
+                        headless=True,
+                        user_id=uid,
+                    )
+                )
+                return _wrap(result, ["account_keeper"])
+
+        # 5. 批量健康检查
+        if re.search(r"批量.*检查.*健康|检查.*所有账号.*健康|所有账号.*健康.*检查|账号.*健康.*批量", t):
+            fn, _ = _MATRIX_SKILLS.get("check_account_health_batch", (None, None))
+            if fn:
+                pf = platform
+                for cn, en in {"抖音": "douyin", "小红书": "xiaohongshu"}.items():
+                    if cn in t:
+                        pf = en
+                        break
+                account_ids = [f"account_{i+1}" for i in range(5)]
+                result = await fn(account_ids=account_ids, platforms=[pf], user_id=uid)
+                return _wrap(result, ["account_keeper"])
+
+        # 6. 流量价值计算
+        if re.search(r"计算.*(流量|互导).*价值|估算.*(流量|互导).*价值", t):
+            fn, _ = _MATRIX_SKILLS.get("calculate_traffic_value", (None, None))
+            if fn:
+                result = await fn(
+                    matrix_data={
+                        "accounts": [
+                            {"followers": 5000, "engagement": 300},
+                            {"followers": 3000, "engagement": 200},
+                            {"followers": 2000, "engagement": 150},
+                        ]
+                    },
+                    user_id=uid,
+                )
+                return _wrap(result, ["traffic_broker"])
+
+        return None
 
     def _extract_account_info_from_input(self, user_input: str) -> tuple[Optional[str], Optional[str]]:
         """
@@ -401,6 +656,8 @@ class MarketingOrchestra:
         return None, None
 
     async def run_sop(self, sop_id: str, context: Dict[str, Any]) -> Dict[str, Any]:
+        import inspect
+
         platform = context.get("platform") or "xiaohongshu"
         dag = compile_methodology_dag(
             sop_id,
@@ -409,14 +666,43 @@ class MarketingOrchestra:
             platform_lib=self.platform_lib,
         )
         results: Dict[str, Any] = {}
+        ok_count = 0
+        fail_count = 0
+        partial_results: List[Dict[str, Any]] = []
         for node in dag:
             skill = node.get("skill")
             params = dict(node.get("params") or {})
             params.setdefault("user_id", context.get("user_id") or "anonymous")
             params.setdefault("platform", platform)
             nid = node.get("id") or skill
-            results[nid] = await self.skill_hub_client.call(skill or "", params)
-        return {"dag": dag, "node_results": results}
+
+            # 参数过滤：只保留 Skill 函数签名中实际存在的参数，避免 compile_methodology_dag
+            # 注入的 methodology_prompt_template / methodology_id 等导致 TypeError
+            fn = self.skill_hub_client._registry.get(skill or "")
+            if fn:
+                sig = inspect.signature(fn)
+                allowed = set(sig.parameters.keys())
+                has_kwargs = any(
+                    p.kind == inspect.Parameter.VAR_KEYWORD
+                    for p in sig.parameters.values()
+                )
+                if not has_kwargs:
+                    params = {k: v for k, v in params.items() if k in allowed}
+
+            out = await self.skill_hub_client.call(skill or "", params)
+            results[nid] = out
+            if out.get("ok"):
+                ok_count += 1
+                partial_results.append({"step": nid, "result": out.get("result")})
+            else:
+                fail_count += 1
+        return {
+            "dag": dag,
+            "node_results": results,
+            "ok_count": ok_count,
+            "fail_count": fail_count,
+            "partial_results": partial_results,
+        }
 
     async def run_dynamic(
         self,
@@ -427,6 +713,11 @@ class MarketingOrchestra:
         uid = context.get("user_id") or "anonymous"
         platform = context.get("platform") or "xiaohongshu"
         kind = intent.get("kind")
+
+        # 矩阵/批量/导流意图优先于常规分类（避免被 traffic/script/diagnosis 等误拦截）
+        matrix_result = await self._resolve_matrix_intent(user_input, platform, uid)
+        if matrix_result is not None:
+            return matrix_result
 
         if kind == "qr_login":
             platform = _extract_login_platform(user_input) or platform
@@ -490,10 +781,11 @@ class MarketingOrchestra:
                     platform = extracted_platform
             
             if _is_demo_account_url(url):
-                # 没有URL，也没有登录凭证，提供二维码登录选项
-                if platform and not context.get("skip_qr_login"):
+                # 没有URL，也没有登录凭证，先引导补充信息
+                # 只有用户明确 prefer_qr_login 时才直接跳转二维码登录
+                if platform and context.get("prefer_qr_login"):
                     return await self._request_qr_code_login(platform, uid)
-                
+
                 return {
                     "ok": True,
                     "result": {
@@ -620,6 +912,21 @@ class MarketingOrchestra:
                 "qa_knowledge",
                 {"question": user_input, "user_id": uid},
             )
+        if kind == "general" and re.search(r"评论|回复|粉丝|社群|私域|互动|分层|画像", user_input):
+            return {
+                "ok": True,
+                "result": {
+                    "type": "community_guide",
+                    "reply": (
+                        "关于社群互动，这里有几个实用建议：\n"
+                        "1）及时回复评论能显著提升账号活跃度和粉丝粘性；\n"
+                        "2）对购买类评论（如'哪里买'），可引导到置顶链接或私信；\n"
+                        "3）粉丝分层可按活跃度（潜水/互动/转化）制定不同触达策略。\n"
+                        "如果你有具体的评论内容或粉丝数据，我可以帮你写更精准的回复或分层方案。"
+                    ),
+                },
+            }
+
         if kind == "conversation":
             reply = await self._natural_conversation_reply(user_input, context)
             return {
@@ -731,7 +1038,6 @@ class MarketingOrchestra:
             result_data = result.get("result", result)
             if result_data.get("login_required") or result_data.get("data_source") == "login_required":
                 # 需要登录，返回引导用户登录的响应
-                platform_name = "抖音" if platform == "douyin" else ("小红书" if platform == "xiaohongshu" else platform)
                 return {
                     "ok": True,
                     "result": {

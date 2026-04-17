@@ -1,0 +1,27 @@
+methodology_id: "big_idea"
+name: "大创意包装"
+applicable_scenarios: ["brand", "awareness", "differentiation"]
+success_cases: ["品牌口号出圈", "系列内容统一记忆点"]
+prompt_templates:
+  core_insight: "提炼一个反直觉或高共鸣的核心洞察，一句话说清"
+  creative_expression: "用比喻、对比、夸张等修辞将洞察转化为感官化表达"
+  consistent_repetition: "在标题、封面、正文、结尾中至少3次重复核心符号"
+steps:
+  - step_id: "core_insight"
+    theory: "pattern_interrupt"
+    agent_role: "strategy"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "核心洞察"
+        content_dna: {}
+        methodology_hint: "BigIdea-Insight"
+  - step_id: "creative_expression"
+    theory: "sensory_language"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "创意表达"
+        content_dna: {}
+        methodology_hint: "BigIdea-Expression"

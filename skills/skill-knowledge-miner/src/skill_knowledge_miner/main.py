@@ -440,8 +440,8 @@ def _default_fill_in_blanks() -> Dict[str, str]:
 async def analyze_competitor(
     competitor_id: str,
     platform: str,
+    user_id: str,
     analysis_depth: str = "standard",
-    user_id: str
 ) -> Dict[str, Any]:
     """
     竞品分析

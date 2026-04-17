@@ -11,9 +11,9 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional
 
-from .models import Intent, IntentType, MarketingSubtype
+from .models import Intent, IntentType
 
 
 class L1RuleEngine:
@@ -34,12 +34,15 @@ class L1RuleEngine:
     DEFAULT_MARKETING_PATTERNS = [
         r"(诊断|分析|看看|体检|评估).*(账号|号|主页|数据)",
         r"(写|生成|创作|改|优化).*(文案|标题|正文|内容|脚本|分镜)",
+        # 「怎么选题」等：选题在「怎么」之后，需单独覆盖（否则仅 subtype 命中、营销层未命中）
+        r"(怎么|如何).*(选题|定位|起号)",
         r"(选题|方向|定位|人设|IP).*(建议|思路|怎么做|规划)",
         r"(流量|粉丝|曝光|阅读|转化|互动).*(提升|增加|优化|分析|问题|差|掉)",
         r"(小红书|抖音|B站|视频号|快手).*(运营|推广|怎么做|诊断)",
         r"(爆款|热门| trending).*(方法|技巧|思路|公式|密码)",
         r"(AIDA|定位理论|钩子|方法论|SOP|增长黑客|4P|4C|漏斗)",
         r"(风险|违规|审核|敏感词|违禁|限流).*(检查|检测|排查)",
+        r"(检查|检测|排查).*(风险|违规|审核|敏感词|违禁|限流)",
         r"(竞品|对手|对标).*(分析|监测|看看)",
         r"(矩阵|多账号|批量).*(管理|运营|发布|规划)",
         r"(知识库|问答|什么是|怎么做|为什么).*(营销|运营|小红书|抖音)",

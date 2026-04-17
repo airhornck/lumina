@@ -80,13 +80,17 @@ except Exception:
     logger.exception("Failed to mount /mcp Skill Hub")
 
 
-from orchestra.router import router as orchestra_router
+from orchestra.router import router as orchestra_router  # noqa: E402
 
 app.include_router(orchestra_router)
 
-from chat_debug.router import router as debug_chat_router
+from chat_debug.router import router as debug_chat_router  # noqa: E402
 
 app.include_router(debug_chat_router)
+
+from services.router import router as services_router  # noqa: E402
+
+app.include_router(services_router)
 
 # Phase 1-4: 新增 Intent 和 Skill 路由
 try:

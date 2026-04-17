@@ -8,7 +8,45 @@ from fastmcp import FastMCP
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 
+try:
+    from knowledge_base.platform_registry import PlatformRegistry
+except ImportError:
+    import sys
+    from pathlib import Path
+    _kb_path = Path(__file__).resolve().parents[3] / "packages" / "knowledge-base" / "src"
+    if str(_kb_path) not in sys.path:
+        sys.path.insert(0, str(_kb_path))
+    from knowledge_base.platform_registry import PlatformRegistry
+
+try:
+    from lumina_skills.methodology_utils import build_methodology_prompt, match_methodology_for_content
+except ImportError:
+    import sys
+    from pathlib import Path
+    _lu_path = Path(__file__).resolve().parents[3] / "packages" / "lumina-skills" / "src"
+    if str(_lu_path) not in sys.path:
+        sys.path.insert(0, str(_lu_path))
+    from lumina_skills.methodology_utils import build_methodology_prompt, match_methodology_for_content
+
 mcp = FastMCP("creative_studio")
+
+
+def _get_spec_value(spec: Any, key_path: List[str], default: Any = None) -> Any:
+    """从 PlatformSpec.content_formats 中查找第一个匹配 key_path 的值"""
+    formats = getattr(spec, "content_formats", {}) or {}
+    for fmt_cfg in formats.values():
+        if not isinstance(fmt_cfg, dict) or fmt_cfg.get("note"):
+            continue
+        val = fmt_cfg
+        for k in key_path:
+            if isinstance(val, dict):
+                val = val.get(k)
+            else:
+                val = None
+                break
+        if val is not None:
+            return val
+    return default
 
 
 class TextGenerationInput(BaseModel):
@@ -57,46 +95,55 @@ async def generate_text(input: TextGenerationInput) -> TextGenerationOutput:
     
     使用 LLM 根据主题、平台和调性生成专业文案
     """
-    # 平台特定模板
-    platform_specs = {
-        "xiaohongshu": {
-            "structure": "痛点引入 + 解决方案 + 使用体验 + 购买建议",
-            "emoji_usage": "适量，增加亲和力",
-            "length": "300-800字",
-            "style": "真实分享、种草氛围"
-        },
-        "douyin": {
-            "structure": "黄金3秒 + 信息密度 + 引导互动",
-            "emoji_usage": "大量使用，增强表现力",
-            "length": "50-200字",
-            "style": "口语化、快节奏"
-        },
-        "bilibili": {
-            "structure": "知识密度 + 逻辑清晰 + 社区黑话",
-            "emoji_usage": "少量，专业为主",
-            "length": "500-1500字",
-            "style": "深度、硬核、有梗"
-        }
-    }
-    
-    spec = platform_specs.get(input.platform, platform_specs["xiaohongshu"])
-    
+    # 从平台规范库读取规范
+    try:
+        spec = PlatformRegistry().load(input.platform)
+        platform_dna_lines = [f"- {item.get('element', '')}: {item.get('value', '')}" for item in spec.content_dna]
+        audit_lines = [
+            f"- {rule.get('category', '')}类禁用词: {', '.join(rule.get('forbidden_terms', []))}"
+            for rule in spec.audit_rules
+        ]
+        platform_dna = "\n".join(platform_dna_lines) if platform_dna_lines else "- 暂无平台DNA规范"
+        audit_rules = "\n".join(audit_lines) if audit_lines else "- 暂无特殊审核规则"
+
+        # 从 content_formats 读取量化约束
+        title_max = _get_spec_value(spec, ["title", "max_chars"], 25)
+        content_max = _get_spec_value(spec, ["content", "max_chars"]) or _get_spec_value(spec, ["content_all", "max_chars"], 1000)
+        tags_max = _get_spec_value(spec, ["tags", "max_count"], 8)
+    except Exception:
+        platform_dna = "- 结构: 痛点引入 + 解决方案 + 使用体验 + 购买建议\n- Emoji使用: 适量，增加亲和力\n- 长度: 300-800字\n- 风格: 真实分享、种草氛围"
+        audit_rules = "- 避免使用夸大、虚假或违禁词汇"
+        title_max = 25
+        content_max = 1000
+        tags_max = 8
+
+    # 根据主题智能匹配内容方法论
+    matched_meth_id = match_methodology_for_content(input.topic, input.content_type)
+    meth_prompt = build_methodology_prompt(matched_meth_id) or ""
+
     prompt = f"""作为资深文案创作者，请为{input.platform}平台创作一篇{input.content_type}：
 
 主题：{input.topic}
 调性：{input.tone}
 关键词：{input.keywords or []}
 
-平台要求：
-- 结构：{spec['structure']}
-- Emoji使用：{spec['emoji_usage']}
-- 长度：{spec['length']}
-- 风格：{spec['style']}
+平台要求（来自平台规范库）：
+{platform_dna}
+
+审核规则：
+{audit_rules}
+
+{meth_prompt}
+
+格式约束：
+- 标题不超过{title_max}字
+- 正文内容不超过{content_max}字
+- 标签不超过{tags_max}个
 
 请生成：
-1. 吸睛标题（使用数字、悬念或利益点，15-25字）
-2. 正文内容（符合平台风格和结构）
-3. 相关标签（5-8个，包含热门标签）
+1. 吸睛标题（使用数字、悬念或利益点，建议不超过{title_max}字）
+2. 正文内容（符合平台风格、结构及上述方法论框架）
+3. 相关标签（建议{tags_max}个以内，包含热门标签）
 4. 封面文案（10-15字，突出核心利益）
 5. 引导行动的结尾（自然且有吸引力）
 
@@ -183,11 +230,17 @@ async def generate_script(input: ScriptGenerationInput) -> ScriptGenerationOutpu
     hook_template = random.choice(hooks)
     hook = hook_template.format(topic=input.topic)
     
+    # 为脚本匹配适合的方法论（默认故事弧线）
+    script_meth_id = match_methodology_for_content(input.topic, content_type="video")
+    script_meth = build_methodology_prompt(script_meth_id) or ""
+
     prompt = f"""作为资深短视频导演，请为{input.platform}平台创作一个{input.duration}秒的视频脚本：
 
 主题：{input.topic}
 钩子文案：{hook}
 目标受众：{input.target_audience or '通用受众'}
+
+{script_meth}
 
 要求：
 1. 前3秒使用提供的钩子文案
@@ -300,14 +353,14 @@ async def optimize_title(titles: List[str], platform: str, user_id: str) -> Dict
             issues.append("缺少数字")
             suggestions.append("加入数字增强可信度，如'3个技巧'、'5分钟学会'")
         
-        # 2. 检查长度
+        # 2. 检查长度（从平台规范库读取）
         title_len = len(title)
-        platform_limits = {
-            "douyin": (8, 25),
-            "xiaohongshu": (10, 20),
-            "bilibili": (15, 40)
-        }
-        min_len, max_len = platform_limits.get(platform, (10, 30))
+        try:
+            spec = PlatformRegistry().load(platform)
+            max_len = _get_spec_value(spec, ["title", "max_chars"], 30)
+            min_len = _get_spec_value(spec, ["title", "min_chars"], 1)
+        except Exception:
+            min_len, max_len = 1, 30
         
         if title_len < min_len:
             issues.append("标题过短")
@@ -351,9 +404,28 @@ async def optimize_title(titles: List[str], platform: str, user_id: str) -> Dict
     try:
         from lumina_skills.llm_utils import call_llm
         
+        try:
+            spec = PlatformRegistry().load(platform)
+            platform_dna_lines = [f"- {item.get('element', '')}: {item.get('value', '')}" for item in spec.content_dna]
+            audit_lines = [
+                f"- {rule.get('category', '')}类禁用词: {', '.join(rule.get('forbidden_terms', []))}"
+                for rule in spec.audit_rules
+            ]
+            platform_dna = "\n".join(platform_dna_lines) if platform_dna_lines else "- 暂无平台DNA规范"
+            audit_rules = "\n".join(audit_lines) if audit_lines else "- 暂无特殊审核规则"
+        except Exception:
+            platform_dna = "- 结构: 痛点引入 + 解决方案 + 使用体验 + 购买建议\n- Emoji使用: 适量，增加亲和力\n- 长度: 300-800字\n- 风格: 真实分享、种草氛围"
+            audit_rules = "- 避免使用夸大、虚假或违禁词汇"
+
         prompt = f"""基于以下{platform}平台的标题，提供整体优化建议：
 
 标题列表：{titles}
+
+平台规范（来自平台规范库）：
+{platform_dna}
+
+审核规则：
+{audit_rules}
 
 请提供：
 1. 该平台标题的最佳实践（3-5条）
@@ -403,13 +475,19 @@ async def _generate_optimized_title(original: str, platform: str, suggestions: L
     try:
         from lumina_skills.llm_utils import call_llm
         
+        try:
+            spec = PlatformRegistry().load(platform)
+            title_max = _get_spec_value(spec, ["title", "max_chars"], 30)
+        except Exception:
+            title_max = 30
+
         prompt = f"""优化以下标题：
 
 原标题：{original}
 平台：{platform}
 改进建议：{suggestions}
 
-请生成一个优化后的标题，保持原意但更具吸引力。
+请生成一个优化后的标题，保持原意但更具吸引力，长度不超过{title_max}字。
 只返回标题文本，不要解释。"""
         
         result = await call_llm(
@@ -418,14 +496,19 @@ async def _generate_optimized_title(original: str, platform: str, suggestions: L
             temperature=0.8,
         )
         
-        return result.get("content", original)[:30]
+        return result.get("content", original)[:title_max]
         
     except Exception:
         # 简单的字符串优化
         prefixes = ["【干货】", "【必看】", "【揭秘】"]
+        try:
+            spec = PlatformRegistry().load(platform)
+            title_max = _get_spec_value(spec, ["title", "max_chars"], 30)
+        except Exception:
+            title_max = 30
         if not any(p in original for p in prefixes):
-            return f"【干货】{original}"[:30]
-        return original
+            return f"【干货】{original}"[:title_max]
+        return original[:title_max]
 
 
 @mcp.tool()

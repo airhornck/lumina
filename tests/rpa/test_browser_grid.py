@@ -58,12 +58,6 @@ class TestRPAExecutor:
     @pytest.mark.asyncio
     async def test_task_execution(self):
         """测试任务执行"""
-        task = {
-            "type": "publish",
-            "account_id": "acc_001",
-            "params": {"content": "测试内容"}
-        }
-        
         # 模拟执行结果
         result = {
             "success": True,
@@ -116,7 +110,7 @@ class TestAntiDetection:
         scripts = [
             "navigator.webdriver = undefined",
             "window.chrome = {...}",
-            "permissions.query = ..."
+            "window.navigator.permissions.query = ...",
         ]
         
         assert len(scripts) >= 3

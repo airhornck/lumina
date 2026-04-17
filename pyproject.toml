@@ -32,6 +32,7 @@ dev = [
 [tool.setuptools.packages.find]
 where = [
     "apps/api/src",
+    "apps/intent/src",
     "apps/orchestra/src",
     "apps/skill-hub/src",
     "apps/rpa/src",
@@ -48,9 +49,11 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 pythonpath = [
     "apps/api/src",
+    "apps/intent/src",
     "apps/orchestra/src",
     "apps/skill-hub/src",
     "apps/rpa/src",
+    "skills/skill-rpa-executor/src",
     "packages/llm-hub/src",
     "packages/knowledge-base/src",
     "packages/lumina-skills/src",

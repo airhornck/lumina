@@ -11,9 +11,11 @@ def _truncate(s: str, n: int = 7000) -> str:
 
 
 async def format_sop_summary(sop_out: Dict[str, Any], user_input: str) -> str:
-    """SOP 模式：简要说明执行到哪一步。"""
+    """SOP 模式：简要说明执行到哪一步，失败时给出原因。"""
     dag = sop_out.get("dag") or []
     nodes = sop_out.get("node_results") or {}
+    ok_count = sop_out.get("ok_count", 0)
+    fail_count = sop_out.get("fail_count", 0)
     if not dag:
         return "已尝试执行 SOP，但未生成执行步骤（请检查方法论 YAML 是否存在）。"
     lines = [
@@ -27,9 +29,24 @@ async def format_sop_summary(sop_out: Dict[str, Any], user_input: str) -> str:
         sk = step.get("skill") or "?"
         raw = nodes.get(sid) or {}
         ok = raw.get("ok")
-        lines.append(f"- `{sid}` → 工具 `{sk}`：{'✓ 已返回' if ok else '✗ 未完成'}")
+        if ok:
+            lines.append(f"- `{sid}` → 工具 `{sk}`：✓ 已返回")
+        else:
+            err = raw.get("error", "未知错误")[:100]
+            lines.append(f"- `{sid}` → 工具 `{sk}`：✗ 未完成（原因：{err}）")
     lines.append("")
-    lines.append("详细 JSON 见 `sop.node_results`；需要口语解读可再说「用一段话总结上面结果」。")
+    if ok_count > 0 and fail_count > 0:
+        lines.append(
+            f"其中 **{ok_count}** 个步骤已完成，**{fail_count}** 个步骤因缺少数据或配置未完成。"
+            "你可以补充信息后重试，或说「跳过未完成步骤直接总结」。"
+        )
+    elif fail_count > 0:
+        lines.append(
+            "所有步骤均未能完成，常见原因是缺少 LLM 配置或所需数据（如账号链接、metrics）。"
+            "请检查配置或补充信息后重试。"
+        )
+    else:
+        lines.append("所有步骤均已成功返回。需要口语解读可再说「用一段话总结上面结果」。")
     return "\n".join(lines)
 
 
@@ -153,11 +170,25 @@ def _template_reply(kind: str, user_input: str, result: dict) -> str:
         lvl = result.get("risk_level", "")
         cats = result.get("risk_categories") or []
         sug = result.get("suggestions") or []
+        flagged = result.get("flagged_terms") or []
+        flagged_txt = ", ".join([f"{f.get('term')}({f.get('category')})" for f in flagged[:5]]) if flagged else "无"
         return (
             "**进度**：已完成内容风险扫描。\n"
             f"**风险等级**：{lvl}；涉及：{'、'.join(cats) if cats else '无'}\n"
+            f"**命中词**：{flagged_txt}\n"
             f"**修改建议**：{'；'.join(sug[:5]) if sug else '保持表述合规、避免绝对化用语。'}"
         )
+
+    if kind == "qr_login":
+        platform = result.get("platform", "")
+        platform_name = "抖音" if platform == "douyin" else ("小红书" if platform == "xiaohongshu" else platform)
+        return (
+            f"请使用 {platform_name} APP 扫描下方二维码完成登录授权。\n"
+            "扫描后我就能获取您的账号数据，继续为您分析。"
+        )
+
+    if kind == "general" and result.get("type") == "community_guide":
+        return result.get("reply", "")
 
     if kind == "general" and result.get("methodology_id"):
         name = result.get("name", "")
@@ -177,10 +208,26 @@ def _template_reply(kind: str, user_input: str, result: dict) -> str:
 
     if kind == "topic" and result.get("recommended_topics"):
         topics = result.get("recommended_topics") or []
+        calendar = result.get("content_calendar") or []
         first = topics[0] if topics else {}
+        lines = [
+            "**进度**：已结合热点与阶段给出选题方向。",
+            f"**首推**：{first.get('topic', '')} — {first.get('reason', '')}",
+        ]
+        if calendar:
+            lines.append("**近期日历**（示例）：")
+            for i, day in enumerate(calendar[:7], 1):
+                lines.append(f"第{i}天：{day.get('topic', '')}")
+        return "\n".join(lines)
+
+    if kind == "cases" and result.get("matched_cases"):
+        cases = result.get("matched_cases") or []
+        first = cases[0] if cases else {}
         return (
-            "**进度**：已结合热点与阶段给出选题方向。\n"
-            f"**首推**：{first.get('topic', '')} — {first.get('reason', '')}"
+            "**进度**：已匹配到一些可参考案例。\n"
+            f"**最相关案例**：{first.get('title', '')}（相似度 {first.get('similarity_score', 0)}）。\n"
+            f"**关键成功因素**：{', '.join(first.get('key_success_factors', []))}\n"
+            "你可以告诉我具体想深入拆解哪个案例。"
         )
 
     return (

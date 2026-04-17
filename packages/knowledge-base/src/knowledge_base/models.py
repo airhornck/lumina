@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 
 @dataclass
@@ -34,6 +34,7 @@ class PlatformSpec:
     platform_id: str
     content_dna: List[Dict[str, Any]] = field(default_factory=list)
     audit_rules: List[Dict[str, Any]] = field(default_factory=list)
+    content_formats: Dict[str, Any] = field(default_factory=dict)
     raw: Dict[str, Any] = field(default_factory=dict)
 
     @classmethod
@@ -43,6 +44,7 @@ class PlatformSpec:
             platform_id=pid,
             content_dna=list(config.get("content_dna") or []),
             audit_rules=list(config.get("audit_rules") or []),
+            content_formats=dict(config.get("content_formats") or {}),
             raw=config,
         )
 

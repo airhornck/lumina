@@ -1,0 +1,83 @@
+---
+INPUT: 帮我规划一个职场类账号矩阵
+KIND: general
+REPLY: **进度**：已从方法论库匹配到一套可参考框架。
+**方法论**：AIDA 增强版（`aida_advanced`），共 2 个步骤。
+如需按步骤带你执行，可以说「按这个方法论一步步来」或指定平台与目标。
+
+[diagnosis] 初始URL: None, 用户输入: 检查所有账号的健康状态...
+[diagnosis] 未找到 xiaohongshu 的登录凭证
+[diagnosis] URL为空或无效，尝试从输入提取账号信息
+[diagnosis] 提取结果: platform=None, account=None
+---
+INPUT: 检查所有账号的健康状态
+KIND: diagnosis
+REPLY: 要做**账号诊断**，需要先锁定是哪个账号：请发 **主页链接**，或说明 **平台 + 可搜索到的昵称**。
+
+您也可以：发送「登录抖音」或「登录小红书」，我会提供二维码让您扫码登录，之后就能自动获取您的账号数据。
+
+---
+INPUT: 计算这个流量互导方案的价值
+KIND: traffic
+REPLY: 要做**流量结构分析**，需要你的真实数据（或手抄后台数字）。请补充例如：**近 7 天** 曝光/阅读、点赞、收藏、评论、分享、主页访问等——有几项写几项。
+
+API 调试时可在请求的 `context` 里传 `metrics`，例如 `{"views": 12000, "likes": 480, "shares": 12}`。
+
+若暂时没有数据、只要通用思路，请直接说「先给通用优化清单」，我按通用框架回复，不伪造漏斗数字。
+
+---
+INPUT: 拆解这个爆款视频：职场穿搭3个禁忌
+KIND: script
+REPLY: **进度**：已处理你的请求（类型：script）。
+**摘要**：{"hook_script": "【curiosity】3 秒内抓住注意力：拆解这个爆款视频：职场穿搭3个禁忌…", "full_script": "口播稿占位，时长约 60s，平台 xiaohongshu。方法论：aida_advanced", "shot_list": [{"timestamp": "0-3s", "visual": "特写", "audio": "钩子", "text": "拆解这个爆款视频：职场穿搭3个禁忌"}, {"timestamp": "3-15s", "visual": "演示", "audio": "展开", "text": "主体"}], "bgm_suggestion": "轻快电子（占位）", "caption_highlights": ["字幕关键词1", "字幕关键词2"], "
+
+---
+INPUT: 有人评论衣服哪里买，帮我回复
+KIND: general
+REPLY: **进度**：已从方法论库匹配到一套可参考框架。
+**方法论**：AIDA 增强版（`aida_advanced`），共 2 个步骤。
+如需按步骤带你执行，可以说「按这个方法论一步步来」或指定平台与目标。
+
+---
+INPUT: 帮我分析一下粉丝画像，分分层
+KIND: conversation
+REPLY: 你好，我是 Lumina 营销助手～可以帮你做账号诊断、选题方向、文案/脚本、内容风险检查等。直接说说你现在最想解决的一个问题就行。
+
+---
+INPUT: 用 AIDA 方法论帮我写一条文案，推广职场穿搭课程
+KIND: content
+REPLY: **进度**：已生成一版文案草稿。
+**标题**：用 AIDA 方法论帮我写一条文案，推广职场穿搭课程｜xiaohongshu
+**正文摘要**：（占位）AIDA 结构下围绕「用 AIDA 方法论帮我写一条文案，推广职场穿搭课程」展开，DNA=['platform_spec_snippet']。…
+
+---
+INPUT: 帮我设计一个A/B测试，看哪个标题更好
+KIND: content
+REPLY: **进度**：已生成一版文案草稿。
+**标题**：帮我设计一个A/B测试，看哪个标题更好｜xiaohongshu
+**正文摘要**：（占位）AIDA 结构下围绕「帮我设计一个A/B测试，看哪个标题更好」展开，DNA=['platform_spec_snippet']。…
+
+---
+INPUT: 说全网最低价会不会被限流
+KIND: conversation
+REPLY: 你好，我是 Lumina 营销助手～可以帮你做账号诊断、选题方向、文案/脚本、内容风险检查等。直接说说你现在最想解决的一个问题就行。
+
+---
+INPUT: 批量登录这10个小红书账号
+KIND: qr_login
+REPLY: **进度**：已处理你的请求（类型：qr_login）。
+**摘要**：{"type": "qr_code_login", "platform": "xiaohongshu", "session_id": "bbbd44c1-14bf-4a75-8673-b967fe726afe", "qr_code_base64": "iVBORw0KGgoAAAANSUhEUgAAAjoAAAI6AQAAAAAGM99tAAAGS0lEQVR4nO1d243jOgyl5ADzaQNbwJTidLAlLbak20FcSgpYwP4M4AEvSFGUksW9ipFkYtk8H548bCEmOcTRISU7hKdg8M8ZB8AGKsNsVIbZqAyzURlmozLMRmWYjcowG5VhNqrXRk5wAICJD87xK3eEL+dcR0y6k1fuSFccp3jRcdW39gT4ZwxCsIG+0U
+
+---
+INPUT: 设计从抖音主号导流到小红书卫星号的路径
+KIND: general
+REPLY: **进度**：已从方法论库匹配到一套可参考框架。
+**方法论**：AIDA 增强版（`aida_advanced`），共 2 个步骤。
+如需按步骤带你执行，可以说「按这个方法论一步步来」或指定平台与目标。
+
+---
+INPUT: 把这条职场穿搭脚本改写成适合抖音、小红书、B站三个平台的版本
+KIND: script
+REPLY: **进度**：已处理你的请求（类型：script）。
+**摘要**：{"hook_script": "【curiosity】3 秒内抓住注意力：把这条职场穿搭脚本改写成适合抖音、小红书、B站三个平台的版本…", "full_script": "口播稿占位，时长约 60s，平台 xiaohongshu。方法论：aida_advanced", "shot_list": [{"timestamp": "0-3s", "visual": "特写", "audio": "钩子", "text": "把这条职场穿搭脚本改写成适合抖音、小红书"}, {"timestamp": "3-15s", "visual": "演示", "audio": "展开", "text": "主体"}], "bgm_suggestion": "轻快电子（占位）", "caption_highlights": ["字幕关键词
+

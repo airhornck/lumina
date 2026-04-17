@@ -37,7 +37,6 @@ async def evaluate_sop(input: SOPEvaluationInput) -> SOPEvaluationOutput:
     基于执行历史和效果数据评估 SOP 有效性
     """
     history = input.execution_history
-    metrics = input.performance_metrics
     
     # 计算成功率
     total = len(history)
@@ -79,8 +78,8 @@ async def evaluate_sop(input: SOPEvaluationInput) -> SOPEvaluationOutput:
 async def evolve_strategy(
     current_strategy: Dict[str, Any],
     performance_data: Dict[str, Any],
+    user_id: str,
     market_changes: Optional[List[str]] = None,
-    user_id: str
 ) -> Dict[str, Any]:
     """
     进化策略

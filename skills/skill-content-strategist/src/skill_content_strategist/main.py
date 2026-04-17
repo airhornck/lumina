@@ -7,9 +7,45 @@
 from fastmcp import FastMCP
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
-import asyncio
+
+try:
+    from knowledge_base.platform_registry import PlatformRegistry
+except ImportError:
+    import sys
+    from pathlib import Path
+    _kb_path = Path(__file__).resolve().parents[3] / "packages" / "knowledge-base" / "src"
+    if str(_kb_path) not in sys.path:
+        sys.path.insert(0, str(_kb_path))
+    from knowledge_base.platform_registry import PlatformRegistry
+
+try:
+    from lumina_skills.methodology_utils import build_methodology_prompt, match_methodology_for_content
+except ImportError:
+    import sys
+    from pathlib import Path
+    _lu_path = Path(__file__).resolve().parents[3] / "packages" / "lumina-skills" / "src"
+    if str(_lu_path) not in sys.path:
+        sys.path.insert(0, str(_lu_path))
+    from lumina_skills.methodology_utils import build_methodology_prompt, match_methodology_for_content
 
 mcp = FastMCP("content_strategist")
+
+
+def _load_platform_spec(platform: str) -> Dict[str, str]:
+    """加载平台规范库中的 DNA 和审核规则"""
+    try:
+        spec = PlatformRegistry().load(platform)
+        dna_lines = [f"- {item.get('element', '')}: {item.get('value', '')}" for item in spec.content_dna]
+        audit_lines = [
+            f"- {rule.get('category', '')}类禁用词: {', '.join(rule.get('forbidden_terms', []))}"
+            for rule in spec.audit_rules
+        ]
+        platform_dna = "\n".join(dna_lines) if dna_lines else "- 暂无平台DNA规范"
+        audit_rules = "\n".join(audit_lines) if audit_lines else "- 暂无特殊审核规则"
+    except Exception:
+        platform_dna = "- 暂无平台DNA规范"
+        audit_rules = "- 暂无特殊审核规则"
+    return {"dna": platform_dna, "audit": audit_rules}
 
 
 class PositioningInput(BaseModel):
@@ -53,6 +89,11 @@ async def analyze_positioning(input: PositioningInput) -> PositioningOutput:
     
     使用 LLM 进行专业的定位分析
     """
+    spec = _load_platform_spec(input.platform)
+
+    # 为定位分析加载定位方法论
+    positioning_meth = build_methodology_prompt("positioning") or ""
+
     # 构建提示词
     prompt = f"""作为资深内容策略师，请为以下账号进行定位分析：
 
@@ -61,11 +102,19 @@ async def analyze_positioning(input: PositioningInput) -> PositioningOutput:
 目标受众：{input.target_audience or '未指定'}
 对标账号：{input.competitor_accounts or '未指定'}
 
+平台 DNA 规范（来自平台规范库）：
+{spec['dna']}
+
+平台审核规则：
+{spec['audit']}
+
+{positioning_meth}
+
 请提供：
 1. 一句话定位声明（我是谁，为谁，提供什么价值）
 2. 目标人群画像（年龄、性别、痛点、需求）
-3. 3-5个内容支柱（核心内容方向）
-4. 差异化策略（如何与竞品区隔）
+3. 3-5个内容支柱（核心内容方向，需结合平台 DNA 与上述方法论）
+4. 差异化策略（如何与竞品区隔，并符合平台调性与方法论框架）
 5. 发布频率建议
 
 以 JSON 格式输出：
@@ -126,18 +175,33 @@ async def generate_topic_calendar(input: TopicCalendarInput) -> TopicCalendarOut
     
     使用 LLM 生成专业的选题规划
     """
+    spec = _load_platform_spec(input.platform)
+
+    # 根据赛道智能匹配内容方法论
+    matched_meth_id = match_methodology_for_content(input.niche, content_type="calendar")
+    calendar_meth = build_methodology_prompt(matched_meth_id) or ""
+
     prompt = f"""作为资深内容策略师，请为以下账号生成{input.duration_days}天的选题日历：
 
 平台：{input.platform}
 赛道：{input.niche}
 账号定位：{input.positioning}
 
+平台 DNA 规范（来自平台规范库）：
+{spec['dna']}
+
+平台审核规则：
+{spec['audit']}
+
+{calendar_meth}
+
 要求：
 1. 每天有明确的主题和话题
-2. 内容形式要平台化（短视频、图文等）
+2. 内容形式要平台化（结合平台 DNA 与方法论选择短视频、图文等）
 3. 考虑一周内的节奏变化
 4. 规划4个主题周，每周有统一主题
 5. 提供3-5个热点追踪建议
+6. 选题需避开平台审核禁用词，符合平台调性与方法论框架
 
 以 JSON 格式输出：
 {{
@@ -244,6 +308,11 @@ async def predict_trends(niche: str, platform: str, user_id: str) -> Dict[str, A
     except Exception as e:
         print(f"[predict_trends] RPA 获取趋势失败: {e}")
     
+    spec = _load_platform_spec(platform)
+
+    # 热点趋势匹配热点借势方法论
+    trend_meth = build_methodology_prompt("trend_ride") or ""
+
     # 使用 LLM 分析趋势
     prompt = f"""基于以下信息，预测 {niche} 领域在 {platform} 平台的热点趋势：
 
@@ -251,10 +320,18 @@ async def predict_trends(niche: str, platform: str, user_id: str) -> Dict[str, A
 平台：{platform}
 当前热门话题：{hot_topics or '未获取'}
 
+平台 DNA 规范（来自平台规范库）：
+{spec['dna']}
+
+平台审核规则：
+{spec['audit']}
+
+{trend_meth}
+
 请提供：
-1. 新兴话题（3-5个）
+1. 新兴话题（3-5个，需符合平台调性）
 2. 季节性机会（2-3个）
-3. 推荐内容形式
+3. 推荐内容形式（结合平台 DNA 与热点借势方法论）
 4. 趋势可信度评分（0-1）
 
 以 JSON 格式输出。"""
@@ -350,6 +427,11 @@ async def analyze_competitor_real(
         
         # 使用 LLM 深度分析
         if analysis_depth in ["standard", "deep"]:
+            spec = _load_platform_spec(platform)
+
+            # 竞品分析可结合定位与差异化方法论
+            competitor_meth = build_methodology_prompt("positioning") or ""
+
             prompt = f"""基于以下竞品数据，进行深度分析：
 
 竞品昵称：{data.get('nickname')}
@@ -363,9 +445,17 @@ async def analyze_competitor_real(
 最近作品内容：
 {[c.get('title', '') for c in recent_contents[:5]]}
 
+平台 DNA 规范（来自平台规范库）：
+{spec['dna']}
+
+平台审核规则：
+{spec['audit']}
+
+{competitor_meth}
+
 请提供：
-1. 优势和劣势分析
-2. 可学习的策略
+1. 优势和劣势分析（结合平台 DNA 与定位方法论评估内容适配度）
+2. 可学习的策略（符合平台调性的打法）
 3. 差异化机会
 
 以 JSON 格式输出。"""

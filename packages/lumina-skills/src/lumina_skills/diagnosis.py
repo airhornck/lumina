@@ -373,6 +373,26 @@ async def analyze_traffic(
     }
 
 
+# 通用极限词与风险词库（作为平台规则的兜底）
+_UNIVERSAL_RISK_TERMS = [
+    ("全网最低", "extreme_pricing"),
+    ("最低价", "extreme_pricing"),
+    ("最便宜", "extreme_pricing"),
+    ("最好", "superlative"),
+    ("第一", "superlative"),
+    ("极致", "superlative"),
+    ("顶级", "superlative"),
+    ("首选", "superlative"),
+    ("绝对", "absolute_claim"),
+    ("保证", "absolute_claim"),
+    ("百分百", "absolute_claim"),
+    ("永不", "absolute_claim"),
+    ("疗效", "medical"),
+    ("治愈", "medical"),
+    ("治疗", "medical"),
+]
+
+
 async def detect_risk(
     content_text: str,
     platform: str,
@@ -382,6 +402,7 @@ async def detect_risk(
     risks: List[Dict[str, Any]] = []
     flagged: List[Dict[str, Any]] = []
     text = content_text or ""
+    # 平台规则
     for rule in spec.audit_rules:
         terms = rule.get("forbidden_terms") or []
         cat = rule.get("category") or "general"
@@ -389,15 +410,28 @@ async def detect_risk(
             if t and t in text:
                 risks.append({"category": cat, "term": t})
                 flagged.append({"term": t, "category": cat})
+    # 通用兜底词库
+    for term, cat in _UNIVERSAL_RISK_TERMS:
+        if term in text and not any(f["term"] == term for f in flagged):
+            risks.append({"category": cat, "term": term})
+            flagged.append({"term": term, "category": cat})
     level = "low"
     if len(flagged) >= 3:
         level = "high"
     elif flagged:
         level = "medium"
+    suggestions = []
+    if flagged:
+        suggestions.append("删除或改写敏感词")
+        # 针对极限词给出替代表述建议
+        if any(f["category"] in ("extreme_pricing", "superlative", "absolute_claim") for f in flagged):
+            suggestions.append("避免使用绝对化用语，可改用'很受欢迎'、'性价比高'等相对表述")
+    else:
+        suggestions.append("未发现明显违规词")
     return {
         "risk_level": level,
         "risk_categories": list({r["category"] for r in risks}) or ["none"],
         "flagged_terms": flagged,
-        "suggestions": ["删除或改写敏感词"] if flagged else ["未发现明显违规词"],
+        "suggestions": suggestions,
         "alternative_phrases": {},
     }

@@ -5,8 +5,7 @@
 """
 
 import pytest
-import asyncio
-from unittest.mock import Mock, AsyncMock, patch
+from unittest.mock import Mock
 
 
 class TestAccountCrawler:
@@ -16,7 +15,7 @@ class TestAccountCrawler:
     async def test_rate_limiter(self):
         """测试速率限制器"""
         import time
-        from apps.rpa.src.rpa.account_crawler import RateLimiter
+        from rpa.account_crawler import RateLimiter
         
         limiter = RateLimiter(
             default_delay=0.1,
@@ -34,7 +33,7 @@ class TestAccountCrawler:
     @pytest.mark.asyncio
     async def test_parse_number(self):
         """测试数字解析"""
-        from apps.rpa.src.rpa.account_crawler import AccountCrawler
+        from rpa.account_crawler import AccountCrawler
         
         crawler = AccountCrawler(Mock())
         
@@ -48,7 +47,7 @@ class TestAccountCrawler:
     @pytest.mark.asyncio
     async def test_convert_to_diagnosis_format(self):
         """测试诊断格式转换"""
-        from apps.rpa.src.rpa.account_crawler import (
+        from rpa.account_crawler import (
             CrawledAccountData,
             convert_to_diagnosis_format,
         )
@@ -81,8 +80,7 @@ class TestAccountCrawler:
     @pytest.mark.asyncio
     async def test_diagnose_account_with_fallback(self):
         """测试诊断账号（带回退）"""
-        from packages.lumina_skills.src.lumina_skills.diagnosis import (
-            diagnose_account,
+        from lumina_skills.diagnosis import (
             _generate_basic_diagnosis,
         )
         
@@ -106,7 +104,7 @@ class TestRPAIntegration:
     @pytest.mark.asyncio
     async def test_skill_rpa_executor_crawl_account(self):
         """测试 skill-rpa-executor crawl_account 任务"""
-        from skills.skill_rpa_executor.src.skill_rpa_executor.main import handle_crawl_account
+        from skill_rpa_executor.main import handle_crawl_account
         
         # 模拟输入
         mock_input = Mock()
@@ -133,7 +131,7 @@ class TestAntiDetection:
     
     def test_fingerprint_generation(self):
         """测试指纹生成"""
-        from apps.rpa.src.rpa.anti_detection import FingerprintGenerator
+        from rpa.anti_detection import FingerprintGenerator
         
         fp1 = FingerprintGenerator.generate(seed="test1")
         fp2 = FingerprintGenerator.generate(seed="test1")
@@ -148,7 +146,7 @@ class TestAntiDetection:
     
     def test_stealth_scripts(self):
         """测试隐身脚本"""
-        from apps.rpa.src.rpa.anti_detection import AntiDetectionLayer
+        from rpa.anti_detection import AntiDetectionLayer
         
         layer = AntiDetectionLayer()
         scripts = layer.get_stealth_scripts()

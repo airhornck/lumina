@@ -1,0 +1,36 @@
+methodology_id: "pas_framework"
+name: "痛点-激化-解决"
+applicable_scenarios: ["conversion", "problem_solving", "tutorial"]
+success_cases: ["护肤避坑笔记高收藏", "职场效率工具种草"]
+prompt_templates:
+  problem: "精准描述目标受众的一个具体痛点，越细节越能引起共鸣"
+  agitation: "放大不解决的代价：情绪、时间、金钱、社交风险"
+  solution: "给出可立即执行的解决方案，附带证据或简单步骤"
+steps:
+  - step_id: "problem"
+    theory: "pain_point_resonance"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "痛点共鸣"
+        content_dna: {}
+        methodology_hint: "PAS-Problem"
+  - step_id: "agitation"
+    theory: "loss_aversion"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "激化痛点"
+        content_dna: {}
+        methodology_hint: "PAS-Agitation"
+  - step_id: "solution"
+    theory: "instant_gratification"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "解决方案"
+        content_dna: {}
+        methodology_hint: "PAS-Solution"
