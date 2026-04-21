@@ -6,6 +6,7 @@ RPA Skill 工具集
 
 from __future__ import annotations
 
+import asyncio
 from typing import Any, Dict, Optional, List
 from dataclasses import dataclass
 
@@ -355,6 +356,10 @@ class RPASkillHelper:
                 platform=platform,
             )
             
+            # 小红书需要 Cookie 登录，先加载 Cookie
+            if platform == "xiaohongshu":
+                await self._load_xiaohongshu_cookies(session.page)
+            
             # 根据数据类型访问不同页面
             urls = {
                 "trends": {
@@ -364,6 +369,7 @@ class RPASkillHelper:
                 "hot_topics": {
                     "douyin": "https://www.douyin.com/hot",
                     "xiaohongshu": "https://www.xiaohongshu.com/search_result?keyword=热门",
+                    "bilibili": "https://www.bilibili.com/v/popular/all",
                 },
             }
             
@@ -377,41 +383,24 @@ class RPASkillHelper:
                     error=f"不支持的数据类型: {data_type}",
                 )
             
-            await session.page.goto(url, wait_until="networkidle")
-            await asyncio.sleep(2)
+            await session.page.goto(url, wait_until="domcontentloaded", timeout=60000)
             
-            # 提取热门话题/趋势
-            hot_topics = await session.page.evaluate("""
-                () => {
-                    const topics = [];
-                    // 尝试多种选择器
-                    const selectors = [
-                        '[data-e2e="hot-topic"]',
-                        '.hot-topic',
-                        '.trend-item',
-                        '[class*="hot"]',
-                        '[class*="trend"]',
-                    ];
-                    
-                    for (const selector of selectors) {
-                        const elements = document.querySelectorAll(selector);
-                        elements.forEach((el, idx) => {
-                            if (idx < 10) {
-                                const text = el.textContent || '';
-                                if (text && text.length < 50) {
-                                    topics.push({
-                                        title: text.trim(),
-                                        rank: idx + 1,
-                                    });
-                                }
-                            }
-                        });
-                        if (topics.length > 0) break;
-                    }
-                    
-                    return topics;
-                }
-            """)
+            # 针对动态渲染页面，增加更长的等待时间
+            # 并尝试滚动页面触发懒加载
+            await asyncio.sleep(5)
+            await session.page.evaluate("window.scrollBy(0, 800)")
+            await asyncio.sleep(3)
+            
+            # 使用 Playwright 的 query_selector_all 而不是 JS evaluate
+            # 因为 Playwright 可以更好地处理动态渲染
+            hot_topics = []
+            
+            if platform == "douyin":
+                hot_topics = await self._extract_douyin_hot(session.page)
+            elif platform == "xiaohongshu":
+                hot_topics = await self._extract_xiaohongshu_hot(session.page)
+            elif platform == "bilibili":
+                hot_topics = await self._extract_bilibili_hot(session.page)
             
             await browser_grid.close_session(account_id, save_state=True)
             
@@ -431,6 +420,243 @@ class RPASkillHelper:
                 data={},
                 error=str(e),
             )
+    
+    async def _extract_douyin_hot(self, page) -> List[Dict[str, Any]]:
+        """提取抖音热榜"""
+        topics = []
+        
+        # 抖音热榜页: 从 li 元素中提取视频信息
+        # 文本格式通常是: 时长 标题 #话题 @UP主 发布时间
+        try:
+            elements = await page.query_selector_all("li")
+            for el in elements[:30]:
+                try:
+                    text = await el.text_content()
+                    if not text:
+                        continue
+                    text = text.strip()
+                    
+                    # 过滤条件
+                    if len(text) < 10 or len(text) > 100:
+                        continue
+                    if text.startswith("http"):
+                        continue
+                    
+                    # 清理文本: 去掉时长前缀 (00:12, 01:23 等)
+                    import re
+                    cleaned = re.sub(r'^\d{2}:\d{2}', '', text).strip()
+                    # 去掉数字前缀 (播放量等)
+                    cleaned = re.sub(r'^\d+\.?\d*[万k]?', '', cleaned).strip()
+                    
+                    # 提取话题标签
+                    hashtags = re.findall(r'#([^\s#]+)', cleaned)
+                    # 提取标题部分（@之前的文本）
+                    title_part = cleaned.split("@")[0].strip()
+                    # 去掉末尾的时间描述
+                    title_part = re.sub(r'\d+[天小时分钟]+前$', '', title_part).strip()
+                    
+                    if len(title_part) > 5 and not any(t["title"] == title_part for t in topics):
+                        topics.append({
+                            "title": title_part,
+                            "rank": len(topics) + 1,
+                            "hashtags": hashtags[:5],
+                            "raw": text[:100],
+                        })
+                except Exception:
+                    continue
+        except Exception:
+            pass
+        
+        return topics[:15]
+    
+    async def _load_xiaohongshu_cookies(self, page) -> None:
+        """加载小红书 Cookie"""
+        try:
+            from pathlib import Path
+            # skill_utils.py 位于 apps/rpa/src/rpa/，需要上溯4层到项目根目录
+            cookie_file = Path(__file__).resolve().parents[4] / "data" / "credentials" / "xiaohongshu_cookies.txt"
+            if cookie_file.exists():
+                cookie_str = cookie_file.read_text().strip()
+                cookies = []
+                for item in cookie_str.split("; "):
+                    if "=" in item:
+                        name, value = item.split("=", 1)
+                        cookies.append({
+                            "name": name.strip(),
+                            "value": value.strip(),
+                            "domain": ".xiaohongshu.com",
+                            "path": "/",
+                        })
+                await page.context.add_cookies(cookies)
+                print(f"[RPA] 小红书Cookie已加载，共 {len(cookies)} 条")
+            else:
+                print(f"[RPA] 小红书Cookie文件不存在: {cookie_file}")
+        except Exception as e:
+            print(f"[RPA] 加载小红书Cookie失败: {e}")
+    
+    async def _extract_xiaohongshu_hot(self, page) -> List[Dict[str, Any]]:
+        """提取小红书热门"""
+        topics = []
+        
+        # 需要过滤掉的页脚/法律文本关键词
+        skip_keywords = [
+            "ICP", "备案", "许可证", "营业执照", "增值电信",
+            "医疗器械", "网络文化", "药品信息", "互联网医院",
+            "网安备", "12345", "青少年", "举报", "扫黄打非",
+            "不良信息", "广告", "侵权", "隐私", "协议",
+        ]
+        
+        # 小红书搜索页: 笔记标题策略
+        # Cookie 登录后，笔记标题主要在 span 元素中
+        strategies = [
+            # 策略1: 笔记卡片中的 span（小红书标题通常在 span 中）
+            {
+                "selector": 'span',
+            },
+            # 策略2: 搜索笔记链接
+            {
+                "selector": 'a[href*="/explore/"]',
+            },
+            # 策略3: 包含 title 属性的元素
+            {
+                "selector": '[title]',
+            },
+            # 策略4: 通用内容卡片
+            {
+                "selector": 'div[class*="note"]',
+            },
+            # 策略5: section 中的文本（小红书常用 section 布局）
+            {
+                "selector": 'section',
+            },
+        ]
+        
+        for strategy in strategies:
+            try:
+                elements = await page.query_selector_all(strategy["selector"])
+                for idx, el in enumerate(elements[:60]):
+                    try:
+                        text = await el.text_content()
+                        if not text:
+                            continue
+                        text = text.strip()
+                        
+                        # 过滤条件: 放宽长度限制
+                        if len(text) < 8 or len(text) > 80:
+                            continue
+                        
+                        # 过滤页脚法律文本
+                        if any(kw in text for kw in skip_keywords):
+                            continue
+                        
+                        # 过滤纯数字
+                        if text.replace(".", "").isdigit():
+                            continue
+                        
+                        # 过滤无意义的短文本（按钮文字、导航等）
+                        meaningless = [
+                            "分享", "收藏", "评论", "点赞", "关注", "更多", "收起", "展开",
+                            "登录", "注册", "首页", "发现", "购物", "消息", "我",
+                            "获取验证码", "手机号登录", "密码登录", "其他登录方式",
+                        ]
+                        if text in meaningless:
+                            continue
+                        
+                        # 过滤过短的纯中文（如"阅读","笔记"等）
+                        if len(text) < 10 and text in ["阅读", "笔记", "收藏", "喜欢"]:
+                            continue
+                        
+                        if not any(t["title"] == text for t in topics):
+                            topics.append({
+                                "title": text,
+                                "rank": len(topics) + 1,
+                            })
+                    except Exception:
+                        continue
+                if len(topics) >= 5:
+                    break
+            except Exception:
+                continue
+        
+        return topics[:15]
+    
+    async def _extract_bilibili_hot(self, page) -> List[Dict[str, Any]]:
+        """提取B站热门"""
+        topics = []
+        
+        # B站热门页: 视频列表结构
+        # 从调试可以看到: 标题 + UP主 + 播放量 + 弹幕数
+        # B站热门视频卡片通常在 .video-card 或特定结构中
+        
+        # 需要过滤的导航/提示文字
+        skip_words = [
+            "首页", "番剧", "直播", "游戏中心", "会员购", "下载APP",
+            "登录", "注册", "历史", "收藏", "消息", "创作中心", "投稿",
+            "每周必看", "全站排行榜", "排行榜", "排行榜解析", "排行榜规则",
+            "关闭", "bilibili", "关于我们", "联系我们", "用户协议", "隐私政策",
+        ]
+        
+        # 策略: 先尝试提取视频卡片中的标题
+        # B站热门页的视频卡片结构通常是:
+        # <div class="video-card">...<a href="/video/BVxxx"><h3>标题</h3></a>...</div>
+        strategies = [
+            # 策略1: h3 标签（B站视频标题常用）
+            {
+                "selector": 'h3',
+            },
+            # 策略2: 视频卡片中的链接
+            {
+                "selector": 'a[href*="/video/"]',
+            },
+            # 策略3: B站视频列表项
+            {
+                "selector": '.video-card, [class*="card"]',
+            },
+            # 策略4: 所有较长的文本内容
+            {
+                "selector": 'span, div',
+            },
+        ]
+        
+        for strategy in strategies:
+            try:
+                elements = await page.query_selector_all(strategy["selector"])
+                for idx, el in enumerate(elements[:40]):
+                    try:
+                        text = await el.text_content()
+                        if not text:
+                            continue
+                        text = text.strip()
+                        
+                        # 过滤条件
+                        if len(text) < 8 or len(text) > 100:
+                            continue
+                        
+                        # 过滤导航/菜单/提示文字
+                        if any(sw in text for sw in skip_words):
+                            continue
+                        
+                        # 过滤纯数字（播放量等）
+                        if text.replace(".", "").replace("万", "").isdigit():
+                            continue
+                        
+                        # 过滤过短的无意义文本
+                        if len(text.replace(" ", "").replace("\n", "")) < 8:
+                            continue
+                        
+                        if not any(t["title"] == text for t in topics):
+                            topics.append({
+                                "title": text,
+                                "rank": len(topics) + 1,
+                            })
+                    except Exception:
+                        continue
+                if len(topics) >= 5:
+                    break
+            except Exception:
+                continue
+        
+        return topics[:15]
     
     async def close(self):
         """关闭所有资源"""

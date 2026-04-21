@@ -25,6 +25,7 @@ TOOL_REGISTRY: Dict[str, Callable[..., Awaitable[Dict[str, Any]]]] = {
     "fetch_industry_news": fetch_industry_news,
     "monitor_competitor": monitor_competitor,
     "visualize_data": visualize_data,
+    "fetch_trending_topics": fetch_trending_topics,
 }
 
 

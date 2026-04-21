@@ -1,0 +1,31 @@
+请将以下内容改写为适合 **{platform}** 平台的版本。
+
+【内容类型】{content_type}
+
+【平台 DNA】
+{dna}
+
+【审核规则】
+{audit}
+
+【格式约束】
+{formats}
+
+{methodology}
+{seed}
+{position}
+
+【原始内容】
+标题：{title}
+正文：{content}
+
+【输出要求】
+请输出严格符合以下 JSON 格式的内容：
+{
+  "title": "平台适配后的标题（符合平台长度限制）",
+  "body": "平台适配后的正文内容（符合平台风格）",
+  "hashtags": ["标签1", "标签2", "标签3"],
+  "hook": "如果是视频平台，写出黄金3秒钩子；图文平台可留空",
+  "best_time": "建议发布时间",
+  "compliance_warnings": ["如有合规风险请列出，无则留空数组"]
+}

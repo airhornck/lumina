@@ -107,6 +107,13 @@ try:
 except Exception:
     logger.exception("Failed to mount Skill router")
 
+try:
+    from api.demo_router import router as demo_router
+    app.include_router(demo_router)
+    logger.info("Demo router mounted at /api/v1/demo")
+except Exception:
+    logger.exception("Failed to mount Demo router")
+
 _debug_static = _repo_root / "static" / "debug_chat"
 if _debug_static.is_dir():
     app.mount(
