@@ -10,6 +10,8 @@ from knowledge_base.platform_registry import PlatformRegistry
 from skill_hub_client import SkillHubClient
 from sop_engine import compile_methodology_dag
 
+from orchestra.agent_orchestrator import AgentOrchestrator, ExecutionResult
+
 
 # ========== 矩阵 Agent Skill 兼容导入 ==========
 def _import_matrix_skills():
@@ -337,6 +339,7 @@ class MarketingOrchestra:
         self.methodology_lib = MethodologyRegistry()
         self.platform_lib = PlatformRegistry()
         self.skill_hub_client = SkillHubClient()
+        self.agent_orchestrator = AgentOrchestrator(skill_hub_client=self.skill_hub_client)
 
     def _classify_intent(
         self, user_input: str, session_history: Optional[List[Dict[str, Any]]] = None
@@ -704,6 +707,89 @@ class MarketingOrchestra:
             "partial_results": partial_results,
         }
 
+    def _should_use_agent_team(self, kind: str, context: Dict[str, Any]) -> bool:
+        """判断当前意图是否适合走 AgentTeam 多 Agent 协作
+        
+        只有在具备必要上下文时才走 AgentTeam，否则 fallback 到原有路径
+        返回 clarification 引导用户补充信息。
+        """
+        if kind == "diagnosis":
+            # 有账号信息时才走多 Agent 协作诊断
+            return bool(context.get("account_url") or context.get("cookies"))
+        if kind == "traffic":
+            # 有真实数据时才走多 Agent 协作分析
+            return _context_has_user_metrics(context)
+        return kind in {"content", "script", "topic", "risk"}
+    
+    async def _run_agent_team(
+        self,
+        user_input: str,
+        context: Dict[str, Any],
+        intent: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """通过 AgentOrchestrator 组建并执行 AgentTeam"""
+        kind = intent.get("kind", "general")
+        
+        # MarketingOrchestra kind → AgentOrchestrator intent_key 映射
+        kind_to_intent = {
+            "diagnosis": "diagnosis",
+            "traffic": "traffic_analysis",
+            "content": "content_creation",
+            "script": "script_creation",
+            "topic": "topic_selection",
+            "risk": "risk_check",
+        }
+        intent_key = kind_to_intent.get(kind, kind)
+        
+        # 组建 AgentTeam
+        team = self.agent_orchestrator.orchestrate(
+            intent_type=intent_key,
+            intent_subtype=None,
+            user_id=context.get("user_id", "anonymous"),
+            context=context,
+        )
+        
+        if not team.agents:
+            return {"ok": False, "error": f"no_agents_for_intent:{kind}"}
+        
+        # 执行 AgentTeam
+        result = await self.agent_orchestrator.execute_team(
+            team=team,
+            user_input=user_input,
+            context=context,
+        )
+        
+        # 提取主结果（兼容原有 API 契约）
+        # 对于并行模式，取第一个成功的 Agent 的核心 result
+        # 对于串行模式，取最后一个 Agent 的核心 result
+        primary_result: Dict[str, Any] = {}
+        for agent_id, output in result.agent_outputs.items():
+            if isinstance(output, dict) and "results" in output:
+                for skill_id, skill_res in output["results"].items():
+                    if isinstance(skill_res, dict) and skill_res.get("ok") and skill_res.get("result"):
+                        primary_result = dict(skill_res["result"])
+                        break
+        
+        # 将聚合结果合并到主结果中，避免破坏原有字段
+        merged_result = dict(result.results)
+        if primary_result:
+            # 主结果字段优先，聚合结果作为补充
+            for k, v in primary_result.items():
+                if k not in merged_result:
+                    merged_result[k] = v
+        
+        return {
+            "ok": result.success,
+            "result": merged_result,
+            "agent_outputs": result.agent_outputs,
+            "errors": result.errors,
+            "execution_time_ms": result.execution_time_ms,
+            "agent_team": {
+                "mode": team.mode.value,
+                "agents": [a.id for a in team.agents],
+            },
+        }
+
     async def run_dynamic(
         self,
         user_input: str,
@@ -713,6 +799,11 @@ class MarketingOrchestra:
         uid = context.get("user_id") or "anonymous"
         platform = context.get("platform") or "xiaohongshu"
         kind = intent.get("kind")
+
+        # ===== 新增：多 Agent 协作路径 =====
+        if self._should_use_agent_team(kind, context):
+            return await self._run_agent_team(user_input, context, intent)
+        # ==================================
 
         # 矩阵/批量/导流意图优先于常规分类（避免被 traffic/script/diagnosis 等误拦截）
         matrix_result = await self._resolve_matrix_intent(user_input, platform, uid)
@@ -1132,10 +1223,15 @@ class MarketingOrchestra:
 
         kind = intent.get("kind") or "general"
         reply = await format_orchestra_reply(kind, dyn, user_input)
+        
+        # 判断是否走了 AgentTeam 路径
+        is_agent_team = dyn.get("agent_team") is not None
+        
         return {
             "layer": "orchestra",
-            "mode": "dynamic",
+            "mode": "agent_team" if is_agent_team else "dynamic",
             "intent": intent,
             "hub": dyn,
             "reply": reply,
+            "agent_team": dyn.get("agent_team") if is_agent_team else None,
         }

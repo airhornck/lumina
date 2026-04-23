@@ -28,6 +28,16 @@ except ImportError:
         sys.path.insert(0, str(_lu_path))
     from lumina_skills.methodology_utils import build_methodology_prompt, match_methodology_for_content
 
+try:
+    from llm_hub import get_client
+except ImportError:
+    import sys
+    from pathlib import Path
+    _llm_path = Path(__file__).resolve().parents[3] / "packages" / "llm-hub" / "src"
+    if str(_llm_path) not in sys.path:
+        sys.path.insert(0, str(_llm_path))
+    from llm_hub import get_client
+
 mcp = FastMCP("bulk_creative")
 
 
@@ -47,6 +57,53 @@ def _get_spec_value(spec: Any, key_path: List[str], default: Any = None) -> Any:
         if val is not None:
             return val
     return default
+
+
+async def _llm_rewrite_content(
+    master_content: Dict[str, Any],
+    instruction: str,
+    platform: str = "xiaohongshu",
+    extra_context: str = "",
+) -> Dict[str, Any] | None:
+    """调用 LLM 改写内容，返回改写后的结构化数据。"""
+    try:
+        client = get_client(skill_name="bulk_creative")
+        if client and client.config.api_key:
+            prompt = (
+                f"你是一位社交媒体内容专家。请根据以下指令改写内容。\n\n"
+                f"【改写指令】\n{instruction}\n\n"
+                f"【原始内容】\n"
+                f"标题：{master_content.get('title', '')}\n"
+                f"正文：{master_content.get('content', '')[:800]}\n"
+                f"标签：{', '.join(master_content.get('hashtags', [])[:10])}\n\n"
+                f"【目标平台】{platform}\n"
+                f"{extra_context}\n\n"
+                f"要求：\n"
+                f"1. 保持原始内容的核心信息不变；\n"
+                f"2. 标题吸引人且符合平台调性；\n"
+                f"3. 正文口语化、有节奏感；\n"
+                f"4. 标签精准且热门（3-8个）；\n"
+                f"5. angle 用一句话概括本次改写角度；\n"
+                f"6. 输出严格 JSON："
+                f'{{"title":"","content":"","hashtags":[],"angle":"","quality_score":0.0-1.0}}'
+            )
+            raw = await client.complete(
+                prompt,
+                response_format={"type": "json_object"},
+                temperature=0.75,
+                max_tokens=2000,
+            )
+            data = json.loads(raw)
+            return {
+                "title": data.get("title", master_content.get("title", "")),
+                "content": data.get("content", master_content.get("content", "")),
+                "hashtags": data.get("hashtags") or master_content.get("hashtags", []),
+                "angle": data.get("angle", ""),
+                "quality_score": float(data.get("quality_score", 0.8)),
+            }
+    except Exception:
+        pass
+    return None
 
 
 class BulkVariationInput(BaseModel):
@@ -114,7 +171,7 @@ async def generate_variations(input: BulkVariationInput) -> BulkVariationOutput:
             },
             "avg_content_length": sum(len(v.get("content", "")) for v in variations) / max(len(variations), 1)
         },
-        quality_scores=[0.85 + i*0.01 for i in range(len(variations))]  # 模拟质量分数
+        quality_scores=[v.get("quality_score", 0.75) for v in variations]  # 优先使用 LLM 返回的质量分
     )
 
 
@@ -123,6 +180,25 @@ async def create_niche_variation(master_content: Dict, niche: str, account: Dict
     topic = master_content.get("topic", niche)
     meth_id = match_methodology_for_content(f"{topic} {niche}", content_type="post") or "aida_advanced"
     meth_guide = build_methodology_prompt(meth_id) or ""
+    platform = account.get("platform", "xiaohongshu")
+
+    llm_result = await _llm_rewrite_content(
+        master_content,
+        instruction=f"改写为【{niche}】细分领域的专属版本，融入该行业的专业术语、痛点和受众语言",
+        platform=platform,
+        extra_context=f"账号类型：细分领域，领域标签：{niche}",
+    )
+    if llm_result:
+        return {
+            "account_id": account.get("id"),
+            "type": "细分领域",
+            **llm_result,
+            "best_time": "20:00",
+            "recommended_methodology": meth_id,
+            "methodology_guide": meth_guide,
+        }
+
+    # Fallback
     return {
         "account_id": account.get("id"),
         "type": "细分领域",
@@ -141,6 +217,24 @@ async def create_scenario_variation(master_content: Dict, scene: str, account: D
     topic = master_content.get("topic", scene)
     meth_id = match_methodology_for_content(f"{topic} {scene}场景", content_type="post") or "story_arc"
     meth_guide = build_methodology_prompt(meth_id) or ""
+    platform = account.get("platform", "xiaohongshu")
+
+    llm_result = await _llm_rewrite_content(
+        master_content,
+        instruction=f"改写为【{scene}场景】的实用版本，从具体使用场景切入，增加代入感",
+        platform=platform,
+        extra_context=f"账号类型：场景化，场景标签：{scene}",
+    )
+    if llm_result:
+        return {
+            "account_id": account.get("id"),
+            "type": "场景化",
+            **llm_result,
+            "best_time": "12:00",
+            "recommended_methodology": meth_id,
+            "methodology_guide": meth_guide,
+        }
+
     return {
         "account_id": account.get("id"),
         "type": "场景化",
@@ -159,6 +253,24 @@ async def create_local_variation(master_content: Dict, city: str, account: Dict)
     topic = master_content.get("topic", city)
     meth_id = match_methodology_for_content(f"{topic} {city}本地", content_type="post") or "trend_ride"
     meth_guide = build_methodology_prompt(meth_id) or ""
+    platform = account.get("platform", "xiaohongshu")
+
+    llm_result = await _llm_rewrite_content(
+        master_content,
+        instruction=f"改写为【{city}】本地特色版本，融入地域文化、方言元素和本地受众的共鸣点",
+        platform=platform,
+        extra_context=f"账号类型：地域化，城市标签：{city}",
+    )
+    if llm_result:
+        return {
+            "account_id": account.get("id"),
+            "type": "地域化",
+            **llm_result,
+            "best_time": "18:00",
+            "recommended_methodology": meth_id,
+            "methodology_guide": meth_guide,
+        }
+
     return {
         "account_id": account.get("id"),
         "type": "地域化",
@@ -177,6 +289,24 @@ async def create_general_variation(master_content: Dict, account: Dict) -> Dict:
     topic = master_content.get("topic", "")
     meth_id = match_methodology_for_content(topic, content_type="post") or "aida_advanced"
     meth_guide = build_methodology_prompt(meth_id) or ""
+    platform = account.get("platform", "xiaohongshu")
+
+    llm_result = await _llm_rewrite_content(
+        master_content,
+        instruction="优化为通用受众版本，语言通俗易懂，适合大众传播",
+        platform=platform,
+        extra_context="账号类型：通用受众",
+    )
+    if llm_result:
+        return {
+            "account_id": account.get("id"),
+            "type": "通用",
+            **llm_result,
+            "best_time": "19:00",
+            "recommended_methodology": meth_id,
+            "methodology_guide": meth_guide,
+        }
+
     return {
         "account_id": account.get("id"),
         "type": "通用",
@@ -224,16 +354,60 @@ async def adapt_platform(
             max_length = 1000
             hashtag_limit = 10
 
-        adapted_content = content.get("content", "")[:int(max_length)]
-        adapted_hashtags = content.get("hashtags", [])[:int(hashtag_limit)]
+        # 尝试用 LLM 做跨平台风格改写
+        llm_adapted = None
+        try:
+            client = get_client(skill_name="bulk_creative")
+            if client and client.config.api_key:
+                prompt = (
+                    f"你是一位跨平台内容适配专家。请将以下内容从{source_platform}适配到{target}。\n\n"
+                    f"【原始内容】\n"
+                    f"正文：{content.get('content', '')[:800]}\n"
+                    f"标签：{', '.join(content.get('hashtags', [])[:10])}\n\n"
+                    f"【{target}平台规范】\n"
+                    f"风格指南：{style_guide}\n"
+                    f"正文长度限制：{max_length}字\n"
+                    f"标签数量限制：{hashtag_limit}个\n\n"
+                    f"要求：\n"
+                    f"1. 严格按照目标平台的语言风格和用户习惯改写，不要简单截断；\n"
+                    f"2. 正文长度不超过{max_length}字；\n"
+                    f"3. 标签数量不超过{hashtag_limit}个，且符合目标平台热门标签习惯；\n"
+                    f"4. 保持原始内容的核心信息不变。\n\n"
+                    f"输出严格JSON：{{\"content\":\"\",\"hashtags\":[]}}"
+                )
+                raw = await client.complete(
+                    prompt,
+                    response_format={"type": "json_object"},
+                    temperature=0.7,
+                    max_tokens=2000,
+                )
+                data = json.loads(raw)
+                llm_adapted = {
+                    "content": data.get("content", "")[:int(max_length)],
+                    "hashtags": (data.get("hashtags") or [])[:int(hashtag_limit)],
+                }
+        except Exception:
+            pass
 
-        adaptations[target] = {
-            "platform": target,
-            "content": adapted_content,
-            "hashtags": adapted_hashtags,
-            "style_guide": style_guide,
-            "notes": f"适配自{source_platform}，已根据平台规范库调整至{target}风格"
-        }
+        if llm_adapted:
+            adaptations[target] = {
+                "platform": target,
+                "content": llm_adapted["content"],
+                "hashtags": llm_adapted["hashtags"],
+                "style_guide": style_guide,
+                "notes": f"由LLM智能适配自{source_platform}至{target}",
+            }
+        else:
+            # Fallback：仅做长度截断
+            adapted_content = content.get("content", "")[:int(max_length)]
+            adapted_hashtags = content.get("hashtags", [])[:int(hashtag_limit)]
+            adaptations[target] = {
+                "platform": target,
+                "content": adapted_content,
+                "hashtags": adapted_hashtags,
+                "style_guide": style_guide,
+                "notes": f"适配自{source_platform}至{target}（系统提示：LLM适配暂时不可用，仅做长度截断）",
+            }
     
     return {
         "original_platform": source_platform,
@@ -261,24 +435,71 @@ async def batch_optimize(
         "conversion": "hook_story_offer",
         "reach": "trend_ride",
     }
+    goal_desc = {
+        "engagement": "提升互动率，增加互动引导、提问、悬念",
+        "conversion": "提升转化率，强化行动号召、稀缺感、社会认同",
+        "reach": "提升曝光量，优化关键词、增加热点关联",
+    }
     recommended_meth = goal_to_methodology.get(optimization_goal, "aida_advanced")
     meth_guide = build_methodology_prompt(recommended_meth) or ""
 
     for content in contents:
-        # 根据目标进行优化
+        # 尝试用 LLM 智能优化
+        llm_optimized = None
+        try:
+            client = get_client(skill_name="bulk_creative")
+            if client and client.config.api_key:
+                prompt = (
+                    f"你是一位内容优化专家。请基于以下优化目标改写内容。\n\n"
+                    f"【原始内容】\n"
+                    f"正文：{content.get('content', '')[:800]}\n"
+                    f"标签：{', '.join(content.get('hashtags', [])[:10])}\n\n"
+                    f"【优化目标】{optimization_goal} - {goal_desc.get(optimization_goal, '全面优化')}\n"
+                    f"【方法论指引】{meth_guide}\n\n"
+                    f"要求：\n"
+                    f"1. 根据优化目标有针对性地调整内容，不要简单追加固定句子；\n"
+                    f"2. 优化后的内容要自然融入原文，不要生硬拼接；\n"
+                    f"3. 标签也要相应优化（3-8个）；\n"
+                    f"4. 给出一个质量分数（0.0-1.0）。\n\n"
+                    f"输出严格JSON："
+                    f'{{"optimized_content":"","optimized_hashtags":[],"quality_score":0.0-1.0}}'
+                )
+                raw = await client.complete(
+                    prompt,
+                    response_format={"type": "json_object"},
+                    temperature=0.75,
+                    max_tokens=2000,
+                )
+                data = json.loads(raw)
+                llm_optimized = {
+                    "optimized_content": data.get("optimized_content", content.get("content", "")),
+                    "optimized_hashtags": data.get("optimized_hashtags") or content.get("hashtags", []),
+                    "quality_score": float(data.get("quality_score", 0.8)),
+                }
+        except Exception:
+            pass
+
+        if llm_optimized:
+            optimized.append({
+                "original_id": content.get("id"),
+                **llm_optimized,
+                "optimization_applied": optimization_goal,
+                "recommended_methodology": recommended_meth,
+                "methodology_guide": meth_guide,
+            })
+            continue
+
+        # Fallback：简单追加固定模板
         if optimization_goal == "engagement":
-            # 增加互动引导
             optimized_content = content.get("content", "") + "\n\n💬 你怎么看？评论区聊聊"
             optimized_hashtags = content.get("hashtags", []) + ["互动"]
         elif optimization_goal == "conversion":
-            # 强化行动号召
             optimized_content = content.get("content", "") + "\n\n👉 点击主页，获取更多干货"
             optimized_hashtags = content.get("hashtags", []) + ["必看"]
         else:
             optimized_content = content.get("content", "")
             optimized_hashtags = content.get("hashtags", [])
         
-        # 标签数量也按平台规范限制（此处取通用默认值 10，实际调用时可按平台传入）
         try:
             spec = PlatformRegistry().load(content.get("platform", "xiaohongshu"))
             tag_limit = int(_get_spec_value(spec, ["tags", "max_count"], 10))
@@ -292,12 +513,17 @@ async def batch_optimize(
             "optimization_applied": optimization_goal,
             "recommended_methodology": recommended_meth,
             "methodology_guide": meth_guide,
+            "quality_score": 0.65,
         })
     
+    # 收集 LLM 返回的质量分数，fallback 项使用默认值
+    quality_scores = [o.get("quality_score", 0.75) for o in optimized]
+
     return {
         "total_optimized": len(optimized),
         "optimization_goal": optimization_goal,
         "results": optimized,
+        "quality_scores": quality_scores,
         "expected_improvement": "15-25%" if optimization_goal == "engagement" else "10-20%"
     }
 

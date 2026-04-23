@@ -43,20 +43,20 @@
     },
     {
       "name": "__ac_nonce",
-      "value": "069e0998d00b2ca93e7bd",
+      "value": "069ea356f0001a5a673a",
       "domain": "www.douyin.com",
       "path": "/",
-      "expires": 1776328850.499758,
+      "expires": 1776958580.945134,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
     },
     {
       "name": "__ac_signature",
-      "value": "_02B4Z6wo00f01.q24fAAAIDACwxkzj1rhCf6lo1AAJdWb8",
+      "value": "_02B4Z6wo00f011tT.xgAAIDAqul6JOJweltbc5OAAL9Kd0",
       "domain": "www.douyin.com",
       "path": "/",
-      "expires": 1807863050,
+      "expires": 1808492780,
       "httpOnly": false,
       "secure": true,
       "sameSite": "None"
@@ -66,24 +66,24 @@
       "value": "1",
       "domain": ".douyin.com",
       "path": "/",
-      "expires": 1810887050.880222,
+      "expires": 1811516781.257183,
       "httpOnly": false,
       "secure": true,
       "sameSite": "None"
     },
     {
       "name": "UIFID_TEMP",
-      "value": "3f2aa3873e6ff73842f564dd1feb103e03722fda1dd31d66891170883398fab74fad159a4706798b5f59fe6bccbb33e98e3cdc7690618dcbfdd63fd28e81f55259b98ed8fdb99bc80d69c453707c8749",
+      "value": "3f2aa3873e6ff73842f564dd1feb103e03722fda1dd31d66891170883398fab7bd8c573ed6cc9e66e9ab44d811ce440aad2e0a430e29a2ac45185ff90fbb635d94af2194746b23ef765fdbc276ee24d4630fe4bd065f3959aaf5f681b9cb165ddcb8adf13700b75fac42bcc8ea11120f",
       "domain": ".douyin.com",
       "path": "/",
-      "expires": 1810887050.880252,
+      "expires": 1811516781.257207,
       "httpOnly": false,
       "secure": true,
       "sameSite": "None"
     },
     {
       "name": "x-web-secsdk-uid",
-      "value": "1e577471-e8d1-48a9-a3b8-a889ece8ce74",
+      "value": "20d12835-46ce-41a4-aa3b-67492c01193c",
       "domain": "www.douyin.com",
       "path": "/",
       "expires": -1,
@@ -93,10 +93,20 @@
     },
     {
       "name": "s_v_web_id",
-      "value": "verify_mo179h5v_G0lKW6mI_Ryug_41wk_BPb1_PfmvGTdG65pE",
+      "value": "verify_mobm6sul_qVFbdOsn_7KvI_4hz1_85Eo_lIiWZCEr8OHa",
       "domain": "www.douyin.com",
       "path": "/",
-      "expires": 1781511051,
+      "expires": 1782140782,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "is_support_rtm_web_ts",
+      "value": "1",
+      "domain": ".douyin.com",
+      "path": "/",
+      "expires": -1,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
@@ -106,7 +116,7 @@
       "value": "true",
       "domain": ".douyin.com",
       "path": "/",
-      "expires": 1776931851.899142,
+      "expires": 1777561584.048074,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
@@ -116,7 +126,7 @@
       "value": "%220%22",
       "domain": ".douyin.com",
       "path": "/",
-      "expires": 1776931851.919171,
+      "expires": 1777561584.074297,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
@@ -126,7 +136,7 @@
       "value": "1280",
       "domain": "www.douyin.com",
       "path": "/",
-      "expires": 1776931851,
+      "expires": 1777561584,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
@@ -136,7 +146,7 @@
       "value": "720",
       "domain": "www.douyin.com",
       "path": "/",
-      "expires": 1776931851,
+      "expires": 1777561584,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
@@ -146,37 +156,37 @@
       "value": "%22%7B%5C%22cookie_enabled%5C%22%3Atrue%2C%5C%22screen_width%5C%22%3A1280%2C%5C%22screen_height%5C%22%3A720%2C%5C%22browser_online%5C%22%3Atrue%2C%5C%22cpu_core_num%5C%22%3A18%2C%5C%22device_memory%5C%22%3A8%2C%5C%22downlink%5C%22%3A10%2C%5C%22effective_type%5C%22%3A%5C%224g%5C%22%2C%5C%22round_trip_time%5C%22%3A0%7D%22",
       "domain": ".douyin.com",
       "path": "/",
-      "expires": 1776931851.923543,
+      "expires": 1777561584.080898,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
     },
     {
       "name": "odin_tt",
-      "value": "517b8ae99e4f4da976ba0475d1373feecd03469417db689e7de1d2ad971d3dbc16fe6d5930aa57f8692ab95bfe7966a1980db50c01939b031d10df83d329d5d1de3966c10193e4edf8b958207d317d5b",
+      "value": "76da345faca673d739ca678f481f913ead4d5a923e70a5fe45768adf39e51c93fac7b5058ffed3af49cd461621614b5061688af9fe2eebeb07560567b6aff5ee769dd8091f887fc40a6e6c3aa2a8fed5",
       "domain": ".douyin.com",
       "path": "/",
-      "expires": 1807863052.000148,
+      "expires": 1808492784.145679,
       "httpOnly": true,
       "secure": false,
       "sameSite": "Lax"
     },
     {
       "name": "strategyABtestKey",
-      "value": "%221776327052.519%22",
+      "value": "%221776956784.912%22",
       "domain": ".douyin.com",
       "path": "/",
-      "expires": 1776931852.519438,
+      "expires": 1777561584.912411,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
     },
     {
       "name": "fpk1",
-      "value": "U2FsdGVkX1+iXJ8rVqOjyAW9dmF16jKys5T29A6hodGcq9j722V2bJgZBY5p2UOaqjKtDMcii9F2ZHUZlEarcg==",
+      "value": "U2FsdGVkX19WLdGPRmjcR/UYnZ5HKc1SSgep2iEuvGhlkIB4YpmbIlVt3FjMPHyRxjB5WZIMXmnzCRXFUOUU5g==",
       "domain": "www.douyin.com",
       "path": "/",
-      "expires": 1810887052,
+      "expires": 1811516785,
       "httpOnly": false,
       "secure": true,
       "sameSite": "None"
@@ -186,44 +196,44 @@
       "value": "0327a37f9def16ffd65176d2489be8dc",
       "domain": "www.douyin.com",
       "path": "/",
-      "expires": 1810887052,
+      "expires": 1811516785,
       "httpOnly": false,
       "secure": true,
       "sameSite": "None"
     },
     {
       "name": "passport_csrf_token",
-      "value": "e9e267e00b7e756903fa515966b049bb",
+      "value": "7c5bbba9eaa3a58f01bb2c150c75b45a",
       "domain": ".douyin.com",
       "path": "/",
-      "expires": 1781511052.958343,
+      "expires": 1782140785.565,
       "httpOnly": false,
       "secure": true,
       "sameSite": "None"
     },
     {
       "name": "passport_csrf_token_default",
-      "value": "e9e267e00b7e756903fa515966b049bb",
+      "value": "7c5bbba9eaa3a58f01bb2c150c75b45a",
       "domain": ".douyin.com",
       "path": "/",
-      "expires": 1781511052.958432,
+      "expires": 1782140785.565096,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
     },
     {
       "name": "ttwid",
-      "value": "1%7C1pDEGHnkrMBFCh_jX2SfPUu_bnpyffUYdVVaZSR1Bcs%7C1776327056%7C73d4fb33ab0d97fbbb72789151721e3585c4014c553bfb8c9a554625baaffd25",
+      "value": "1%7CotNMJh3wDTOhEJTqSV-YgJqNn2n5qZvYGPTco9Hj8hI%7C1776956788%7Cac74991d6a34d301d83bd8b41d09bc9fa6d861192f107b9c8ae8ce1fb1e94d7f",
       "domain": ".douyin.com",
       "path": "/",
-      "expires": 1807863053.433506,
+      "expires": 1808492786.0216,
       "httpOnly": true,
       "secure": true,
       "sameSite": "None"
     },
     {
       "name": "biz_trace_id",
-      "value": "ada69780",
+      "value": "480dabdf",
       "domain": ".douyin.com",
       "path": "/",
       "expires": -1,
@@ -233,20 +243,20 @@
     },
     {
       "name": "__security_mc_1_s_sdk_crypt_sdk",
-      "value": "0de5c996-44a0-a706",
+      "value": "55763f61-46ac-9ac6",
       "domain": ".douyin.com",
       "path": "/",
-      "expires": 1781511053.581707,
+      "expires": 1782140786.248329,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
     },
     {
       "name": "bd_ticket_guard_client_data",
-      "value": "eyJiZC10aWNrZXQtZ3VhcmQtdmVyc2lvbiI6MiwiYmQtdGlja2V0LWd1YXJkLWl0ZXJhdGlvbi12ZXJzaW9uIjoxLCJiZC10aWNrZXQtZ3VhcmQtcmVlLXB1YmxpYy1rZXkiOiJCSTFxZk1FUDdHRWdmeWc5VXEvVjNkT0JmeWtCR0swWVhSUEZlUUN3NDZ5eE9qYlBLdTR6S21vWlo3UkFxUklHUUxYT2F4dzBqdnZsQW1xaGUvdjVXdG89IiwiYmQtdGlja2V0LWd1YXJkLXdlYi12ZXJzaW9uIjoyfQ%3D%3D",
+      "value": "eyJiZC10aWNrZXQtZ3VhcmQtdmVyc2lvbiI6MiwiYmQtdGlja2V0LWd1YXJkLWl0ZXJhdGlvbi12ZXJzaW9uIjoxLCJiZC10aWNrZXQtZ3VhcmQtcmVlLXB1YmxpYy1rZXkiOiJCQVVYZURzUzhiQnlscnRnTFdtc0N2eVovd1p3Nm92Z1FFNDhka1g0OHYzUUk3UHoxR3NXQitsa0ltanYyU0pMak05cVphYVByTmw3T01zZTNzUEcwNHc9IiwiYmQtdGlja2V0LWd1YXJkLXdlYi12ZXJzaW9uIjoyfQ%3D%3D",
       "domain": ".douyin.com",
       "path": "/",
-      "expires": 1781511053.597329,
+      "expires": 1782140786.269052,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
@@ -256,37 +266,37 @@
       "value": "2",
       "domain": ".douyin.com",
       "path": "/",
-      "expires": 1781511053.59803,
+      "expires": 1782140786.269201,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
     },
     {
       "name": "bd_ticket_guard_client_data_v2",
-      "value": "eyJyZWVfcHVibGljX2tleSI6IkJJMXFmTUVQN0dFZ2Z5ZzlVcS9WM2RPQmZ5a0JHSzBZWFJQRmVRQ3c0Nnl4T2piUEt1NHpLbW9aWjdSQXFSSUdRTFhPYXh3MGp2dmxBbXFoZS92NVd0bz0iLCJyZXFfY29udGVudCI6InNlY190cyIsInJlcV9zaWduIjoibnBydWJWZGpPMW5CWm0rUmlFcUxTck96Q1dqM2VseGpqQnh0Y2RYWUFwST0iLCJzZWNfdHMiOiIjSXFNL2Q1dGRqRE0vaUFicjdSNmRqZ1EyUTBBQ1dMY2dDbWdQLzZpcGZ1SENYTEp2ay8rckcrajVvcmZvIn0%3D",
+      "value": "eyJyZWVfcHVibGljX2tleSI6IkJBVVhlRHNTOGJCeWxydGdMV21zQ3Z5Wi93Wnc2b3ZnUUU0OGRrWDQ4djNRSTdQejFHc1dCK2xrSW1qdjJTSkxqTTlxWmFhUHJObDdPTXNlM3NQRzA0dz0iLCJyZXFfY29udGVudCI6InNlY190cyIsInJlcV9zaWduIjoiNkR6ZmcwODlRUWRnUUtwZitVWjlESE1aUTNZOTZxdVRwWW1SOU1vS2NGaz0iLCJzZWNfdHMiOiIjbkhmNkwzcW5yZ3Y4UFpWdUlDelROb1Y3OElCeE0wSVlObURZclBEMVdKMjVIL04yV1NRS21pRWJqZVhtIn0%3D",
       "domain": ".douyin.com",
       "path": "/",
-      "expires": 1781511053.669499,
+      "expires": 1782140786.315261,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
     },
     {
       "name": "sdk_source_info",
-      "value": "7e276470716a68645a606960273f276364697660272927676c715a6d6069756077273f276364697660272927666d776a68605a607d71606b766c6a6b5a7666776c7571273f275e58272927666a6b766a69605a696c6061273f27636469766027292762696a6764695a7364776c6467696076273f275e582729277672715a646971273f2763646976602729277f6b5a666475273f2763646976602729276d6a6e5a6b6a716c273f2763646976602729276c6b6f5a7f6367273f27636469766027292771273f273d343236303532373633323234272927676c715a75776a716a666a69273f2763646976602778",
+      "value": "7e276470716a68645a606960273f276364697660272927676c715a6d6069756077273f276364697660272927666d776a68605a607d71606b766c6a6b5a7666776c7571273f275e58272927666a6b766a69605a696c6061273f27636469766027292762696a6764695a7364776c6467696076273f275e582729277672715a646971273f2763646976602729277f6b5a666475273f2763646976602729276d6a6e5a6b6a716c273f2763646976602729276c6b6f5a7f6367273f27636469766027292771273f273c3336333d3233303c33323234272927676c715a75776a716a666a69273f2763646976602778",
       "domain": ".douyin.com",
       "path": "/",
-      "expires": 1776327353.781835,
+      "expires": 1776957086.443064,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
     },
     {
       "name": "bit_env",
-      "value": "App0f7UAKIISPc1ER6CPUX3y-cMMISSOsmpdjJvnyl3K4IJE5Q4CD5vXCTO0r6skasyChN8dq_5pmJhfxLz-VGKcDmn0HdkXZ1QzVGm2ql9EyY8W3PsWKtHrJC2uKBjIY1scgzzLWS5kOPs-AOtBsA_pcEEN7Ch4-IDm1Qi9lDWiWLXY-_boQc3Oe_H-Zp1sXoU4VcJZoUAfTYwQSRIMqNry7lR53KEJUeGil8jT58nR3wCpxYuTvQLwoABYQYNsmQh0Rb2bL2oQ9HlfLrfLZzRRl_CUrEex4MxsQjjlgOtDBqa5EA277iJHU8DuHycGDuWL6FI1rlZFQ2pzM_fqJimQ-XCNUPOsxNR3P-JRC-vBZZlddCaXLXzFnnTQmUz2cNuSn1Z1_zs063K0OSIbKiiEsNs0OFX1AGk4eEZrFK9WnMh0lbRAsw2LvMdFAcFzx0rTO2IsqwtFoLXVDhucYoMb5iVlNbdT0b2WoOmhQr_m37l1mTdYqurYLX1NtDQP",
+      "value": "sTdVwTZIvlBTauqg1IascgnP67rVZVztNJxhy4z1a_9rSjMVGUrGAtVBGABWyUgUBcdrCV2lsKRggshthXg3EubmQM6c2wX2lxHfoLsEsMMw8lbPIzOoIqST2Afz6V-hfvBHYENMFG6gJVyvJM6oazD_mQGFdc_u7YAQ9_zEhx_499l1332ovpSdCCHvbFDArWYD9wLT79BYWosrrufhaAdEbFojKyv8yKbH0hFa_sfopcSyHWJy7iO5Tmtr2MEkLANEf6oDCAYLo9K7W0bKEKGqIeX7HSKE9Mb7i9QnelRK6UvYUFRb8NbIthnZHLaKO0Q-VlPNkD-qIXsqWA1OQwsVe6iI7Xj7Z2ZDKRvVamC6FdvCBvG5dWXv1d-VjOFpB3oZlNP8fNnsYQWCxeD578Jhiyn0lCca0evM1EC4zGdV_SWMYuw-pEY9bvy0gRmOJJeyAHCeVYi8-59Qew7tf7zbsM5GfiBC4SsfY7DtlH4upnPdOYBCKtZWo427mxwv",
       "domain": ".douyin.com",
       "path": "/",
-      "expires": 1776327353.782049,
+      "expires": 1776957086.443248,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
@@ -296,21 +306,21 @@
       "value": "eyJwX2luIjoiZjExMWU2Nzc1NzI1ZGRmYzVkNDRlYmY5NDc1OGQ1YTBhNmQzYjNlNGY1YTc4ZTRkN2Q0ZWVkZTY4NTBmYWVhNSJ9",
       "domain": ".douyin.com",
       "path": "/",
-      "expires": 1776327353.782171,
+      "expires": 1776957086.443303,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
     },
     {
       "name": "passport_auth_mix_state",
-      "value": "3yrp5fqs8ynglw0i93ag25q86hrr3l27",
+      "value": "7dt17ve9fooypqub84vbzyk3nbrc67ugqqa952al02r18d08",
       "domain": ".douyin.com",
       "path": "/",
-      "expires": 1776327293.78224,
+      "expires": 1776957026.44335,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
     }
   ],
-  "updated_at": "2026-04-16T16:11:00.984483"
+  "updated_at": "2026-04-23T23:06:32.380494"
 }

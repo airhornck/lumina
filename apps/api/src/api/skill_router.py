@@ -23,40 +23,66 @@ async def execute_skill(request: SkillExecuteRequest):
     """
     执行 Skill 方法
     
-    通过 MCP 调用对应的 Skill
+    通过 SkillHubClient 调用对应的 Skill 工具
     """
-    # Skill 路由映射
+    # Skill 路由映射（别名 -> TOOL_REGISTRY 中的工具名）
     skill_routes = {
-        "content_strategist": "skill-content-strategist",
-        "creative_studio": "skill-creative-studio",
-        "data_analyst": "skill-data-analyst",
-        "growth_hacker": "skill-growth-hacker",
-        "community_manager": "skill-community-manager",
-        "compliance_officer": "skill-compliance-officer",
-        "matrix_commander": "skill-matrix-commander",
-        "bulk_creative": "skill-bulk-creative",
-        "account_keeper": "skill-account-keeper",
-        "traffic_broker": "skill-traffic-broker",
-        "knowledge_miner": "skill-knowledge-miner",
-        "sop_evolver": "skill-sop-evolver",
-        "rpa_executor": "skill-rpa-executor",
+        "content_strategist": "generate_script",
+        "creative_studio": "generate_script",
+        "data_analyst": "diagnose_account",
+        "growth_hacker": "analyze_traffic",
+        "community_manager": "generate_text",
+        "compliance_officer": "detect_risk",
+        "matrix_commander": "generate_variations",
+        "bulk_creative": "generate_variations",
+        "account_keeper": "diagnose_account",
+        "traffic_broker": "analyze_traffic",
+        "knowledge_miner": "qa_knowledge",
+        "sop_evolver": "retrieve_methodology",
+        "rpa_executor": "fetch_trending_topics",
     }
     
-    try:
-        # 实际实现会通过 MCP Client 调用
-        # 这里返回模拟结果
-        return {
-            "success": True,
-            "skill": request.skill_name,
-            "method": request.method,
-            "result": {
-                "message": f"Skill {request.skill_name}.{request.method} executed",
-                "params_received": list(request.params.keys())
-            }
-        }
+    # 优先用 method 作为工具名，fallback 到 skill_routes 映射
+    tool_name = request.method or skill_routes.get(request.skill_name, request.skill_name)
     
+    # 尝试通过 SkillHubClient 真实调用
+    try:
+        from skill_hub_client.client import SkillHubClient
+        
+        client = SkillHubClient()
+        result = await client.call(tool_name, request.params)
+        
+        if result.get("ok"):
+            return {
+                "success": True,
+                "skill": request.skill_name,
+                "method": request.method,
+                "result": result.get("result"),
+            }
+        
+        # 非 unknown_skill 错误，返回具体错误信息
+        error_msg = result.get("error", "")
+        if "unknown_skill" not in error_msg:
+            return {
+                "success": False,
+                "skill": request.skill_name,
+                "method": request.method,
+                "error": error_msg,
+            }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        pass
+    
+    # Fallback：返回模拟结果但明确标注
+    return {
+        "success": True,
+        "skill": request.skill_name,
+        "method": request.method,
+        "result": {
+            "message": f"Skill {request.skill_name}.{request.method} executed (系统提示：真实Skill调用暂时不可用，返回模拟结果)",
+            "params_received": list(request.params.keys()),
+            "tool_attempted": tool_name,
+        }
+    }
 
 
 @router.get("/list")

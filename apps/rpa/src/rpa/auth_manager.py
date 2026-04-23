@@ -206,6 +206,9 @@ class QRCodeAuthManager:
     二维码登录认证管理器
     
     管理二维码生成、状态轮询、登录结果存储
+    
+    注：实际登录流程已委托给 rpa.qrcode_login.QRCodeLoginManager，
+    本类仅做数据模型适配和 API 兼容层。
     """
     
     def __init__(self, credential_store: Optional[SecureCredentialStore] = None):
@@ -213,6 +216,24 @@ class QRCodeAuthManager:
         self.credential_store = credential_store or SecureCredentialStore()
         self._cleanup_task: Optional[asyncio.Task] = None
         self._start_cleanup_task()
+    
+    @property
+    def _qr_manager(self):
+        """延迟初始化真实的 QRCodeLoginManager"""
+        from rpa.qrcode_login import get_qr_login_manager
+        return get_qr_login_manager()
+    
+    def _map_status(self, qr_status):
+        """将 qrcode_login 的状态映射到本地状态"""
+        from rpa.qrcode_login import LoginStatus as QRLoginStatus
+        mapping = {
+            QRLoginStatus.PENDING: LoginStatus.PENDING,
+            QRLoginStatus.SCANNED: LoginStatus.SCANNED,
+            QRLoginStatus.CONFIRMED: LoginStatus.CONFIRMED,
+            QRLoginStatus.EXPIRED: LoginStatus.EXPIRED,
+            QRLoginStatus.ERROR: LoginStatus.ERROR,
+        }
+        return mapping.get(qr_status, LoginStatus.ERROR)
     
     def _start_cleanup_task(self):
         """启动定期清理任务"""
@@ -245,30 +266,27 @@ class QRCodeAuthManager:
         """
         创建二维码登录会话
         
-        实际实现中需要调用平台的二维码生成接口
-        这里提供模拟实现
+        委托给 QRCodeLoginManager 启动真实浏览器流程获取二维码
         """
-        session_id = str(uuid.uuid4())
+        # 调用真实实现创建登录会话
+        qr_session = await self._qr_manager.create_login_session(platform, user_id)
         
-        # 生成二维码内容（实际应该是平台返回的URL）
-        qr_content = f"{platform}://login/{session_id}"
-        
-        # 生成二维码图片（Base64）
-        qr_code_base64 = await self._generate_qr_code_image(qr_content)
-        
+        # 转换数据格式
         session = QRCodeSession(
-            session_id=session_id,
-            platform=platform,
-            user_id=user_id,
-            status=LoginStatus.PENDING,
-            qr_code_url=f"data:image/png;base64,{qr_code_base64}",
-            qr_code_data=qr_content,
+            session_id=qr_session.session_id,
+            platform=qr_session.platform,
+            user_id=qr_session.user_id,
+            status=self._map_status(qr_session.status),
+            qr_code_url=f"data:image/png;base64,{qr_session.qr_code_base64}",
+            qr_code_data=qr_session.qr_content,
+            created_at=qr_session.created_at.isoformat(),
+            expires_at=qr_session.expires_at.isoformat(),
         )
         
-        self.sessions[session_id] = session
+        self.sessions[session.session_id] = session
         
-        # 启动状态轮询（实际应调用平台API）
-        asyncio.create_task(self._poll_login_status(session_id, platform))
+        # 启动状态同步任务
+        asyncio.create_task(self._sync_session_status(session.session_id))
         
         return session
     
@@ -295,19 +313,57 @@ class QRCodeAuthManager:
             # 如果没有 qrcode 库，返回一个占位图
             return "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
     
+    async def _sync_session_status(self, session_id: str):
+        """
+        同步 qrcode_login 的会话状态到本地缓存
+        
+        真实登录流程由 QRCodeLoginManager._start_browser_login 处理，
+        这里只负责同步状态和保存凭证。
+        """
+        for _ in range(300):  # 最多轮询 300 次（约 10 分钟）
+            await asyncio.sleep(2)
+            
+            session = self.sessions.get(session_id)
+            if not session:
+                break
+            
+            # 从真实 manager 获取最新状态
+            qr_status = await self._qr_manager.get_session_status(session_id)
+            if not qr_status:
+                break
+            
+            from rpa.qrcode_login import LoginStatus as QRLoginStatus
+            new_status = self._map_status(QRLoginStatus(qr_status["status"]))
+            
+            if new_status != session.status:
+                session.status = new_status
+                
+                if new_status == LoginStatus.CONFIRMED:
+                    session.confirmed_at = datetime.now().isoformat()
+                    if qr_status.get("account_info"):
+                        session.account_info = qr_status["account_info"]
+                    # 获取凭证并保存
+                    cred = await self._qr_manager.get_user_credential(
+                        session.user_id, session.platform
+                    )
+                    if cred:
+                        session.cookies = cred.cookies
+                        session.account_info = {
+                            "account_id": cred.account_id,
+                            "nickname": cred.account_name,
+                            "avatar": "",
+                        }
+                        await self._save_login_result(session)
+                    break
+                elif new_status in (LoginStatus.EXPIRED, LoginStatus.ERROR):
+                    break
+    
     async def _poll_login_status(self, session_id: str, platform: str):
         """
-        轮询登录状态
+        轮询登录状态（已废弃，由 _sync_session_status 替代）
         
-        实际实现中需要调用平台的状态查询接口
+        保留此方法以维持 API 兼容性。
         """
-        # 这里提供模拟实现，实际应该调用抖音/小红书的API
-        session = self.sessions.get(session_id)
-        if not session:
-            return
-        
-        # 模拟轮询（实际应该调用平台API）
-        # 这里先简单处理，实际实现需要在 BrowserGrid 中模拟扫码流程
         pass
     
     async def get_session_status(self, session_id: str) -> Optional[Dict[str, Any]]:
@@ -388,6 +444,27 @@ class QRCodeAuthManager:
         platform: str,
     ) -> Optional[PlatformAccount]:
         """获取用户的平台账号"""
+        # 优先从真实 manager 获取凭证
+        cred = await self._qr_manager.get_user_credential(user_id, platform)
+        if cred:
+            account = PlatformAccount(
+                platform=cred.platform,
+                account_id=cred.account_id,
+                account_name=cred.account_name,
+                cookies=cred.cookies,
+                login_type="qrcode",
+                last_login_at=cred.created_at,
+                expires_at=cred.expires_at,
+                is_active=cred.is_active,
+            )
+            # 检查是否过期
+            if account.expires_at:
+                expires = datetime.fromisoformat(account.expires_at)
+                if datetime.now() > expires:
+                    account.is_active = False
+            return account if account.is_active else None
+        
+        # Fallback：从本地 credential_store 读取
         user_account = self.credential_store.load_user_account(user_id)
         if not user_account:
             return None
@@ -396,7 +473,6 @@ class QRCodeAuthManager:
         if not account:
             return None
         
-        # 检查是否过期
         if account.expires_at:
             expires = datetime.fromisoformat(account.expires_at)
             if datetime.now() > expires:
@@ -415,24 +491,22 @@ class QRCodeAuthManager:
         如果有有效的登录凭证，直接返回
         否则创建二维码登录会话
         """
-        # 检查现有凭证
-        existing_account = await self.get_user_platform_account(user_id, platform)
+        # 委托给真实 manager 检查凭证状态
+        result = await self._qr_manager.check_and_refresh_login(user_id, platform)
         
-        if existing_account:
-            # 检查是否需要刷新
-            expires = datetime.fromisoformat(existing_account.expires_at)
-            if datetime.now() < expires - timedelta(days=7):  # 还有7天以上有效期
-                return {
-                    "type": "existing",
-                    "account": {
-                        "platform": existing_account.platform,
-                        "account_id": existing_account.account_id,
-                        "account_name": existing_account.account_name,
-                        "avatar": existing_account.avatar,
-                    },
-                }
+        if result["type"] == "ready":
+            cred = result.get("credential", {})
+            return {
+                "type": "existing",
+                "account": {
+                    "platform": platform,
+                    "account_id": "",
+                    "account_name": cred.get("account_name", ""),
+                    "avatar": "",
+                },
+            }
         
-        # 创建新的二维码会话
+        # 需要重新登录，创建二维码会话
         session = await self.create_qr_code_session(platform, user_id)
         
         return {

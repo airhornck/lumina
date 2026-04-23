@@ -8,6 +8,17 @@ from fastmcp import FastMCP
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 from datetime import datetime
+import json
+
+try:
+    from llm_hub import get_client
+except ImportError:
+    import sys
+    from pathlib import Path
+    _llm_path = Path(__file__).resolve().parents[3] / "packages" / "llm-hub" / "src"
+    if str(_llm_path) not in sys.path:
+        sys.path.insert(0, str(_llm_path))
+    from llm_hub import get_client
 
 mcp = FastMCP("sop_evolver")
 
@@ -86,57 +97,111 @@ async def evolve_strategy(
     
     基于数据反馈迭代优化策略
     """
-    # 分析当前策略效果
+    market_changes = market_changes or []
     current_roi = performance_data.get("roi", 0)
-    
-    # 生成改进建议
-    improvements = []
-    
-    if current_roi < 2.0:
-        improvements.append({
-            "area": "成本优化",
-            "action": "降低低效渠道投入",
-            "expected_impact": "ROI +0.5"
-        })
-    
-    if performance_data.get("engagement_rate", 0) < 0.05:
-        improvements.append({
-            "area": "内容优化",
-            "action": "优化内容开头和互动引导",
-            "expected_impact": "互动率 +2%"
-        })
-    
-    # 生成新版本策略
-    evolved_strategy = {
-        "version": current_strategy.get("version", 1) + 1,
-        "based_on": current_strategy.get("strategy_id"),
-        "changes": improvements,
-        "key_adjustments": [
-            "增加视频内容比例至60%",
-            "调整发布时间至晚8点",
-            "优化目标受众定向"
-        ],
-        "expected_outcome": {
-            "roi_improvement": "+20-30%",
-            "engagement_lift": "+15-25%",
-            "confidence": 0.75
+    current_version = current_strategy.get("version", 1)
+    next_version = current_version + 1
+
+    # 尝试用 LLM 生成策略调整建议
+    llm_result = None
+    try:
+        client = get_client(skill_name="sop_evolver")
+        if client and client.config.api_key:
+            mc_text = "\n".join(f"- {m}" for m in market_changes) or "无显著变化"
+            prompt = (
+                f"你是一位策略优化专家。请基于以下数据生成策略调整建议。\n\n"
+                f"【当前策略版本】v{current_version}\n"
+                f"【策略描述】{json.dumps(current_strategy, ensure_ascii=False)[:400]}\n\n"
+                f"【效果数据】\n"
+                f"ROI: {performance_data.get('roi', '未知')}\n"
+                f"互动率: {performance_data.get('engagement_rate', '未知')}\n"
+                f"转化率: {performance_data.get('conversion_rate', '未知')}\n"
+                f"曝光量: {performance_data.get('impressions', '未知')}\n\n"
+                f"【市场变化】\n{mc_text}\n\n"
+                f"要求：\n"
+                f"1. 分析数据中的问题和机会；\n"
+                f"2. 给出具体的调整建议（key_adjustments，3-5条）；\n"
+                f"3. 预测调整后的效果（expected_outcome：roi_improvement、engagement_lift、confidence）；\n"
+                f"4. 制定实施计划（phases：3个阶段，含duration和action）；\n"
+                f"5. 给出回滚条件（rollback_criteria）。\n\n"
+                f"输出严格JSON："
+                f'{{"changes":[{{"area":"","action":"","expected_impact":""}}],'
+                f'"key_adjustments":[],"expected_outcome":{{"roi_improvement":"","engagement_lift":"","confidence":0.75}},'
+                f'"phases":[{{"phase":1,"duration":"","action":""}}],'
+                f'"rollback_criteria":""}}'
+            )
+            raw = await client.complete(
+                prompt,
+                response_format={"type": "json_object"},
+                temperature=0.7,
+                max_tokens=2000,
+            )
+            data = json.loads(raw)
+            llm_result = {
+                "changes": data.get("changes", []),
+                "key_adjustments": data.get("key_adjustments", []),
+                "expected_outcome": data.get("expected_outcome", {}),
+                "phases": data.get("phases", []),
+                "rollback_criteria": data.get("rollback_criteria", "ROI下降超过10%"),
+            }
+    except Exception:
+        pass
+
+    if llm_result:
+        evolved_strategy = {
+            "version": next_version,
+            "based_on": current_strategy.get("strategy_id"),
+            **llm_result,
         }
-    }
-    
-    return {
-        "evolution_summary": {
-            "from_version": current_strategy.get("version", 1),
-            "to_version": evolved_strategy["version"],
-            "changes_count": len(improvements)
-        },
-        "evolved_strategy": evolved_strategy,
-        "implementation_plan": {
+    else:
+        # Fallback：基于简单规则生成
+        improvements = []
+        if current_roi < 2.0:
+            improvements.append({
+                "area": "成本优化",
+                "action": "降低低效渠道投入",
+                "expected_impact": "ROI +0.5"
+            })
+        if performance_data.get("engagement_rate", 0) < 0.05:
+            improvements.append({
+                "area": "内容优化",
+                "action": "优化内容开头和互动引导",
+                "expected_impact": "互动率 +2%"
+            })
+
+        evolved_strategy = {
+            "version": next_version,
+            "based_on": current_strategy.get("strategy_id"),
+            "changes": improvements,
+            "key_adjustments": [
+                "增加视频内容比例至60%",
+                "调整发布时间至晚8点",
+                "优化目标受众定向"
+            ],
+            "expected_outcome": {
+                "roi_improvement": "+20-30%",
+                "engagement_lift": "+15-25%",
+                "confidence": 0.75
+            },
             "phases": [
                 {"phase": 1, "duration": "1周", "action": "小范围测试新策略"},
                 {"phase": 2, "duration": "2周", "action": "分析测试结果"},
                 {"phase": 3, "duration": "持续", "action": "全面 rollout"}
             ],
-            "rollback_criteria": "ROI下降超过10%"
+            "rollback_criteria": "ROI下降超过10%",
+            "note": "系统提示：LLM策略进化服务暂时不可用，返回基于规则的默认建议。",
+        }
+    
+    return {
+        "evolution_summary": {
+            "from_version": current_version,
+            "to_version": evolved_strategy["version"],
+            "changes_count": len(evolved_strategy.get("changes", []))
+        },
+        "evolved_strategy": evolved_strategy,
+        "implementation_plan": {
+            "phases": evolved_strategy.get("phases", []),
+            "rollback_criteria": evolved_strategy.get("rollback_criteria", "ROI下降超过10%")
         }
     }
 
@@ -152,8 +217,56 @@ async def generate_sop(
     
     基于最佳实践生成标准操作流程
     """
+    sop_id = f"sop_{int(datetime.now().timestamp())}"
+
+    # 尝试用 LLM 生成定制化 SOP
+    llm_sop = None
+    try:
+        client = get_client(skill_name="sop_evolver")
+        if client and client.config.api_key:
+            bp_text = "\n".join(f"- {bp}" for bp in best_practices) or "无"
+            prompt = (
+                f"你是一位运营流程设计专家。请基于以下任务描述和最佳实践，生成一份标准操作流程（SOP）。\n\n"
+                f"【任务描述】{task_description}\n\n"
+                f"【最佳实践】\n{bp_text}\n\n"
+                f"要求：\n"
+                f"1. 步骤要具体、可执行，不要笼统；\n"
+                f"2. 每个步骤要有明确的检查清单（checklist，3-5项）；\n"
+                f"3. 给出合理的时间估算；\n"
+                f"4. 基于最佳实践设计流程；\n"
+                f"5. 返回 3-6 个步骤。\n\n"
+                f"输出严格JSON："
+                f'{{"steps":[{{"order":1,"name":"步骤名","description":"具体描述","checklist":["检查项1"],"estimated_time":"5分钟"}}],'
+                f'"quality_criteria":["标准1","标准2"]}}'
+            )
+            raw = await client.complete(
+                prompt,
+                response_format={"type": "json_object"},
+                temperature=0.7,
+                max_tokens=2000,
+            )
+            data = json.loads(raw)
+            llm_sop = {
+                "steps": data.get("steps", []),
+                "quality_criteria": data.get("quality_criteria", ["符合品牌调性", "信息准确"]),
+            }
+    except Exception:
+        pass
+
+    if llm_sop:
+        return {
+            "sop_id": sop_id,
+            "name": task_description,
+            "version": 1,
+            "created_at": datetime.now().isoformat(),
+            "steps": llm_sop["steps"],
+            "best_practices_applied": best_practices,
+            "quality_criteria": llm_sop["quality_criteria"],
+        }
+
+    # Fallback：返回通用模板但明确标注
     return {
-        "sop_id": f"sop_{int(datetime.now().timestamp())}",
+        "sop_id": sop_id,
         "name": task_description,
         "version": 1,
         "created_at": datetime.now().isoformat(),
@@ -193,7 +306,8 @@ async def generate_sop(
             "无错别字",
             "信息准确",
             "格式规范"
-        ]
+        ],
+        "note": "系统提示：LLM SOP生成服务暂时不可用，返回通用模板。",
     }
 
 

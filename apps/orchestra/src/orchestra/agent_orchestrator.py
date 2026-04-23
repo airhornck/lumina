@@ -61,28 +61,65 @@ class AgentOrchestrator:
     """
     Agent 编排器
     
-    根据意图类型自动组建 Agent 小队并执行
+    根据意图类型自动组建 Agent 小队并执行。
+    已打通 SkillHubClient，AgentTeam 执行时会真实调用底层 Skill。
     """
     
-    def __init__(self, config_path: Optional[str] = None):
+    # Skill ID → TOOL_REGISTRY 工具名映射
+    # 支持静态映射（str）和动态映射（dict：意图→工具）
+    SKILL_TOOL_MAP = {
+        "skill-content-strategist": "select_topic",
+        "skill-creative-studio": {
+            "content_creation": "generate_text",
+            "script_creation": "generate_script",
+            "default": "generate_text",
+        },
+        "skill-data-analyst": {
+            "diagnosis": "diagnose_account",
+            "traffic_analysis": "analyze_traffic",
+            "default": "diagnose_account",
+        },
+        "skill-growth-hacker": "analyze_traffic",
+        "skill-community-manager": "generate_text",
+        "skill-compliance-officer": "detect_risk",
+        "skill-matrix-commander": "retrieve_methodology",
+        "skill-bulk-creative": "generate_variations",
+        "skill-account-keeper": "diagnose_account",
+        "skill-traffic-broker": "analyze_traffic",
+        "skill-knowledge-miner": "match_cases",
+        "skill-sop-evolver": "retrieve_methodology",
+        "skill-rpa-executor": "fetch_trending_topics",
+    }
+    
+    def __init__(self, config_path: Optional[str] = None, skill_hub_client=None):
         """
         初始化编排器
         
         Args:
-            config_path: Agent 配置文件路径
+            config_path: Agent 配置文件路径（默认从项目 config/agents.yaml 加载）
+            skill_hub_client: SkillHubClient 实例，用于真实调用 Skill
         """
         self.agents: Dict[str, Agent] = {}
         self.intent_agent_map: Dict[str, List[str]] = {}
         self.execution_modes: Dict[str, ExecutionMode] = {}
         
+        # SkillHubClient（延迟初始化）
+        self._skill_hub_client = skill_hub_client
+        
         # 加载配置
         if config_path:
             self._load_config(config_path)
         else:
-            self._load_default_config()
+            # 尝试从项目默认路径加载
+            from pathlib import Path
+            default_path = Path(__file__).resolve().parents[3] / "config" / "agents.yaml"
+            if default_path.is_file():
+                self._load_config(str(default_path))
+            else:
+                self._load_default_config()
     
     def _load_default_config(self) -> None:
-        """加载默认配置"""
+        """加载默认配置（覆盖全部 14 个 Agent）"""
         # 单账号 Agent
         self.agents.update({
             "content_strategist": Agent(
@@ -179,6 +216,37 @@ class AgentOrchestrator:
                 triggers=["traffic_routing"],
                 priority=2
             ),
+            "knowledge_miner": Agent(
+                id="knowledge_miner",
+                name="知识提取器",
+                name_en="KnowledgeMiner",
+                description="负责成功案例模式识别",
+                skills=["skill-knowledge-miner"],
+                triggers=["case_analysis", "pattern_extraction"],
+                priority=3
+            ),
+            "sop_evolver": Agent(
+                id="sop_evolver",
+                name="SOP进化师",
+                name_en="SOPEvolver",
+                description="负责运营流程自我优化",
+                skills=["skill-sop-evolver"],
+                triggers=["sop_optimization", "process_evolution"],
+                priority=3
+            ),
+        })
+        
+        # 通用工具 Agent
+        self.agents.update({
+            "rpa_executor": Agent(
+                id="rpa_executor",
+                name="RPA执行器",
+                name_en="RPAExecutor",
+                description="执行浏览器自动化任务",
+                skills=["skill-rpa-executor"],
+                triggers=["browser_automation", "content_publish", "data_collection"],
+                priority=1
+            ),
         })
         
         # 意图到 Agent 的映射
@@ -213,39 +281,50 @@ class AgentOrchestrator:
         }
     
     def _load_config(self, config_path: str) -> None:
-        """从文件加载配置"""
+        """从文件加载配置（支持 agents.yaml 完整格式）"""
         import yaml
         
         with open(config_path, 'r', encoding='utf-8') as f:
             config = yaml.safe_load(f)
         
-        # 加载 Agent 定义
-        for agent_id, agent_data in config.get('single_account_agents', {}).items():
-            self.agents[agent_id] = Agent(
-                id=agent_id,
-                name=agent_data['name'],
-                name_en=agent_data['name_en'],
-                description=agent_data['description'],
-                skills=agent_data['skills'],
-                triggers=agent_data['triggers'],
-                priority=agent_data.get('priority', 1),
-                llm_config=agent_data.get('llm_config')
-            )
-        
-        for agent_id, agent_data in config.get('matrix_agents', {}).items():
-            self.agents[agent_id] = Agent(
-                id=agent_id,
-                name=agent_data['name'],
-                name_en=agent_data['name_en'],
-                description=agent_data['description'],
-                skills=agent_data['skills'],
-                triggers=agent_data['triggers'],
-                priority=agent_data.get('priority', 1),
-                llm_config=agent_data.get('llm_config')
-            )
+        # 加载所有 Agent 定义（单账号 + 矩阵 + 通用工具）
+        for section in ('single_account_agents', 'matrix_agents', 'utility_agents'):
+            for agent_id, agent_data in config.get(section, {}).items():
+                # 跳过内部 Agent（如 intent_parser）
+                if agent_data.get('internal'):
+                    continue
+                self.agents[agent_id] = Agent(
+                    id=agent_id,
+                    name=agent_data['name'],
+                    name_en=agent_data['name_en'],
+                    description=agent_data['description'],
+                    skills=agent_data['skills'],
+                    triggers=agent_data['triggers'],
+                    priority=agent_data.get('priority', 1),
+                    llm_config=agent_data.get('llm_config')
+                )
         
         # 加载映射关系
-        self.intent_agent_map = config.get('orchestration', {}).get('intent_agent_map', {})
+        orch = config.get('orchestration', {})
+        self.intent_agent_map = orch.get('intent_agent_map', {})
+        
+        # 加载执行模式（支持新格式：parallel/sequential/mixed 列表）
+        # YAML 中可能用 "sequential"，映射到 ExecutionMode.SERIAL
+        mode_name_map = {
+            "parallel": "parallel",
+            "sequential": "serial",
+            "mixed": "mixed",
+        }
+        modes_cfg = orch.get('execution_modes', {})
+        self.execution_modes = {}
+        for mode_name, intents in modes_cfg.items():
+            mapped_name = mode_name_map.get(mode_name, mode_name)
+            try:
+                mode = ExecutionMode(mapped_name)
+            except ValueError:
+                continue
+            for intent_key in intents:
+                self.execution_modes[intent_key] = mode
     
     def orchestrate(
         self,
@@ -297,10 +376,12 @@ class AgentOrchestrator:
             ExecutionMode.SERIAL
         )
         
+        team_context = dict(context or {})
+        team_context["_intent_type"] = intent_type
         return AgentTeam(
             agents=team_agents,
             mode=execution_mode,
-            context=context or {}
+            context=team_context
         )
     
     async def execute_team(
@@ -323,13 +404,17 @@ class AgentOrchestrator:
         import time
         start_time = time.time()
         
+        # 合并 team.context（包含 _intent_type 等编排元信息）到执行上下文
+        execution_context = dict(context)
+        execution_context.update(team.context)
+        
         result = ExecutionResult(success=True)
         
         try:
             if team.mode == ExecutionMode.PARALLEL:
                 # 并行执行
                 tasks = [
-                    self._execute_agent(agent, user_input, context)
+                    self._execute_agent(agent, user_input, execution_context)
                     for agent in team.agents
                 ]
                 agent_results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -344,7 +429,7 @@ class AgentOrchestrator:
                 
             elif team.mode == ExecutionMode.SERIAL:
                 # 串行执行
-                accumulated_context = dict(context)
+                accumulated_context = dict(execution_context)
                 
                 for agent in team.agents:
                     try:
@@ -363,7 +448,7 @@ class AgentOrchestrator:
                     
             else:  # MIXED
                 # 混合模式：部分并行，部分串行
-                result = await self._execute_mixed(team, user_input, context)
+                result = await self._execute_mixed(team, user_input, execution_context)
             
             # 汇总结果
             result.results = self._aggregate_results(result.agent_outputs)
@@ -375,22 +460,132 @@ class AgentOrchestrator:
         result.execution_time_ms = int((time.time() - start_time) * 1000)
         return result
     
+    @property
+    def skill_hub_client(self):
+        """延迟初始化 SkillHubClient"""
+        if self._skill_hub_client is None:
+            from skill_hub_client import SkillHubClient
+            self._skill_hub_client = SkillHubClient()
+        return self._skill_hub_client
+    
+    def _build_params_for_tool(self, tool_name: str, user_input: str, context: Dict[str, Any]) -> Dict[str, Any]:
+        """根据工具名和上下文构建调用参数"""
+        uid = context.get("user_id", "anonymous")
+        platform = context.get("platform", "xiaohongshu")
+        
+        builders = {
+            "diagnose_account": lambda: {
+                "account_url": context.get("account_url", ""),
+                "platform": platform,
+                "user_id": uid,
+                "account_name": context.get("account_name"),
+                "cookies": context.get("cookies"),
+            },
+            "analyze_traffic": lambda: {
+                "metrics": context.get("metrics", {}),
+                "platform": platform,
+                "user_id": uid,
+            },
+            "generate_text": lambda: {
+                "topic": user_input[:200] or "品牌故事",
+                "platform": platform,
+                "content_dna": context.get("content_dna", {}),
+                "user_id": uid,
+            },
+            "generate_script": lambda: {
+                "topic": user_input[:120] or "产品种草",
+                "hook_type": "curiosity",
+                "duration": 60,
+                "platform": platform,
+                "user_id": uid,
+            },
+            "detect_risk": lambda: {
+                "content_text": user_input,
+                "platform": platform,
+            },
+            "select_topic": lambda: {
+                "industry": context.get("industry", "general"),
+                "user_id": uid,
+                "platform": platform,
+            },
+            "match_cases": lambda: {
+                "content_type": "note",
+                "industry": context.get("industry", "general"),
+                "user_id": uid,
+            },
+            "qa_knowledge": lambda: {
+                "question": user_input,
+                "user_id": uid,
+            },
+            "fetch_industry_news": lambda: {
+                "category": context.get("industry", "general"),
+                "days": 3,
+            },
+            "retrieve_methodology": lambda: {
+                "query": user_input,
+                "industry": context.get("industry", ""),
+                "user_id": uid,
+            },
+            "generate_variations": lambda: {
+                "master_content": {"text": user_input, "type": "script"},
+                "target_accounts": context.get("target_accounts", []),
+                "variation_strategy": "auto",
+                "user_id": uid,
+            },
+            "visualize_data": lambda: {
+                "data": context.get("metrics", {}),
+                "chart_type": "line",
+                "title": user_input[:80] or "数据概览",
+                "user_id": uid,
+            },
+            "monitor_competitor": lambda: {
+                "account_id": context.get("competitor_id", "demo_competitor"),
+                "platform": platform,
+                "user_id": uid,
+            },
+        }
+        
+        builder = builders.get(tool_name)
+        if builder:
+            params = builder()
+            return {k: v for k, v in params.items() if v is not None}
+        
+        return {"user_input": user_input, "user_id": uid, "platform": platform}
+    
+    def _resolve_tool_for_skill(self, skill_id: str, intent_type: str) -> str:
+        """根据 skill_id 和意图类型解析要调用的工具名"""
+        mapping = self.SKILL_TOOL_MAP.get(skill_id)
+        if isinstance(mapping, dict):
+            return mapping.get(intent_type, mapping.get("default", skill_id.replace("skill-", "").replace("-", "_")))
+        if isinstance(mapping, str):
+            return mapping
+        return skill_id.replace("skill-", "").replace("-", "_")
+    
     async def _execute_agent(
         self,
         agent: Agent,
         user_input: str,
         context: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """执行单个 Agent"""
-        # 这里调用具体的 Skill
-        # 实际实现会通过 MCP 调用 Python Skill
+        """执行单个 Agent：将其 skills 映射为 Tool 调用"""
+        agent_results = {}
+        intent_type = context.get("_intent_type", "")
+        
+        for skill_id in agent.skills:
+            tool_name = self._resolve_tool_for_skill(skill_id, intent_type)
+            params = self._build_params_for_tool(tool_name, user_input, context)
+            
+            try:
+                result = await self.skill_hub_client.call(tool_name, params)
+                agent_results[skill_id] = result
+            except Exception as e:
+                agent_results[skill_id] = {"ok": False, "error": str(e)}
         
         return {
             "agent_id": agent.id,
             "agent_name": agent.name,
-            "skills": agent.skills,
-            "status": "executed",
-            "context_keys": list(context.keys())
+            "skills_executed": list(agent_results.keys()),
+            "results": agent_results,
         }
     
     async def _execute_mixed(
