@@ -1,11 +1,15 @@
 methodology_id: "pas_framework"
-name: "痛点-激化-解决"
-applicable_scenarios: ["conversion", "problem_solving", "tutorial"]
-success_cases: ["护肤避坑笔记高收藏", "职场效率工具种草"]
+name: "PAS (双重定义)"
+category: "Hybrid"
+description: "该缩写在营销文案写作与人工智能领域均有重要含义，需根据上下文区分。营销领域指 Problem-Agitation-Solution 经典说服逻辑；AI领域指 Prompt Augmentation System 提示增强系统。"
+applicable_scenarios: ["conversion", "problem_solving", "tutorial", "copywriting", "prompt_engineering"]
+success_cases: ["护肤避坑笔记高收藏", "职场效率工具种草", "AI提示优化提升模型表现"]
 prompt_templates:
-  problem: "精准描述目标受众的一个具体痛点，越细节越能引起共鸣"
-  agitation: "放大不解决的代价：情绪、时间、金钱、社交风险"
-  solution: "给出可立即执行的解决方案，附带证据或简单步骤"
+  problem: "精准描述目标受众的一个具体痛点，越细节越能引起共鸣（营销版：直接指出用户面临的具体痛点或难题）"
+  agitation: "放大不解决的代价：情绪、时间、金钱、社交风险，通过情感渲染加剧焦虑（营销版：描述问题不解决的严重后果）"
+  solution: "给出可立即执行的解决方案，附带证据或简单步骤，提出产品作为完美的解决方案，消除痛点"
+  pas_marketing: "Problem - Agitation - Solution：经典的说服逻辑，通过痛点营销促成转化。步骤：Problem(直接指出痛点) → Agitation(放大不解决的后果) → Solution(提出产品解决方案)"
+  pas_ai: "Prompt Augmentation System：面向大语言模型的优化系统，通过自动生成高质量补充提示，优化用户原始输入，提升模型表现"
 steps:
   - step_id: "problem"
     theory: "pain_point_resonance"

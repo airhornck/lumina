@@ -1,0 +1,40 @@
+methodology_id: "hoshin_kanri"
+name: "HSO (方针管理)"
+category: "Strategic_Management"
+description: "一种战略规划方法，旨在确保组织从高层到基层的目标一致性，消除执行中的浪费与偏差。"
+core_philosophy: "全员对齐，聚焦关键目标，通过PDCA循环实现战略落地。"
+applicable_scenarios: ["annual_planning", "goal_alignment", "enterprise_strategy", "strategic_management"]
+success_cases: ["企业年度战略目标全员对齐", "跨部门协同效率提升"]
+prompt_templates:
+  vision_establishment: "高层制定长期的突破性目标，确立清晰的组织愿景和战略方向"
+  goal_deployment: "将高层目标层层分解到部门和个人，确保上下同欲，使用X矩阵展示目标与策略的关系"
+  execution_review: "定期回顾进度，进行偏差分析，通过PDCA循环持续改进执行效果"
+  key_tools: "X矩阵（展示目标与策略关系）、PDCA循环、全员参与机制"
+steps:
+  - step_id: "vision_establishment"
+    theory: "breakthrough_targeting"
+    agent_role: "strategy"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "愿景与突破性目标制定"
+        content_dna: {}
+        methodology_hint: "HoshinKanri-Vision"
+  - step_id: "goal_deployment"
+    theory: "cascading_alignment"
+    agent_role: "strategy"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "目标层层展开与分解"
+        content_dna: {}
+        methodology_hint: "HoshinKanri-Deployment"
+  - step_id: "execution_review"
+    theory: "pdca_cycle"
+    agent_role: "strategy"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "执行审查与PDCA循环"
+        content_dna: {}
+        methodology_hint: "HoshinKanri-Review"

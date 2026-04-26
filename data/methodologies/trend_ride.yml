@@ -1,12 +1,15 @@
 methodology_id: "trend_ride"
 name: "热点借势"
-applicable_scenarios: ["awareness", "viral", "timing"]
+category: "Growth_Hacking"
+description: "借助社会高关注度事件、话题或人物，结合品牌特性进行内容创作，以获取流量红利。"
+core_philosophy: "搭乘流量快车，在嘈杂环境中通过关联高热度话题实现低成本高曝光。"
+applicable_scenarios: ["social_media", "event_marketing", "rapid_response", "awareness", "viral", "timing"]
 success_cases: ["节日热点笔记破圈", "平台挑战赛跟拍爆款"]
 prompt_templates:
-  trend_spotting: "快速识别与账号定位相关的热点：不看全量，只看「可切入」的"
-  angle_bridge: "找到热点与垂直赛道的桥梁：用专业视角重新解读"
-  speed_hook: "前3秒必须出现热点关键词或视觉符号，降低识别成本"
-  value_anchor: "在情绪共鸣后立刻落回到实用价值，避免纯追热点的空洞感"
+  trend_spotting: "快速识别与账号定位相关的热点：不看全量，只看「可切入」的，实时监控热搜榜、行业新闻、突发大事件"
+  angle_bridge: "找到热点与垂直赛道的桥梁：用专业视角重新解读，寻找连接点（视觉借势、观点借势、神转折剧情）"
+  speed_hook: "前3秒必须出现热点关键词或视觉符号，降低识别成本，快速响应抢占黄金传播时间窗口（通常在热点发生后4-24小时内）"
+  value_anchor: "在情绪共鸣后立刻落回到实用价值，避免纯追热点的空洞感，判断热点与品牌调性是否相符，规避政治、灾难等敏感风险"
 steps:
   - step_id: "trend_spotting"
     theory: "selective_attention"
@@ -25,3 +28,21 @@ steps:
         topic: "热点角度嫁接"
         content_dna: {}
         methodology_hint: "TrendRide-AngleBridge"
+  - step_id: "speed_hook"
+    theory: "timeliness_advantage"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "热点快速响应钩子"
+        content_dna: {}
+        methodology_hint: "TrendRide-SpeedHook"
+  - step_id: "value_anchor"
+    theory: "value_anchoring"
+    agent_role: "strategy"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "热点价值锚定"
+        content_dna: {}
+        methodology_hint: "TrendRide-ValueAnchor"

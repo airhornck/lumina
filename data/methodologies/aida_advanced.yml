@@ -1,10 +1,16 @@
 methodology_id: "aida_advanced"
-name: "AIDA 增强版"
-applicable_scenarios: ["conversion", "awareness", "retention"]
-success_cases: ["美妆种草笔记转化提升"]
+name: "AIDA 增强模型"
+category: "Marketing_Communication"
+description: "基于经典AIDA模型，结合现代数字化触点与STP理论优化的消费者行为引导框架。"
+core_philosophy: "通过层层递进的心理引导，将陌生流量转化为忠实用户，强调各环节的转化率优化。"
+related_models: ["STP理论", "AISAS模型"]
+applicable_scenarios: ["marketing_funnel", "copywriting", "landing_page", "conversion", "awareness", "retention"]
+success_cases: ["美妆种草笔记转化提升", "广告投放漏斗优化"]
 prompt_templates:
-  attention: "前 3 秒制造信息缺口"
-  desire: "社会认同与稀缺并存"
+  attention: "在信息过载中通过视觉或认知反差抢夺用户注意力：爆款标题（利用悬念、数字、痛点）、高冲击力视觉（反差图、短视频前3秒）、精准渠道定向（结合STP理论）"
+  interest: "通过价值输出维持用户停留，激发探索欲：干货知识分享、展示产品独特卖点、引发共鸣的场景描述"
+  desire: "将理性兴趣转化为感性渴望，建立情感连接：社会认同（KOL背书、用户好评）、场景化种草（使用后的美好改变）、稀缺性营造（限时、限量）"
+  action: "消除最后一点阻力，促成转化：清晰的行动号召按钮、降低决策门槛（试用、退款保证）、临门一脚（倒计时、优惠券即将过期）"
 steps:
   - step_id: "attention"
     theory: "zeigarnik_effect"
@@ -15,11 +21,30 @@ steps:
         topic: "钩子强化"
         content_dna: {}
         methodology_hint: "AIDA-Attention"
+  - step_id: "interest"
+    theory: "value_maintenance"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "兴趣维持"
+        content_dna: {}
+        methodology_hint: "AIDA-Interest"
   - step_id: "desire"
     theory: "social_proof"
     agent_role: "strategy"
     skill_call:
-      name: "match_cases"
+      name: "generate_text"
       params:
-        content_type: "note"
-        industry: "general"
+        topic: "欲望激发"
+        content_dna: {}
+        methodology_hint: "AIDA-Desire"
+  - step_id: "action"
+    theory: "call_to_action"
+    agent_role: "strategy"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "行动号召"
+        content_dna: {}
+        methodology_hint: "AIDA-Action"

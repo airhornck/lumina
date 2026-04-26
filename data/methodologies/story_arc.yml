@@ -1,13 +1,16 @@
 methodology_id: "story_arc"
 name: "故事弧线"
-applicable_scenarios: ["awareness", "engagement", "brand_story"]
+category: "Content_Creation"
+description: "通过组织事件顺序和因果关系，引导受众情绪起伏的叙事结构框架。"
+core_philosophy: "情节不仅是事件的堆砌，更是因果的揭示；通过冲突和解决建立情感连接。"
+applicable_scenarios: ["short_video", "brand_story", "soft_article", "speech", "awareness", "engagement", "brand_story"]
 success_cases: ["个人IP成长故事爆款", "品牌起源故事高互动"]
 prompt_templates:
-  setup: "建立世界观与人物：让读者在3秒内知道「谁」和「在哪」"
-  inciting_incident: "打破平衡的事件：一个具体的冲突、意外或转折点"
-  rising_action: "过程曲折：尝试→失败→再尝试，叠加情绪张力"
-  climax: "高潮释放：给出关键结果、反转或顿悟"
-  resolution: "收尾共鸣：回扣开头，给出可迁移的经验或情感落点"
+  setup: "建立世界观与人物：让读者在3秒内知道「谁」和「在哪」，介绍背景、人物现状，打破平衡，提出核心目标或冲突"
+  inciting_incident: "打破平衡的事件：一个具体的冲突、意外或转折，提出核心目标"
+  rising_action: "过程曲折：尝试→失败→再尝试，叠加情绪张力，描述努力尝试、遭遇挫折、危机加深"
+  climax: "高潮释放：给出关键结果、反转或顿悟，迎来高潮，解决冲突"
+  resolution: "收尾共鸣：回扣开头，给出可迁移的经验或情感落点，展示新常态或获得感悟"
 steps:
   - step_id: "setup"
     theory: "narrative_transportation"
@@ -15,16 +18,34 @@ steps:
     skill_call:
       name: "generate_text"
       params:
-        topic: "故事开场"
+        topic: "故事开篇与世界观建立"
         content_dna: {}
         methodology_hint: "StoryArc-Setup"
+  - step_id: "inciting_incident"
+    theory: "conflict_introduction"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "冲突与转折设计"
+        content_dna: {}
+        methodology_hint: "StoryArc-IncitingIncident"
+  - step_id: "rising_action"
+    theory: "emotional_escalation"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "过程曲折与情绪叠加"
+        content_dna: {}
+        methodology_hint: "StoryArc-RisingAction"
   - step_id: "climax"
     theory: "peak_end_rule"
     agent_role: "creative"
     skill_call:
       name: "generate_text"
       params:
-        topic: "高潮反转"
+        topic: "高潮反转设计"
         content_dna: {}
         methodology_hint: "StoryArc-Climax"
   - step_id: "resolution"
@@ -33,6 +54,6 @@ steps:
     skill_call:
       name: "generate_text"
       params:
-        topic: "收尾共鸣"
+        topic: "收尾共鸣与经验总结"
         content_dna: {}
         methodology_hint: "StoryArc-Resolution"

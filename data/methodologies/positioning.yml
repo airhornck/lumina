@@ -1,11 +1,40 @@
 methodology_id: "positioning"
-name: "定位理论（骨架）"
-applicable_scenarios: ["brand", "awareness"]
+name: "定位理论"
+category: "Strategic_Management"
+description: "在潜在顾客心智中为品牌占据一个独特且有价值的位置，核心是心智占领。"
+core_philosophy: "商战发生在心智中，而非货架上。通过简化信息，让品牌成为某个品类的代表。"
+applicable_scenarios: ["brand_strategy", "market_analysis", "product_launch", "brand", "awareness"]
+success_cases: ["品牌心智份额第一提及率提升", "差异化定位成功出圈"]
+prompt_templates:
+  segmentation: "根据地理、人口、心理等变量将大市场切分为具有不同需求的子市场，识别高潜力细分人群"
+  targeting: "评估各细分市场的吸引力，选择企业资源最匹配、最具竞争优势的一个或多个目标市场"
+  positioning: "设计品牌形象和价值主张，确立与竞争对手的差异化优势，追求消费者大脑中的第一提及率"
+  differentiation: "寻找人无我有、人有我优的特性，提供支撑定位的证据（如销量领先、专家认证）"
 steps:
-  - step_id: "differentiation"
+  - step_id: "segmentation"
+    theory: "market_segmentation"
     agent_role: "strategy"
     skill_call:
-      name: "retrieve_methodology"
+      name: "generate_text"
       params:
-        query: "差异化定位"
-        industry: "general"
+        topic: "市场细分分析"
+        content_dna: {}
+        methodology_hint: "Positioning-Segmentation"
+  - step_id: "targeting"
+    theory: "target_market_selection"
+    agent_role: "strategy"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "目标市场选择"
+        content_dna: {}
+        methodology_hint: "Positioning-Targeting"
+  - step_id: "positioning"
+    theory: "mind_share_occupation"
+    agent_role: "strategy"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "品牌定位设计"
+        content_dna: {}
+        methodology_hint: "Positioning-Positioning"
