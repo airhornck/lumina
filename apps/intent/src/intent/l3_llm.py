@@ -80,10 +80,12 @@ class LLMClassifier:
         prompt = self._build_prompt(text, session_context, prior_probability)
         
         try:
+            user_id = getattr(session_context, "user_id", None)
             response = await self.llm_client.complete(
                 prompt,
                 response_format={"type": "json_object"},
-                temperature=0.1
+                temperature=0.1,
+                _usage_meta={"user_id": user_id, "skill_name": "intent_l3"} if user_id else None,
             )
             
             # 解析 JSON 响应

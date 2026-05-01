@@ -18,6 +18,7 @@ async def call_llm(
     response_format: Optional[Dict[str, Any]] = None,
     max_tokens: int = 2000,
     fallback_response: Optional[Dict[str, Any]] = None,
+    user_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     统一 LLM 调用接口
@@ -29,6 +30,7 @@ async def call_llm(
         response_format: 响应格式（如 {"type": "json_object"}）
         max_tokens: 最大 token 数
         fallback_response: 失败时的回退响应
+        user_id: 用户唯一标识（用于 token 用量统计）
         
     Returns:
         解析后的 JSON 响应或 fallback
@@ -44,6 +46,7 @@ async def call_llm(
                 temperature=temperature,
                 max_tokens=max_tokens,
                 response_format=response_format,
+                _usage_meta={"user_id": user_id, "skill_name": skill_name} if user_id else None,
             )
             
             # 尝试解析 JSON
@@ -65,6 +68,8 @@ async def call_llm(
             temperature=temperature,
             max_tokens=max_tokens,
             response_format=response_format,
+            user_id=user_id,
+            skill_name=skill_name,
         )
     except Exception as e:
         print(f"[call_llm] litellm 直接调用失败: {e}")
@@ -81,6 +86,8 @@ async def _call_litellm_direct(
     temperature: float = 0.7,
     max_tokens: int = 2000,
     response_format: Optional[Dict[str, Any]] = None,
+    user_id: Optional[str] = None,
+    skill_name: Optional[str] = None,
 ) -> Dict[str, Any]:
     """直接使用 litellm 调用（从环境变量读取配置）"""
     import litellm
@@ -113,6 +120,19 @@ async def _call_litellm_direct(
     
     resp = await litellm.acompletion(**kwargs)
     content = resp.choices[0].message.content or ""
+    
+    # 上报 token 用量
+    usage = getattr(resp, "usage", None)
+    if usage and user_id:
+        from llm_hub.usage_reporter import report_usage
+        await report_usage(
+            user_id=user_id,
+            model=model_id,
+            prompt_tokens=getattr(usage, "prompt_tokens", 0) or 0,
+            completion_tokens=getattr(usage, "completion_tokens", 0) or 0,
+            total_tokens=getattr(usage, "total_tokens", 0) or 0,
+            skill_name=skill_name,
+        )
     
     if response_format and response_format.get("type") == "json_object":
         try:

@@ -124,6 +124,18 @@ CREATE TABLE IF NOT EXISTS rpa_tasks (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- LLM Token 用量记录表
+CREATE TABLE IF NOT EXISTS llm_usage_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL,
+    model VARCHAR(100) NOT NULL,
+    skill_name VARCHAR(100),
+    prompt_tokens INTEGER NOT NULL DEFAULT 0,
+    completion_tokens INTEGER NOT NULL DEFAULT 0,
+    total_tokens INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- 创建索引
 CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at);
@@ -135,6 +147,9 @@ CREATE INDEX IF NOT EXISTS idx_contents_user_id ON contents(user_id);
 CREATE INDEX IF NOT EXISTS idx_contents_status ON contents(status);
 CREATE INDEX IF NOT EXISTS idx_rpa_tasks_user_id ON rpa_tasks(user_id);
 CREATE INDEX IF NOT EXISTS idx_rpa_tasks_status ON rpa_tasks(status);
+CREATE INDEX IF NOT EXISTS idx_llm_usage_user_id ON llm_usage_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_llm_usage_created_at ON llm_usage_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_llm_usage_user_date ON llm_usage_logs(user_id, created_at);
 
 -- 插入测试用户（开发环境）
 INSERT INTO users (id, username, email, is_active, is_superuser)

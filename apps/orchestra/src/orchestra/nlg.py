@@ -54,6 +54,7 @@ async def format_orchestra_reply(
     intent_kind: str,
     hub: Dict[str, Any],
     user_input: str,
+    user_id: str | None = None,
 ) -> str:
     """根据意图与 hub 包装生成自然语言；无 LLM 时用模板兜底。"""
     if not hub.get("ok"):
@@ -80,14 +81,14 @@ async def format_orchestra_reply(
 
         client = get_client(skill_name="orchestra_nlg")
         if client and client.config.api_key:
-            return await _llm_format(client, intent_kind, user_input, result)
+            return await _llm_format(client, intent_kind, user_input, result, user_id)
     except Exception:
         pass
 
     return _template_reply(intent_kind, user_input, result)
 
 
-async def _llm_format(client: Any, kind: str, user_input: str, result: dict) -> str:
+async def _llm_format(client: Any, kind: str, user_input: str, result: dict, user_id: str | None = None) -> str:
     payload = _truncate(json.dumps(result, ensure_ascii=False))
     prompt = (
         "你是 Lumina 营销助手，正在向用户说明系统刚执行完的一步分析结果。\n"
@@ -101,7 +102,12 @@ async def _llm_format(client: Any, kind: str, user_input: str, result: dict) -> 
         "4）给 1～3 条可执行的下一步。\n"
         "不要输出 JSON 或代码块；不要编造未出现在结构化结果里的具体平台数据。"
     )
-    text = await client.complete(prompt, temperature=0.5, max_tokens=900)
+    text = await client.complete(
+        prompt,
+        temperature=0.5,
+        max_tokens=900,
+        _usage_meta={"user_id": user_id, "skill_name": "orchestra_nlg"} if user_id else None,
+    )
     return (text or "").strip() or _template_reply(kind, user_input, result)
 
 

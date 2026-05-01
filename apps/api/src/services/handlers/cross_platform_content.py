@@ -259,6 +259,7 @@ async def _generate_master_content(
         response_format={"type": "json_object"},
         temperature=0.7,
         max_tokens=4096,
+        _usage_meta={"user_id": user_id, "skill_name": "cross_platform_content"},
     )
 
     try:
@@ -328,6 +329,7 @@ async def _revise_platform_content(
         response_format={"type": "json_object"},
         temperature=0.7,
         max_tokens=4096,
+        _usage_meta={"user_id": user_id, "skill_name": "cross_platform_content"},
     )
 
     try:
@@ -502,6 +504,7 @@ async def handle_cross_platform_content_stream(
                     response_format={"type": "json_object"},
                     temperature=0.7,
                     max_tokens=4096,
+                    _usage_meta={"user_id": user_id, "skill_name": "cross_platform_content"},
                 )
 
                 try:

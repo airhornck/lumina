@@ -12,8 +12,6 @@ llm_pool:
     max_tokens: 8192
     timeout: 60
     tags: ["high-quality", "creative", "reasoning", "expensive"]
-    cost_per_1k_input: 0.003
-    cost_per_1k_output: 0.015
   
   # GPT-4o - 通用高质量
   gpt-4o:
@@ -24,8 +22,6 @@ llm_pool:
     max_tokens: 4096
     timeout: 60
     tags: ["high-quality", "fast", "versatile"]
-    cost_per_1k_input: 0.005
-    cost_per_1k_output: 0.015
   
   # GPT-4o-mini - 低成本分类
   gpt-4o-mini:
@@ -36,8 +32,6 @@ llm_pool:
     max_tokens: 2048
     timeout: 30
     tags: ["cheap", "fast", "classification"]
-    cost_per_1k_input: 0.00015
-    cost_per_1k_output: 0.0006
   
   # DeepSeek-V3 - 主力中文模型
   deepseek-v3:
@@ -49,8 +43,6 @@ llm_pool:
     max_tokens: 4096
     timeout: 60
     tags: ["cheap", "fast", "chinese-optimized", "default"]
-    cost_per_1k_input: 0.0002
-    cost_per_1k_output: 0.0004
   
   # DeepSeek-R1 - 推理模型
   deepseek-r1:
@@ -62,8 +54,6 @@ llm_pool:
     max_tokens: 4096
     timeout: 120
     tags: ["reasoning", "analysis", "chinese-optimized", "cheap"]
-    cost_per_1k_input: 0.0004
-    cost_per_1k_output: 0.0016
 
 # ========== 第二步：配置分配策略 ==========
 

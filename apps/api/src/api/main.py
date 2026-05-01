@@ -28,6 +28,32 @@ _llm_yaml = Path(
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # 1. 初始化数据库连接池
+    try:
+        from infra.db import init_db_pool
+
+        pool = await init_db_pool()
+        if pool:
+            logger.info("Database pool initialized")
+        else:
+            logger.warning("DATABASE_URL not set, running without DB persistence")
+    except Exception:
+        logger.exception("Database pool init failed; usage tracking disabled")
+
+    # 2. 注册 LLM 用量上报回调
+    try:
+        from llm_hub.usage_reporter import set_usage_reporter
+        from services.usage_service import record_usage
+
+        async def _reporter(user_id, model, pt, ct, tt, skill_name):
+            await record_usage(user_id, model, pt, ct, skill_name)
+
+        set_usage_reporter(_reporter)
+        logger.info("LLM usage reporter registered")
+    except Exception:
+        logger.exception("Failed to register LLM usage reporter")
+
+    # 3. 加载 LLM Hub
     if _llm_yaml.is_file():
         try:
             from llm_hub import init_default_hub
@@ -38,7 +64,17 @@ async def lifespan(app: FastAPI):
             logger.exception("LLM Hub load failed; skills run without LLM")
     else:
         logger.warning("No LLM config at %s", _llm_yaml)
+
     yield
+
+    # 关闭数据库连接池
+    try:
+        from infra.db import close_db_pool
+
+        await close_db_pool()
+        logger.info("Database pool closed")
+    except Exception:
+        logger.exception("Database pool close failed")
 
 
 app = FastAPI(
@@ -60,6 +96,7 @@ app.add_middleware(
 @app.get("/health")
 async def health():
     from llm_hub import get_hub
+    from infra.db import get_pool
 
     return {
         "status": "ok",
@@ -67,6 +104,7 @@ async def health():
         "architecture": "openclaw -> marketing_intelligence_hub -> orchestra -> skill_hub",
         "llm_hub": get_hub() is not None,
         "mcp_skill_hub_mount": "/mcp",
+        "db_pool": get_pool() is not None,
     }
 
 
@@ -113,6 +151,14 @@ try:
     logger.info("Demo router mounted at /api/v1/demo")
 except Exception:
     logger.exception("Failed to mount Demo router")
+
+# Token 用量查询路由
+try:
+    from api.usage_router import router as usage_router
+    app.include_router(usage_router)
+    logger.info("Usage router mounted at /api/v1/usage")
+except Exception:
+    logger.exception("Failed to mount Usage router")
 
 _debug_static = _repo_root / "static" / "debug_chat"
 if _debug_static.is_dir():

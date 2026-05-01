@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, AsyncIterator, Dict, List, Optional
 
 from llm_hub.config_models import LLMConfig
+from llm_hub.usage_reporter import report_usage
 
 
 def litellm_model_id(cfg: LLMConfig) -> str:
@@ -30,6 +31,7 @@ class LLMClient:
         response_format: Optional[Dict[str, Any]] = None,
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
+        _usage_meta: Optional[Dict[str, Any]] = None,
     ) -> str:
         import litellm
 
@@ -51,7 +53,23 @@ class LLMClient:
             kwargs["response_format"] = response_format
         resp = await litellm.acompletion(**kwargs)
         choice = resp.choices[0]
-        return (choice.message.content or "").strip()
+        content = (choice.message.content or "").strip()
+
+        # 若调用方提供了 user_id 等元数据，则上报 token 用量
+        usage = getattr(resp, "usage", None)
+        if usage and _usage_meta:
+            user_id = _usage_meta.get("user_id")
+            if user_id:
+                await report_usage(
+                    user_id=str(user_id),
+                    model=model,
+                    prompt_tokens=getattr(usage, "prompt_tokens", 0) or 0,
+                    completion_tokens=getattr(usage, "completion_tokens", 0) or 0,
+                    total_tokens=getattr(usage, "total_tokens", 0) or 0,
+                    skill_name=_usage_meta.get("skill_name"),
+                )
+
+        return content
 
     async def stream_completion(
         self,

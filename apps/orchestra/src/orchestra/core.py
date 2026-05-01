@@ -1019,7 +1019,7 @@ class MarketingOrchestra:
             }
 
         if kind == "conversation":
-            reply = await self._natural_conversation_reply(user_input, context)
+            reply = await self._natural_conversation_reply(user_input, context, uid)
             return {
                 "ok": True,
                 "result": {
@@ -1142,7 +1142,7 @@ class MarketingOrchestra:
         return result
 
     async def _natural_conversation_reply(
-        self, user_input: str, context: Dict[str, Any]
+        self, user_input: str, context: Dict[str, Any], user_id: str = ""
     ) -> str:
         """正常对话：有 LLM 时结合简短历史；无 Key 时固定友好话术。"""
         system = (
@@ -1166,7 +1166,12 @@ class MarketingOrchestra:
 
             client = get_client(skill_name="orchestra_chat")
             if client and client.config.api_key:
-                return await client.complete(prompt, temperature=0.75, max_tokens=512)
+                return await client.complete(
+                    prompt,
+                    temperature=0.75,
+                    max_tokens=512,
+                    _usage_meta={"user_id": user_id, "skill_name": "orchestra_chat"} if user_id else None,
+                )
         except Exception:
             pass
 
@@ -1222,7 +1227,7 @@ class MarketingOrchestra:
         from orchestra.nlg import format_orchestra_reply
 
         kind = intent.get("kind") or "general"
-        reply = await format_orchestra_reply(kind, dyn, user_input)
+        reply = await format_orchestra_reply(kind, dyn, user_input, user_id)
         
         # 判断是否走了 AgentTeam 路径
         is_agent_team = dyn.get("agent_team") is not None

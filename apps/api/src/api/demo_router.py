@@ -206,6 +206,7 @@ async def get_position_matrix(
             response_format={"type": "json_object"},
             temperature=0.7,
             max_tokens=2048,
+            _usage_meta={"user_id": user_id, "skill_name": "demo_matrix"} if user_id else None,
         )
 
         try:
@@ -326,6 +327,7 @@ async def get_weekly_rankings(
             response_format={"type": "json_object"},
             temperature=0.7,
             max_tokens=4096,
+            _usage_meta={"user_id": user_id, "skill_name": "demo_rankings"} if user_id else None,
         )
 
         try:
