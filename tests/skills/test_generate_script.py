@@ -20,7 +20,7 @@ for p in (
     if str(p) not in sys.path:
         sys.path.insert(0, str(p))
 
-from lumina_skills.content import generate_script
+from lumina_skills.content import generate_script  # noqa: E402
 
 
 @pytest.fixture

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>为什么你越刷短视频，越觉得空虚？ - 母稿</title>
+    <style>
+        body {
+            max-width: 720px;
+            margin: 40px auto;
+            padding: 0 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #fafafa;
+        }
+        .container {
+            background: #fff;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        h1 { font-size: 26px; margin-bottom: 12px; color: #1a1a1a; }
+        .tags { margin: 16px 0; }
+        .tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            margin-right: 8px;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        .positioning {
+            background: #f0f7ff;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #4a90d9;
+        }
+        .positioning h3 { margin-top: 0; color: #2c5aa0; font-size: 16px; }
+        article { font-size: 16px; margin-top: 24px; color: #444; }
+        .compliance {
+            color: #2e7d32;
+            font-size: 14px;
+            margin-top: 24px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        .compliance.warning {
+            color: #bf360c;
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+        .compliance.warning mark {
+            background: #ffcc80;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .cover-copy, .cta {
+            background: #f3e5f5;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin: 18px 0;
+            border-left: 4px solid #9c27b0;
+        }
+        .cover-copy h4, .cta h4 { margin-top: 0; color: #6a1b9a; font-size: 15px; }
+
+        /* 平台规范卡片 */
+        .platform-specs {
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 24px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .platform-specs h3 { margin-top: 0; color: #f57c00; font-size: 16px; }
+        .spec-section { margin: 14px 0; }
+        .spec-section h4 {
+            font-size: 14px;
+            color: #e65100;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .spec-section ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+        .spec-section li { margin: 4px 0; }
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .spec-table th, .spec-table td {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .spec-table th {
+            background: #fff3cd;
+            color: #856404;
+            font-weight: 600;
+            width: 30%;
+        }
+        .spec-table td { color: #555; }
+        .audit-warning {
+            background: #ffebee;
+            border-left-color: #ef5350;
+        }
+        .audit-warning h4 { color: #c62828; }
+
+        /* 平台字段区 */
+        .platform-fields {
+            background: #e3f2fd;
+            padding: 18px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .platform-fields h4 {
+            margin-top: 0;
+            color: #1565c0;
+            font-size: 15px;
+        }
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #bbdefb;
+            font-size: 14px;
+        }
+        .field-row:last-child { border-bottom: none; }
+        .field-label { color: #424242; font-weight: 500; }
+        .field-value { color: #1565c0; font-weight: 600; }
+        .field-warn { color: #e53935; font-weight: 600; }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+        .best-time {
+            background: #e8eaf6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: #3949ab;
+            border-left: 4px solid #5c6bc0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="positioning"><h3>🎯 账号定位</h3><p><strong>为泛兴趣用户提供兼具深度与趣味性的多元内容，满足其探索未知、提升认知与获得情感共鸣的核心需求。</strong></p><p>👥 目标受众：18-45 不限</p><p>📌 内容支柱：跨界知识解读：将冷门或专业领域知识转化为易懂、有趣的叙事（如历史、科技、心理学与日常生活的关联）, 社会文化洞察：分析当下热点、现象或趋势背后的深层逻辑与人性洞察, 情感与成长故事：分享真实、有共鸣的个人经历或虚构叙事，传递积极或反思性价值观</p></div>
+        
+        <h1>为什么你越刷短视频，越觉得空虚？</h1>
+        <div class="tags">
+            
+        </div>
+        <article>你有没有过这样的时刻：明明刷了一小时手机，放下后却觉得脑袋空空，甚至有点焦虑？<br><br>这不是你的错，而是算法在‘喂养’你。<br><br>心理学上有个概念叫‘多巴胺陷阱’：短视频通过高频刺激（15秒一个反转、一句金句）让你不断获得即时满足，但每次满足后，大脑会迅速回到‘饥饿’状态，迫使你继续滑动。结果呢？你‘消费’了大量信息，却几乎没有‘消化’任何内容——因为你的注意力被切碎，深度思考的回路被彻底打断。<br><br>更隐蔽的是，算法只推荐你‘喜欢’的，让你困在信息茧房里。你以为自己在探索世界，其实只是在重复验证自己的偏见。<br><br>那怎么办？<br><br>试试‘信息断食’：每天留出30分钟，只看一本书、一篇长文或一部纪录片。你会发现，真正有价值的认知，从来不是‘喂’出来的，而是‘嚼’出来的。<br><br>我们不是反对短视频，而是提醒你：别让算法替你决定你该知道什么。<br><br>#信息过载 #深度思考 #认知升级 #多巴胺陷阱 #反算法 #短视频焦虑 #内容消费 #心理洞察</article>
+        <div class="cover-copy"><h4>📱 封面文案</h4><p>刷完一小时，你得到了什么？</p></div><div class="cta"><h4>👉 行动号召</h4><p>评论区聊聊：你最近一次深度思考是什么时候？</p></div>
+        
+        
+        <div class="compliance">✅ 合规检查通过，未发现违规词</div>
+        <footer>
+            由 Lumina 智能营销助手生成 · 母稿
+        </footer>
+    </div>
+</body>
+</html>

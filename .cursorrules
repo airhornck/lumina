@@ -1,0 +1,219 @@
+# Lumina 宪法级上下文控制（.cursorrules）
+
+> 版本：v1.1
+> 日期：2026-07-07
+> 依据：`docs/LUMINA_BUSINESS_SOURCE_OF_TRUTH.md`、`docs/LUMINA_HYBRID_RENOVATION_PLAN.md`
+
+---
+
+## 一、项目定位
+
+Lumina 是一个面向个人创作者和 KOL 的对话式 AI 营销智能助手平台。所有技术决策必须服务于创作者体验。
+
+---
+
+## 二、技术栈版本锁定
+
+| 层级 | 技术 | 版本/约束 |
+|------|------|-----------|
+| 语言 | Python | 3.12+ |
+| Web 框架 | FastAPI | 0.10x |
+| 数据库 | PostgreSQL | 14+ |
+| DB 驱动 | asyncpg | 当前 pyproject 锁定版本 |
+| ORM/工具 | Pydantic v2 | 必须 |
+| LLM Hub | 自研 llm_hub | 不可绕过 |
+| Agent 底座 | Hermes Agent | 仅核心依赖，阶段 1 后引入 |
+
+---
+
+## 三、架构分层规范
+
+### 3.1 分层职责
+
+```
+API Layer (apps/api/src/)
+├── routers/          # 只负责：路由注册、请求校验、响应序列化、SSE 流式输出
+└── main.py           # 生命周期管理
+
+Service Layer (apps/api/src/services/)
+├── handlers/         # 编排处理器，调用 Orchestra 或 Hermes Adapter
+├── hermes_adapter.py # Hermes 引擎适配器（阶段 1）
+└── memory_service.py # 服务级记忆封装
+
+Orchestra Layer (apps/orchestra/src/orchestra/)
+├── core.py           # MarketingOrchestra：意图分类、任务状态机、动态路由
+├── task_state.py     # 任务状态管理
+├── required_fields.py# 内容生成必要字段定义
+└── intent_guards.py  # 渐进式生成检查
+
+Skill Layer (skills/)
+└── 具体业务 Skill 实现
+
+Data Layer
+├── apps/api/src/infra/db.py  # 数据库连接池
+└── PostgreSQL                # 持久化存储
+```
+
+### 3.2 禁止行为
+
+- ❌ 禁止在 Router 中写业务逻辑
+- ❌ 禁止在 Skill 中直接操作 HTTP 请求/响应
+- ❌ 禁止绕过 `llm_hub` 直接调用 LLM API
+- ❌ 禁止在进程内使用 dict/list 作为持久化存储
+- ❌ 禁止在 Hermes 中启用 terminal/browser/code execution 等危险工具
+
+---
+
+## 四、接口统一化与稳定性红线
+
+### 4.1 对外服务流统一入口
+
+**唯一对外服务流接口**：`POST /api/v1/services/system-chat/stream`
+
+所有对话类能力（系统对话、内容方向榜单、定位矩阵、每周决策快照）必须通过该统一入口提供，以 Skill / Agent 方式挂载，通过关键词或意图唤起。
+
+### 4.2 必须保持稳定的协议
+
+| 类型 | 具体内容 |
+|------|----------|
+| 统一接口路径 | `/api/v1/services/system-chat/stream` |
+| 请求参数 | 现有字段名称、类型、必填性 |
+| 响应 JSON | `ok`、`layer`、`mode`、`intent`、`hub`、`reply` 等字段必须保留 |
+| SSE 事件 | `start`、`assistant_delta`、`export_link`、`compliance_report`、`done` |
+| 错误码 | 现有错误返回格式 |
+
+### 4.3 已废弃/过渡期的接口
+
+| 接口路径 | 状态 | 说明 |
+|----------|------|------|
+| `/api/v1/services/content-ranking/stream` | 已废弃 | 能力迁移到统一接口 Skill |
+| `/api/v1/services/positioning/stream` | 已废弃 | 能力迁移到统一接口 Skill |
+| `/api/v1/services/weekly-snapshot/stream` | 已废弃 | 能力迁移到统一接口 Skill |
+
+✅ 允许：在统一接口内部新增 Skill 路由、新增可选参数、新增 SSE 事件类型、内部重路由。
+
+❌ 禁止：新增除统一接口外的对外服务流接口；禁止修改统一接口的协议稳定性。
+
+---
+
+## 五、代码规范
+
+### 5.1 类型系统
+
+- 强制使用类型注解
+- 禁止使用 `Any` 作为偷懒方案；必须使用 `Any` 时需在注释中说明原因
+- 使用 Pydantic v2 模型校验外部输入
+
+### 5.2 异步规范
+
+- I/O 操作必须使用 `async`/`await`
+- 数据库操作必须通过 asyncpg 连接池
+- 禁止使用同步阻塞调用
+
+### 5.3 错误处理
+
+- 所有外部调用必须有 try/except
+- 不允许吞掉异常，必须记录日志
+- 用户-facing 错误必须通过 SSE `error` 事件返回
+
+---
+
+## 六、测试规范
+
+### 6.1 测试先行
+
+- 任何新功能必须先写测试，初始状态为 Red
+- 生产代码只能在测试失败后编写
+
+### 6.2 测试分层
+
+| 类型 | 目录 | 目标 |
+|------|------|------|
+| 单元测试 | `tests/unit/` / 模块内 `tests/` | 函数/类级别 |
+| 集成测试 | `tests/integration/` | 模块组合 |
+| 接口回归 | `tests/interface_regression/` | 外部接口兼容性 |
+| E2E | `tests/e2e/` | 端到端 |
+
+### 6.3 覆盖率门禁
+
+- 增量代码测试覆盖率 ≥ 85%
+- 接口回归测试必须 100% 通过
+
+---
+
+## 七、安全红线
+
+### 7.1 Hermes 工具安全
+
+必须禁用的工具：
+
+```python
+DISABLED_HERMES_TOOLS = [
+    "terminal", "execute_code", "browser", "shell",
+    "file_write", "file_delete", "file_read", "python",
+]
+```
+
+只允许注册 `lumina_marketing` 工具集。
+
+### 7.2 数据安全
+
+- 用户数据必须按 `user_id` 隔离
+- 禁止在日志中打印用户消息内容
+- 数据库查询必须使用参数化查询
+
+### 7.3 内容安全
+
+- AI 生成内容不得包含违规信息
+- 必须接入合规检测（`risk` Skill）
+
+---
+
+## 八、Feature Flag 规范
+
+所有新功能必须通过环境变量开关控制：
+
+```bash
+# 阶段 0
+CHAT_MEMORY_BACKEND=postgres
+LUMINA_ENABLE_PROGRESSIVE_GENERATION=true
+LUMINA_ENABLE_TASK_STATE=true
+
+# 阶段 2
+LUMINA_USE_VECTOR_MEMORY=false
+
+# 阶段 3
+LUMINA_UNIFIED_SYSTEM_CHAT=true
+LUMINA_ENABLE_CONTENT_RANKING_SKILL=true
+LUMINA_ENABLE_POSITIONING_MATRIX_SKILL=true
+LUMINA_ENABLE_WEEKLY_SNAPSHOT_SKILL=true
+LUMINA_UNIFIED_SYSTEM_CHAT_ONLY=false
+```
+
+- 默认必须安全（危险 toolset 一律禁用）
+- 开关变更无需重启即可生效（通过设置热重载）
+
+---
+
+## 九、文档规范
+
+- 任何架构/接口变更必须同步更新 `docs/` 下对应文档
+- 新增 Spec 必须放在 `docs/specs/`
+- 业务真源变更必须经人类 Review
+
+---
+
+## 十、反模式清单
+
+| 反模式 | 说明 | 处理方式 |
+|--------|------|----------|
+| 强制生成 | 信息不足时直接生成内容 | 使用渐进式生成检查 |
+| 失忆症 | 忘记用户历史信息 | 使用持久化记忆 |
+| 一步终结 | 完成单步后结束对话 | 使用任务状态机 |
+| 进程内记忆 | dict/list 存储持久数据 | 使用 PostgreSQL |
+| 规则驱动意图 | 仅依赖正则匹配 | 逐步引入 LLM 辅助 |
+| 硬编码流程 | 意图直接映射 Skill | 引入规划层 |
+
+---
+
+> **本文件是 Lumina 项目宪法级上下文控制。AI 在生成/修改代码时，必须严格遵守以上规则。**

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>30秒拆解一个底层思维：为什么你越努力越焦虑？ - 母稿</title>
+    <style>
+        body {
+            max-width: 720px;
+            margin: 40px auto;
+            padding: 0 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #fafafa;
+        }
+        .container {
+            background: #fff;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        h1 { font-size: 26px; margin-bottom: 12px; color: #1a1a1a; }
+        .tags { margin: 16px 0; }
+        .tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            margin-right: 8px;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        .positioning {
+            background: #f0f7ff;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #4a90d9;
+        }
+        .positioning h3 { margin-top: 0; color: #2c5aa0; font-size: 16px; }
+        article { font-size: 16px; margin-top: 24px; color: #444; }
+        .compliance {
+            color: #2e7d32;
+            font-size: 14px;
+            margin-top: 24px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        .compliance.warning {
+            color: #bf360c;
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+        .compliance.warning mark {
+            background: #ffcc80;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .cover-copy, .cta {
+            background: #f3e5f5;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin: 18px 0;
+            border-left: 4px solid #9c27b0;
+        }
+        .cover-copy h4, .cta h4 { margin-top: 0; color: #6a1b9a; font-size: 15px; }
+
+        /* 平台规范卡片 */
+        .platform-specs {
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 24px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .platform-specs h3 { margin-top: 0; color: #f57c00; font-size: 16px; }
+        .spec-section { margin: 14px 0; }
+        .spec-section h4 {
+            font-size: 14px;
+            color: #e65100;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .spec-section ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+        .spec-section li { margin: 4px 0; }
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .spec-table th, .spec-table td {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .spec-table th {
+            background: #fff3cd;
+            color: #856404;
+            font-weight: 600;
+            width: 30%;
+        }
+        .spec-table td { color: #555; }
+        .audit-warning {
+            background: #ffebee;
+            border-left-color: #ef5350;
+        }
+        .audit-warning h4 { color: #c62828; }
+
+        /* 平台字段区 */
+        .platform-fields {
+            background: #e3f2fd;
+            padding: 18px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .platform-fields h4 {
+            margin-top: 0;
+            color: #1565c0;
+            font-size: 15px;
+        }
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #bbdefb;
+            font-size: 14px;
+        }
+        .field-row:last-child { border-bottom: none; }
+        .field-label { color: #424242; font-weight: 500; }
+        .field-value { color: #1565c0; font-weight: 600; }
+        .field-warn { color: #e53935; font-weight: 600; }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+        .best-time {
+            background: #e8eaf6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: #3949ab;
+            border-left: 4px solid #5c6bc0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="positioning"><h3>🎯 账号定位</h3><p><strong>面向泛知识领域的高价值内容创作者，通过深度解析、跨界连接与实用洞察，帮助用户在信息过载时代建立系统认知，提升决策质量与生活智慧。</strong></p><p>👥 目标受众：25-45 不限</p><p>📌 内容支柱：认知升级与思维模型：解析心理学、经济学、系统科学等底层原理，提供决策框架, 高效生活与自我管理：时间管理、习惯养成、精力分配等实用方法论, 跨界洞察与趋势解读：将科技、商业、文化等领域动态转化为个人成长启示</p></div>
+        
+        <h1>30秒拆解一个底层思维：为什么你越努力越焦虑？</h1>
+        <div class="tags">
+            
+        </div>
+        <article>你有没有发现，明明每天忙得像陀螺，却感觉什么都没抓住？刷了无数干货，收藏了无数文章，焦虑感反而越来越重？<br><br>这背后，其实是一个被忽略的认知陷阱——『努力幻觉』。<br><br>心理学上有个概念叫『行动偏见』：当面对复杂问题时，大脑会本能地选择『做点什么』来缓解不适，哪怕这件事本身毫无意义。比如，疯狂囤资料、列计划、报课……这些动作让你产生『我在进步』的错觉，但实际上，你只是在用战术上的勤奋，掩盖战略上的懒惰。<br><br>真正的破局点，不是『做更多』，而是『做更少』。<br><br>这里分享一个我常用的‘三问筛选法’：<br>1. 这件事如果只做10分钟，对长期目标有影响吗？<br>2. 这件事不做，最坏的后果我能接受吗？<br>3. 这件事是‘必须做’还是‘应该做’？<br><br>把精力聚焦在‘必须做’的20%上，你会发现，80%的焦虑其实来自那些‘应该做’的噪音。<br><br>30秒，一个思维模型，帮你从『努力焦虑』切换到『精准发力』。<br><br>#认知升级 #思维模型 #反焦虑 #高效生活 #底层逻辑 #个人成长 #决策框架 #时间管理</article>
+        <div class="cover-copy"><h4>📱 封面文案</h4><p>为什么越努力越焦虑？3个问题，30秒帮你找到答案。</p></div><div class="cta"><h4>👉 行动号召</h4><p>关注我，每周拆解一个底层思维，用认知升级对抗信息焦虑。</p></div>
+        
+        
+        <div class="compliance">✅ 合规检查通过，未发现违规词</div>
+        <footer>
+            由 Lumina 智能营销助手生成 · 母稿
+        </footer>
+    </div>
+</body>
+</html>

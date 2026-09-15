@@ -4,7 +4,6 @@
 """
 
 import asyncio
-import json
 import sys
 import re
 from pathlib import Path
@@ -60,7 +59,7 @@ async def debug_xiaohongshu_page(url: str, name: str):
             # 3. 打印页面文本前1500字符（过滤掉页脚）
             # 找到前1500个有意义的字符
             clean_text = re.sub(r'[\n\r]+', '\n', body_text)
-            lines = [l.strip() for l in clean_text.split('\n') if len(l.strip()) > 3]
+            lines = [line.strip() for line in clean_text.split('\n') if len(line.strip()) > 3]
             # 过滤掉页脚法律文本
             skip_prefixes = ["ICP", "备案", "许可证", "增值电信", "网安备", "扫黄打非", "不良信息"]
             content_lines = []
@@ -69,12 +68,12 @@ async def debug_xiaohongshu_page(url: str, name: str):
                     break
                 content_lines.append(line)
             
-            print(f"\n页面内容（前30行非页脚文本）:")
+            print("\n页面内容（前30行非页脚文本）:")
             for i, line in enumerate(content_lines[:30]):
                 print(f"  [{i+1}] {line[:80]}")
             
             # 4. 分析DOM结构：查找所有span和div中的文本
-            print(f"\n--- DOM元素分析 ---")
+            print("\n--- DOM元素分析 ---")
             
             # 分析span元素
             spans = await page.query_selector_all("span")
@@ -85,7 +84,7 @@ async def debug_xiaohongshu_page(url: str, name: str):
                 if text and 5 < len(text.strip()) < 60:
                     span_texts.append(text.strip())
             if span_texts:
-                print(f"\n有意义的span文本（前15条）:")
+                print("\n有意义的span文本（前15条）:")
                 for i, t in enumerate(span_texts[:15]):
                     print(f"  [{i+1}] {t[:60]}")
             
@@ -98,7 +97,7 @@ async def debug_xiaohongshu_page(url: str, name: str):
                 if text and 5 < len(text.strip()) < 60:
                     div_texts.append(text.strip())
             if div_texts:
-                print(f"\n有意义的div文本（前15条）:")
+                print("\n有意义的div文本（前15条）:")
                 for i, t in enumerate(div_texts[:15]):
                     print(f"  [{i+1}] {t[:60]}")
             
@@ -111,7 +110,7 @@ async def debug_xiaohongshu_page(url: str, name: str):
                 if alt and len(alt.strip()) > 5:
                     img_alts.append(alt.strip())
             if img_alts:
-                print(f"\n图片alt文本（前10条）:")
+                print("\n图片alt文本（前10条）:")
                 for i, alt in enumerate(img_alts[:10]):
                     print(f"  [{i+1}] {alt[:60]}")
             
@@ -125,7 +124,7 @@ async def debug_xiaohongshu_page(url: str, name: str):
                 if text and 5 < len(text.strip()) < 60:
                     link_texts.append((text.strip(), href))
             if link_texts:
-                print(f"\n有意义的链接文本（前15条）:")
+                print("\n有意义的链接文本（前15条）:")
                 for i, (text, href) in enumerate(link_texts[:15]):
                     print(f"  [{i+1}] {text[:50]} -> {href[:40] if href else 'N/A'}")
             

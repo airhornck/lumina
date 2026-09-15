@@ -12,32 +12,46 @@ content_formats:
       max_chars: 55
       min_chars: 1
       default: "15-25"
+      required: true
+    video:
+      required: true
     video_size:
       max: "4GB"
+      required: true
     video_duration:
       max: "60分钟"
       default: "15-60秒"
+      required: true
     video_format:
       recommended: ["mp4", "mov"]
+      required: true
     video_resolution:
       recommended: "1080P(1920*1080)及以上"
       ratio: "9:16竖屏为主"
+      required: false
     content:
       default: "50-200"
+      required: true
     tags:
       max_count: 5
+      required: false
     cover:
       recommendation: "前三帧或上传封面图"
+      required: false
   图文:
     pic_num:
       max: 35
       min: 2
       default: "3-9"
+      required: true
     title:
       max_chars: 55
       min_chars: 1
       default: "15-25"
+      required: true
     content:
       default: "100-500"
+      required: true
     tags:
       max_count: 5
+      required: false

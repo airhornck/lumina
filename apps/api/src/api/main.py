@@ -1,5 +1,5 @@
 """
-Lumina 统一 API：LLM Hub + Layer2 编排（/api/v1/marketing/hub）+ Layer3 MCP（/mcp）。
+Lumina 统一 API：LLM Hub + Hermes Agent 引擎（system-chat）+ Layer3 MCP（/mcp）。
 对齐 Development_plan_v2 四层架构中的 Python 宿主进程。
 """
 
@@ -78,10 +78,13 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Lumina",
-    description="编排层 + MCP Skill Hub + 双库（YAML）",
-    version="0.2.0",
+    title="Lumina API",
+    description="Lumina 营销智能助手统一 API。以 Hermes Agent 为唯一执行引擎，涵盖 Skill 调用、Token 用量查询、Demo 工作台等能力层接口。",
+    version="0.4.0",
     lifespan=lifespan,
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
 )
 
 app.add_middleware(
@@ -93,7 +96,7 @@ app.add_middleware(
 )
 
 
-@app.get("/health")
+@app.get("/health", tags=["system"], summary="健康检查", response_model=dict)
 async def health():
     from llm_hub import get_hub
     from infra.db import get_pool
@@ -101,7 +104,7 @@ async def health():
     return {
         "status": "ok",
         "service": "lumina",
-        "architecture": "openclaw -> marketing_intelligence_hub -> orchestra -> skill_hub",
+        "architecture": "fastapi -> hermes_adapter -> hermes_agent -> lumina_tools",
         "llm_hub": get_hub() is not None,
         "mcp_skill_hub_mount": "/mcp",
         "db_pool": get_pool() is not None,
@@ -112,15 +115,24 @@ try:
     from skill_hub_app.factory import build_skill_hub_mcp
 
     _skill_mcp = build_skill_hub_mcp()
-    app.mount("/mcp", _skill_mcp.http_app(path="", transport="streamable-http"))
+    _mcp_http_app = _skill_mcp.http_app(path="/", transport="streamable-http")
+    app.mount("/mcp", _mcp_http_app)
+
+    # Starlette 不会运行被挂载子应用的 lifespan，而 fastmcp>=3.4 的
+    # streamable-http 会话管理依赖其 lifespan 初始化 task group，需并入父应用。
+    _parent_lifespan = app.router.lifespan_context
+
+    @asynccontextmanager
+    async def _combined_lifespan(_app: FastAPI):
+        async with _mcp_http_app.lifespan(_mcp_http_app):
+            async with _parent_lifespan(_app) as _state:
+                yield _state
+
+    app.router.lifespan_context = _combined_lifespan
     logger.info("FastMCP Skill Hub mounted at /mcp (streamable-http)")
 except Exception:
     logger.exception("Failed to mount /mcp Skill Hub")
 
-
-from orchestra.router import router as orchestra_router  # noqa: E402
-
-app.include_router(orchestra_router)
 
 from chat_debug.router import router as debug_chat_router  # noqa: E402
 
@@ -130,14 +142,7 @@ from services.router import router as services_router  # noqa: E402
 
 app.include_router(services_router)
 
-# Phase 1-4: 新增 Intent 和 Skill 路由
-try:
-    from api.intent_router import router as intent_router
-    app.include_router(intent_router)
-    logger.info("Intent router mounted at /intent")
-except Exception:
-    logger.exception("Failed to mount Intent router")
-
+# Phase 1-4: 新增 Skill 路由
 try:
     from api.skill_router import router as skill_router
     app.include_router(skill_router)
@@ -167,6 +172,31 @@ if _debug_static.is_dir():
         StaticFiles(directory=str(_debug_static), html=True),
         name="debug_chat_ui",
     )
+
+# 前端 SDK 静态目录（luminaChatClient.js），供调试页与外部前端引入
+_sdk_static = _repo_root / "static" / "sdk"
+if _sdk_static.is_dir():
+    app.mount(
+        "/sdk",
+        StaticFiles(directory=str(_sdk_static)),
+        name="sdk_static",
+    )
+
+# v2.0: 内容导出 StaticFiles 挂载
+_content_static = _repo_root / "static" / "content"
+_content_static.mkdir(parents=True, exist_ok=True)
+app.mount(
+    "/static/content",
+    StaticFiles(directory=str(_content_static)),
+    name="content_exports",
+)
+
+# v2.0: 导出下载路由
+try:
+    from api.export_router import router as export_router
+    app.include_router(export_router)
+except Exception:
+    logger.exception("Failed to mount Export router")
 
 
 def main() -> None:

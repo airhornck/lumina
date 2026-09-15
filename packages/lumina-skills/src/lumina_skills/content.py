@@ -73,31 +73,31 @@ async def generate_text(
             }
             prompt_parts = [
                 f"你是一位专业的社交媒体文案策划师。请为主题「{topic}」撰写一份{platform}平台的图文文案。",
-                f"",
-                f"【方法论指引】",
+                "",
+                "【方法论指引】",
                 meth_prompt,
-                f"",
-                f"【用户 DNA 与约束】",
+                "",
+                "【用户 DNA 与约束】",
                 f"DNA 参数：{json.dumps(dna, ensure_ascii=False)[:600]}",
                 f"额外约束：{constraints}",
-                f"",
-                f"【平台规范】",
+                "",
+                "【平台规范】",
                 "\n".join(platform_constraints or ["按平台通用规范创作"]),
             ]
             if dna_info:
-                prompt_parts += [f"", f"【平台内容 DNA】", "\n".join(dna_info)]
+                prompt_parts += ["", "【平台内容 DNA】", "\n".join(dna_info)]
             if audit_info:
-                prompt_parts += [f"", f"【审核合规】", "\n".join(audit_info)]
+                prompt_parts += ["", "【审核合规】", "\n".join(audit_info)]
             prompt_parts += [
-                f"",
-                f"要求：",
-                f"1. title 必须严格符合平台标题长度限制，吸引人且口语化；",
-                f"2. content 必须是完整的正文文案，带节奏感，适合直接发布；",
-                f"3. hashtags 给出 3-8 个精准标签，与主题高度相关；",
-                f"4. 严格遵守平台审核规则，禁用词一个都不能出现；",
-                f"5. 结合用户 DNA 参数调整语气和风格。",
-                f"",
-                f"请严格按以下 JSON 格式输出，不要包含任何解释性文字，只返回合法 JSON：",
+                "",
+                "要求：",
+                "1. title 必须严格符合平台标题长度限制，吸引人且口语化；",
+                "2. content 必须是完整的正文文案，带节奏感，适合直接发布；",
+                "3. hashtags 给出 3-8 个精准标签，与主题高度相关；",
+                "4. 严格遵守平台审核规则，禁用词一个都不能出现；",
+                "5. 结合用户 DNA 参数调整语气和风格。",
+                "",
+                "请严格按以下 JSON 格式输出，不要包含任何解释性文字，只返回合法 JSON：",
                 json.dumps(output_example, ensure_ascii=False, indent=2),
             ]
             prompt = "\n".join(prompt_parts)
@@ -199,35 +199,35 @@ async def generate_script(
             }
 
             prompt_parts = [
-                f"你是一位专业的短视频脚本策划师。请为以下需求生成一份完整的视频脚本方案。",
-                f"",
+                "你是一位专业的短视频脚本策划师。请为以下需求生成一份完整的视频脚本方案。",
+                "",
                 f"【主题】{topic}",
                 f"【平台】{platform}",
                 f"【目标时长】{duration}秒（口播稿字数建议控制在 {estimated_words} 字左右）",
                 f"【钩子类型】{hook_type}",
                 f"【视觉元素要求】{', '.join(visual_elements) if visual_elements else '无特殊要求'}",
-                f"",
-                f"【方法论指引】",
+                "",
+                "【方法论指引】",
                 meth_prompt,
-                f"",
-                f"【平台规范】",
+                "",
+                "【平台规范】",
                 "\n".join(platform_constraints or ["按平台通用规范创作"]),
             ]
             if dna_info:
-                prompt_parts += [f"", f"【平台内容 DNA】", "\n".join(dna_info)]
+                prompt_parts += ["", "【平台内容 DNA】", "\n".join(dna_info)]
             if audit_info:
-                prompt_parts += [f"", f"【审核合规】", "\n".join(audit_info)]
+                prompt_parts += ["", "【审核合规】", "\n".join(audit_info)]
             prompt_parts += [
-                f"",
-                f"要求：",
-                f"1. hook_script 必须是能在前3秒抓住注意力的口语化钩子，不要套路化；",
-                f"2. full_script 必须是完整的口播稿，带时间节奏感，适合直接录制；",
+                "",
+                "要求：",
+                "1. hook_script 必须是能在前3秒抓住注意力的口语化钩子，不要套路化；",
+                "2. full_script 必须是完整的口播稿，带时间节奏感，适合直接录制；",
                 f"3. shot_list 必须按 {duration} 秒合理拆分镜头，每个镜头有明确的时间戳、画面、声音、字幕；",
-                f"4. bgm_suggestion 给出具体音乐风格和情绪，不要只说'轻快电子'；",
-                f"5. caption_highlights 提取 3-5 个必须在字幕中突出的关键词；",
-                f"6. 严格遵守平台审核规则，禁用词一个都不能出现。",
-                f"",
-                f"请严格按以下 JSON 格式输出，不要包含任何解释性文字，只返回合法 JSON：",
+                "4. bgm_suggestion 给出具体音乐风格和情绪，不要只说'轻快电子'；",
+                "5. caption_highlights 提取 3-5 个必须在字幕中突出的关键词；",
+                "6. 严格遵守平台审核规则，禁用词一个都不能出现。",
+                "",
+                "请严格按以下 JSON 格式输出，不要包含任何解释性文字，只返回合法 JSON：",
                 json.dumps(output_example, ensure_ascii=False, indent=2),
             ]
             prompt = "\n".join(prompt_parts)
@@ -280,10 +280,13 @@ async def select_topic(
     platform: str,
     account_stage: str = "growth",
     hot_topics: List[str] | None = None,
+    brief: str | None = None,
 ) -> Dict[str, Any]:
     hot_topics = hot_topics or []
     news = await fetch_industry_news(category=industry, days=3)
-    nlist = news.get("news_list") or []
+    is_placeholder = news.get("data_source") == "placeholder"
+    # 占位新闻不进入生成流程（避免 LLM 基于假标题产出假大空选题）
+    nlist = [] if is_placeholder else (news.get("news_list") or [])
 
     available_methods = list_available_methodologies()
     if not available_methods:
@@ -297,17 +300,20 @@ async def select_topic(
             news_items = "\n".join(
                 f"{idx + 1}. {it.get('title', '')} - {it.get('description', '')[:100]}"
                 for idx, it in enumerate(nlist[:5])
-            )
+            ) or "（无实时行业新闻数据，请基于用户背景与平台内容生态常识推荐）"
             hot_items = "\n".join(f"- {ht}" for ht in hot_topics[:3]) or "无"
+            brief_items = (brief or "").strip() or "未提供"
 
             prompt = (
-                f"你是一位资深内容策划师。请基于以下行业新闻和用户热点，"
+                f"你是一位资深内容策划师。请基于以下信息，"
                 f"为{platform}平台的{account_stage}阶段账号生成选题推荐。\n\n"
+                f"【用户背景】\n{brief_items}\n\n"
                 f"【行业新闻】\n{news_items}\n\n"
                 f"【用户热点】\n{hot_items}\n\n"
                 f"【可用方法论】{', '.join(available_methods)}\n\n"
                 f"要求：\n"
-                f"1. 为每条新闻和每个热点各生成一个选题推荐；\n"
+                f"1. 优先结合用户背景（人群、赛道、平台）生成 3-5 个选题推荐；"
+                f"有行业新闻/热点时为每条各生成一个；\n"
                 f"2. score 为 0.0-1.0 的相关性评分；\n"
                 f"3. reason 必须具体、可操作（1-2句话），不要泛泛而谈；\n"
                 f"4. methodology 必须从可用方法论中选择最匹配的一个；\n"
@@ -331,7 +337,7 @@ async def select_topic(
         pass
 
     # 如果 LLM 成功返回且数量足够，直接使用
-    if len(llm_topics) >= len(nlist[:5]) + len(hot_topics[:3]):
+    if llm_topics and len(llm_topics) >= len(nlist[:5]) + len(hot_topics[:3]):
         topics = llm_topics
     else:
         # Fallback：按原有逻辑填充，但 reason 不再写死"占位"
@@ -367,8 +373,13 @@ async def select_topic(
 
     return {
         "recommended_topics": topics,
-        "content_calendar": [{"day_offset": j, "topic": topics[j % len(topics)]["topic"]} for j in range(min(3, max(1, len(topics))))],
-        "trend_analysis": news.get("trend_prediction", ""),
+        "content_calendar": (
+            [{"day_offset": j, "topic": topics[j % len(topics)]["topic"]} for j in range(min(3, len(topics)))]
+            if topics
+            else []
+        ),
+        "trend_analysis": "" if is_placeholder else news.get("trend_prediction", ""),
+        "data_source": news.get("data_source", "newsapi"),
         "user_id": user_id,
         "platform": platform,
     }

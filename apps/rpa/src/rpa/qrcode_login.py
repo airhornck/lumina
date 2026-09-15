@@ -238,7 +238,6 @@ class QRCodeLoginManager:
         4. 获取登录后的Cookie
         """
         from rpa.browser_grid import BrowserGrid
-        from rpa.account_crawler import RateLimiter
         
         browser_grid = BrowserGrid(max_instances=1, headless=False)  # 非无头模式方便调试
         session = self.sessions.get(session_id)

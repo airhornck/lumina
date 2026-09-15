@@ -17,7 +17,7 @@ def expand_env_value(value: Union[str, Any]) -> Any:
         return value
 
     def repl(m: re.Match[str]) -> str:
-        key, has_dash, default = m.group(1), m.group(2), m.group(3)
+        key, _, default = m.group(1), m.group(2), m.group(3)
         if key in os.environ and os.environ[key] != "":
             return os.environ[key]
         if default is not None:

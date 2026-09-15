@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any, AsyncIterator, Dict, List
 
 from services.memory_service import ServiceMemoryStore
+from services.handlers.system_chat import _memory_rows_to_session
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +67,66 @@ def _is_revision_request(message: str) -> bool:
     return any(kw in msg_lower for kw in revision_keywords)
 
 
+def _extract_title_constraint(spec: Any, content_type: str) -> str:
+    """按 content_type 匹配平台格式，显式提取 title 约束文案。"""
+    if not spec or not hasattr(spec, "content_formats") or not spec.content_formats:
+        return "标题：纯文本格式，无硬性格式限制，方便用户后期修改。"
+
+    formats = spec.content_formats
+    candidates: List[str] = []
+    matched_cfg: Dict[str, Any] | None = None
+
+    # 1. 精确匹配
+    if content_type in formats:
+        cfg = formats[content_type]
+        if isinstance(cfg, dict) and not cfg.get("note"):
+            matched_cfg = cfg
+            candidates.append(content_type)
+
+    # 2. 模糊匹配（如 "视频" 匹配 "短视频"）
+    if matched_cfg is None:
+        for fmt_name, cfg in formats.items():
+            if isinstance(cfg, dict) and cfg.get("note"):
+                continue
+            if content_type in fmt_name or fmt_name in content_type:
+                matched_cfg = cfg
+                candidates.append(fmt_name)
+                break
+
+    # 3. 兜底：找第一个有 title 配置的格式
+    if matched_cfg is None:
+        for fmt_name, cfg in formats.items():
+            if isinstance(cfg, dict) and not cfg.get("note") and "title" in cfg:
+                matched_cfg = cfg
+                candidates.append(fmt_name)
+                break
+
+    if matched_cfg is None or not isinstance(matched_cfg, dict):
+        return "标题：纯文本格式，无硬性格式限制，方便用户后期修改。"
+
+    title_cfg = matched_cfg.get("title")
+    if not isinstance(title_cfg, dict):
+        return "标题：纯文本格式，无硬性格式限制，方便用户后期修改。"
+
+    parts: List[str] = []
+    max_c = title_cfg.get("max_chars")
+    min_c = title_cfg.get("min_chars")
+    default = title_cfg.get("default")
+
+    if min_c is not None and max_c is not None:
+        parts.append(f"长度限制 {min_c}-{max_c} 个字符")
+    elif max_c is not None:
+        parts.append(f"长度限制最多 {max_c} 个字符")
+    elif min_c is not None:
+        parts.append(f"长度限制最少 {min_c} 个字符")
+
+    if default:
+        parts.append(f"推荐 {default} 字")
+
+    constraint = "，".join(parts) if parts else "纯文本格式，无硬性格式限制，方便用户后期修改"
+    return f"标题（当前内容类型为「{candidates[0] if candidates else content_type}」）：{constraint}。"
+
+
 def _build_platform_prompt(
     master_content: Dict[str, Any],
     platform: str,
@@ -100,12 +161,21 @@ def _build_platform_prompt(
                 if category and forbidden:
                     audit_lines.append(f"{category}类禁用词: {', '.join(forbidden)}")
 
-    # 格式约束
-    format_constraints: List[str] = []
+    # 格式约束：仅提取与当前 content_type 匹配的格式，并显式化 title 约束
+    title_constraint = _extract_title_constraint(spec, content_type)
+    format_constraints: List[str] = [title_constraint]
     if spec and hasattr(spec, "content_formats") and spec.content_formats:
-        for fmt_name, fmt_cfg in spec.content_formats.items():
-            if isinstance(fmt_cfg, dict) and not fmt_cfg.get("note"):
-                format_constraints.append(f"{fmt_name}: {fmt_cfg}")
+        cfg = spec.content_formats.get(content_type)
+        if cfg and isinstance(cfg, dict) and not cfg.get("note"):
+            # 补充除 title 外的其他格式约束（hashtags、pic_num 等）
+            for k, v in cfg.items():
+                if k == "title":
+                    continue
+                if isinstance(v, dict):
+                    sub_parts = [f"{sk}={sv}" for sk, sv in v.items() if sk not in ("note",)]
+                    format_constraints.append(f"{k}: {', '.join(sub_parts)}")
+                else:
+                    format_constraints.append(f"{k}: {v}")
 
     # 方法论引导
     meth_guide = ""
@@ -189,9 +259,9 @@ def _build_platform_prompt(
 正文：{master_content.get('content', '')}
 
 【输出要求】
-请输出严格符合以下 JSON 格式的内容：
+请输出严格符合以下 JSON 格式的内容，必须严格遵守上方【格式约束】中的 title 长度限制：
 {{
-  "title": "平台适配后的标题（符合平台长度限制）",
+  "title": "平台适配后的标题（严格遵守上述格式约束中的长度限制）",
   "body": "平台适配后的正文内容（符合平台风格）",
   "hashtags": ["标签1", "标签2", "标签3"],
   "hook": "如果是视频平台，写出黄金3秒钩子；图文平台可留空",
@@ -206,6 +276,7 @@ async def _generate_master_content(
     seed_topic: Dict[str, Any] | None,
     user_position: Dict[str, Any] | None,
     client: Any,
+    user_id: str,
 ) -> Dict[str, Any]:
     """基于用户消息或选题种子生成核心内容"""
 
@@ -278,6 +349,7 @@ async def _revise_platform_content(
     revision_request: str,
     platform: str,
     client: Any,
+    user_id: str,
 ) -> Dict[str, Any]:
     """基于上一轮内容和修稿要求，重新生成平台内容"""
 
@@ -365,17 +437,14 @@ async def handle_cross_platform_content_stream(
 ) -> AsyncIterator[str]:
     """
     跨平台内容生成 SSE Handler
-
-    1. 提取参数（target_platforms / seed_topic / user_position / master_content）
-    2. 若未提供核心内容，由 LLM 生成 master content
-    3. 检测是否为多轮修稿请求，若是则基于历史重新生成
-    4. 匹配最佳方法论（MethodologyRegistry）
-    5. 逐平台适配：读取 PlatformSpec → 构建 Prompt → LLM 生成 → 合规扫描 → SSE 推送
-    6. 保存完整结果到 ServiceMemoryStore
+    v2.0 复用 CrossPlatformEngine（stream=True 模式）
     """
-    service = "cross-platform-content"
+    import uuid
+    from services.content_engine.cross_platform_engine import CrossPlatformEngine
 
-    # 1. 提取参数
+    service = "cross-platform-content"
+    request_id = str(uuid.uuid4())
+
     target_platforms = (
         context.get("target_platforms")
         or _extract_platforms_from_message(message)
@@ -383,198 +452,57 @@ async def handle_cross_platform_content_stream(
     if not target_platforms:
         target_platforms = ["xiaohongshu", "douyin", "bilibili"]
 
-    seed_topic = context.get("seed_topic")
-    user_position = context.get("user_position")
-    master = context.get("master_content")
-    content_type = context.get("content_type", "图文")
-
-    # 2. 记忆处理
-    history_before = await store.list_messages(user_id, conversation_id, service)
+    # 只取最近 24 条注入 LLM（下方 _memory_rows_to_session 同值），读取量与历史总量脱钩
+    history_before = await store.list_messages(user_id, conversation_id, service, limit=24)
     await store.append(user_id, conversation_id, service, "user", message)
 
     yield _sse(
         {"type": "start", "service": service, "platforms": target_platforms}
     )
 
-    # 3. 初始化 LLM
-    from llm_hub import get_client, get_hub
-
-    hub = get_hub()
-    if not hub:
-        yield _sse(
-            {
-                "type": "error",
-                "message": "LLM Hub 未初始化。请检查服务启动日志。",
-            }
-        )
-        return
-
-    client = get_client(skill_name="cross_platform_content")
-    if not client:
-        client = get_client()
-    if not client:
-        yield _sse(
-            {
-                "type": "error",
-                "message": "无法获取 LLM 客户端。请检查 llm.yaml 配置。",
-            }
-        )
-        return
-
-    if not client.config.api_key:
-        yield _sse({"type": "error", "message": "LLM 客户端缺少 API Key。"})
-        return
-
-    # 4. 检测是否为修稿请求
-    is_revision = _is_revision_request(message)
-    previous_contents: Dict[str, Dict[str, Any]] = {}
-    if is_revision and history_before:
-        # 从历史消息中提取上一轮 assistant 的 JSON 内容
-        for row in reversed(history_before):
-            if row.get("role") == "assistant" and isinstance(row.get("content"), str):
-                try:
-                    prev = json.loads(row["content"])
-                    if isinstance(prev, dict) and "platform" in prev:
-                        previous_contents[prev["platform"]] = prev
-                except json.JSONDecodeError:
-                    continue
-                break
-
-    # 5. 若用户未提供核心内容且不是修稿，由 LLM 生成
-    if not master and not is_revision:
-        try:
-            master = await _generate_master_content(
-                message, seed_topic, user_position, client
-            )
-        except Exception as e:
-            logger.exception("Failed to generate master content")
-            yield _sse(
-                {
-                    "type": "error",
-                    "message": f"生成核心内容失败: {str(e)[:500]}",
-                }
-            )
-            return
-
-    # 6. 匹配最佳方法论
-    methodology = None
-    try:
-        from knowledge_base.methodology_registry import MethodologyRegistry
-
-        query_topic = master.get("topic", "") if master else message[:50]
-        methodology = MethodologyRegistry().find_best_match(
-            query=query_topic,
-            industry=context.get("industry", ""),
-            goal=context.get("optimization_goal", ""),
-        )
-    except Exception as e:
-        logger.warning("Methodology matching failed: %s", e)
-
-    # 7. 逐平台适配
+    engine = CrossPlatformEngine()
     full_responses: List[str] = []
 
-    for pf in target_platforms:
-        try:
-            from knowledge_base.platform_registry import PlatformRegistry
-
-            spec = PlatformRegistry().load(pf)
-
-            if is_revision and pf in previous_contents:
-                # 修稿模式：基于上一轮内容重新生成
-                content = await _revise_platform_content(
-                    previous_contents[pf],
-                    message,
-                    pf,
-                    client,
-                )
-            else:
-                # 正常生成模式
-                prompt = _build_platform_prompt(
-                    master_content=master or {"title": message[:50], "content": message},
-                    platform=pf,
-                    spec=spec,
-                    methodology=methodology,
-                    seed_topic=seed_topic,
-                    user_position=user_position,
-                    content_type=content_type,
-                )
-
-                response = await client.complete(
-                    prompt=prompt,
-                    response_format={"type": "json_object"},
-                    temperature=0.7,
-                    max_tokens=4096,
-                    _usage_meta={"user_id": user_id, "skill_name": "cross_platform_content"},
-                )
-
-                try:
-                    content = json.loads(response)
-                except json.JSONDecodeError:
-                    content = {
-                        "title": (master or {}).get("title", ""),
-                        "body": response[:2000],
-                        "hashtags": [],
-                        "hook": "",
-                        "best_time": "",
-                        "compliance_warnings": ["JSON 解析失败，返回原始文本"],
-                    }
-
-            # 合规扫描
-            audit_rules = []
-            if spec and hasattr(spec, "audit_rules"):
-                audit_rules = spec.audit_rules or []
-            full_text = content.get("title", "") + content.get("body", "")
-            warnings = _scan_compliance(full_text, audit_rules)
-            if warnings:
-                content["compliance_warnings"] = warnings
+    try:
+        async for chunk in engine.generate_stream(
+            user_id=user_id,
+            conversation_id=conversation_id,
+            message=message,
+            target_platforms=target_platforms,
+            context=context,
+            session_history=_memory_rows_to_session([
+                r for r in history_before
+                if r.get("role") in ("user", "assistant") and isinstance(r.get("content"), str)
+            ]),
+            request_id=request_id,
+        ):
+            if chunk.type == "master":
+                content = chunk.content
+                full_responses.append(json.dumps(content, ensure_ascii=False))
                 yield _sse(
-                    {
-                        "type": "warning",
-                        "platform": pf,
-                        "warnings": warnings,
-                    }
+                    {"type": "platform_chunk", "platform": "master", "content": content}
+                )
+            elif chunk.type == "platform":
+                content = chunk.content
+                if chunk.warnings:
+                    yield _sse(
+                        {
+                            "type": "warning",
+                            "platform": chunk.platform,
+                            "warnings": chunk.warnings,
+                        }
+                    )
+                full_responses.append(json.dumps(content, ensure_ascii=False))
+                yield _sse(
+                    {"type": "platform_chunk", "platform": chunk.platform, "content": content}
                 )
 
-            # 补充平台特定字段（差异化内容类型）
-            if pf == "xiaohongshu":
-                content["pic_count_tip"] = "6-9 张"
-                content["pic_ratio"] = "3:4"
-                if content_type == "视频":
-                    content["format"] = "视频"
-                    content["video_duration_tip"] = "15-60 秒"
-                else:
-                    content["format"] = content_type
-            elif pf == "douyin":
-                content["duration_tip"] = "15-60 秒"
-                content["format"] = "视频"
-                if content_type == "仅文字":
-                    content["format"] = "图文"
-            elif pf == "bilibili":
-                content["danmu_prompt"] = "在关键转折点设置弹幕互动引导"
-                content["format"] = "视频"
-                if content_type == "图文":
-                    content["format"] = "图文"
-                    content["pic_count_tip"] = "3-6 张"
+    except Exception as e:
+        logger.exception("CrossPlatformEngine stream failed")
+        yield _sse({"type": "error", "message": f"生成失败: {str(e)[:500]}"})
+        return
 
-            content["platform"] = pf
-
-            yield _sse(
-                {"type": "platform_chunk", "platform": pf, "content": content}
-            )
-            full_responses.append(json.dumps(content, ensure_ascii=False))
-
-        except Exception as e:
-            logger.exception("Platform %s generation failed", pf)
-            yield _sse(
-                {
-                    "type": "error",
-                    "platform": pf,
-                    "message": f"生成失败: {str(e)[:500]}",
-                }
-            )
-            continue
-
-    # 8. 保存到记忆
+    # 保存到记忆
     full_text = "\n\n".join(full_responses)
     if full_text:
         await store.append(
@@ -586,5 +514,6 @@ async def handle_cross_platform_content_stream(
             "type": "done",
             "total_platforms": len(target_platforms),
             "full_length": len(full_text),
+            "payload": {"reply": full_text, "platforms": target_platforms},
         }
     )

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>为什么你的学习效率总比别人低？3个底层逻辑让你1小时顶3小时 - 母稿</title>
+    <style>
+        body {
+            max-width: 720px;
+            margin: 40px auto;
+            padding: 0 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #fafafa;
+        }
+        .container {
+            background: #fff;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        h1 { font-size: 26px; margin-bottom: 12px; color: #1a1a1a; }
+        .tags { margin: 16px 0; }
+        .tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            margin-right: 8px;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        .positioning {
+            background: #f0f7ff;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #4a90d9;
+        }
+        .positioning h3 { margin-top: 0; color: #2c5aa0; font-size: 16px; }
+        article { font-size: 16px; margin-top: 24px; color: #444; }
+        .compliance {
+            color: #2e7d32;
+            font-size: 14px;
+            margin-top: 24px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        .compliance.warning {
+            color: #bf360c;
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+        .compliance.warning mark {
+            background: #ffcc80;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .cover-copy, .cta {
+            background: #f3e5f5;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin: 18px 0;
+            border-left: 4px solid #9c27b0;
+        }
+        .cover-copy h4, .cta h4 { margin-top: 0; color: #6a1b9a; font-size: 15px; }
+
+        /* 平台规范卡片 */
+        .platform-specs {
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 24px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .platform-specs h3 { margin-top: 0; color: #f57c00; font-size: 16px; }
+        .spec-section { margin: 14px 0; }
+        .spec-section h4 {
+            font-size: 14px;
+            color: #e65100;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .spec-section ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+        .spec-section li { margin: 4px 0; }
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .spec-table th, .spec-table td {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .spec-table th {
+            background: #fff3cd;
+            color: #856404;
+            font-weight: 600;
+            width: 30%;
+        }
+        .spec-table td { color: #555; }
+        .audit-warning {
+            background: #ffebee;
+            border-left-color: #ef5350;
+        }
+        .audit-warning h4 { color: #c62828; }
+
+        /* 平台字段区 */
+        .platform-fields {
+            background: #e3f2fd;
+            padding: 18px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .platform-fields h4 {
+            margin-top: 0;
+            color: #1565c0;
+            font-size: 15px;
+        }
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #bbdefb;
+            font-size: 14px;
+        }
+        .field-row:last-child { border-bottom: none; }
+        .field-label { color: #424242; font-weight: 500; }
+        .field-value { color: #1565c0; font-weight: 600; }
+        .field-warn { color: #e53935; font-weight: 600; }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+        .best-time {
+            background: #e8eaf6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: #3949ab;
+            border-left: 4px solid #5c6bc0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="positioning"><h3>🎯 账号定位</h3><p><strong>面向泛领域内容消费者的通用型知识服务账号，以结构化、高信息密度的方式提供跨学科洞察与实用方法论，帮助用户在信息碎片化时代高效获取可迁移的认知资产。</strong></p><p>👥 目标受众：20-45 不限</p><p>📌 内容支柱：跨学科思维模型与底层逻辑拆解, 高信息密度的方法论与工具分享, 热点事件的多维度冷思考与知识延伸</p></div>
+        
+        <h1>为什么你的学习效率总比别人低？3个底层逻辑让你1小时顶3小时</h1>
+        <div class="tags">
+            
+        </div>
+        <article>你刷了100篇干货，却依然感觉大脑空空？这不是你不够努力，而是你的学习系统缺少了3个关键模块。<br><br>**1. 信息分拣器：别让大脑当硬盘**<br>大脑不是用来存储的，而是用来思考的。遇到任何新知识，先问三个问题：它能解释什么现象？它和我知道的什么冲突？我能用它解决什么具体问题？这就是著名的“费曼学习法”的变体——用问题筛子过滤信息，避免无效囤积。<br><br>**2. 概念钩子：跨学科连接**<br>一个概念在单一领域是孤岛，在多个领域就是桥梁。比如“复利效应”不只存在于金融，也适用于技能积累和人脉经营。当你把“熵增定律”理解成房间变乱、组织效率下降、甚至感情变淡的本质时，你就拥有了一个万能分析工具。<br><br>**3. 输出倒逼输入：30%法则**<br>别等到学完再输出。学到一个新模型，立刻尝试用三句话讲给一个外行听，或者写一段100字的小结。这能倒逼你抓住核心，同时发现理解漏洞。研究表明，主动输出能让知识留存率从10%提升到90%。<br><br>这三个模块，本质上是在帮你的大脑建立“认知操作系统”，而不是塞满碎片。下次学习前，先问自己：我是在收集信息，还是在升级系统？<br><br>#认知升级 #学习方法 #费曼学习法 #复利思维 #熵增定律 #知识管理 #高效学习 #底层逻辑</article>
+        <div class="cover-copy"><h4>📱 封面文案</h4><p>1小时顶3小时的学习系统</p></div><div class="cta"><h4>👉 行动号召</h4><p>收藏这份底层框架，下次学习前拿出来对照。你还有什么提升效率的独门技巧？评论区分享，一起升级认知系统。</p></div>
+        
+        
+        <div class="compliance">✅ 合规检查通过，未发现违规词</div>
+        <footer>
+            由 Lumina 智能营销助手生成 · 母稿
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,7 +1,6 @@
 import sys
 from pathlib import Path
 
-import pytest
 from fastapi.testclient import TestClient
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,7 +17,7 @@ for p in (
 ):
     sys.path.insert(0, str(p))
 
-from api.main import app
+from api.main import app  # noqa: E402
 
 client = TestClient(app)
 
@@ -42,24 +41,6 @@ def test_debug_memory_crud():
     assert r.json().get("count") == 0
 
 
-def test_system_chat_stream_uses_orchestra():
-    r = client.post(
-        "/api/v1/debug/chat/stream",
-        json={
-            "capability": "system_chat",
-            "user_id": "u_orch",
-            "conversation_id": "c_orch",
-            "message": "账号诊断",
-            "platform": "xiaohongshu",
-            "hub_context": {"industry": "beauty"},
-        },
-    )
-    assert r.status_code == 200
-    assert "text/event-stream" in (r.headers.get("content-type") or "")
-    assert "marketing_orchestra" in r.text
-    assert "layer" in r.text
-
-
 def test_debug_stream_returns_event_stream():
     r = client.post(
         "/api/v1/debug/chat/stream",
@@ -80,3 +61,9 @@ def test_debug_static_mounted():
     r = client.get("/debug/chat/index.html")
     assert r.status_code == 200
     assert b"Lumina" in r.content
+
+
+def test_sdk_static_mounted():
+    r = client.get("/sdk/luminaChatClient.js")
+    assert r.status_code == 200
+    assert b"LuminaChatClient" in r.content

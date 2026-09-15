@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>为什么你总觉得时间不够用？一个反直觉的真相 - 母稿</title>
+    <style>
+        body {
+            max-width: 720px;
+            margin: 40px auto;
+            padding: 0 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #fafafa;
+        }
+        .container {
+            background: #fff;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        h1 { font-size: 26px; margin-bottom: 12px; color: #1a1a1a; }
+        .tags { margin: 16px 0; }
+        .tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            margin-right: 8px;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        .positioning {
+            background: #f0f7ff;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #4a90d9;
+        }
+        .positioning h3 { margin-top: 0; color: #2c5aa0; font-size: 16px; }
+        article { font-size: 16px; margin-top: 24px; color: #444; }
+        .compliance {
+            color: #2e7d32;
+            font-size: 14px;
+            margin-top: 24px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        .compliance.warning {
+            color: #bf360c;
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+        .compliance.warning mark {
+            background: #ffcc80;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .cover-copy, .cta {
+            background: #f3e5f5;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin: 18px 0;
+            border-left: 4px solid #9c27b0;
+        }
+        .cover-copy h4, .cta h4 { margin-top: 0; color: #6a1b9a; font-size: 15px; }
+
+        /* 平台规范卡片 */
+        .platform-specs {
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 24px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .platform-specs h3 { margin-top: 0; color: #f57c00; font-size: 16px; }
+        .spec-section { margin: 14px 0; }
+        .spec-section h4 {
+            font-size: 14px;
+            color: #e65100;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .spec-section ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+        .spec-section li { margin: 4px 0; }
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .spec-table th, .spec-table td {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .spec-table th {
+            background: #fff3cd;
+            color: #856404;
+            font-weight: 600;
+            width: 30%;
+        }
+        .spec-table td { color: #555; }
+        .audit-warning {
+            background: #ffebee;
+            border-left-color: #ef5350;
+        }
+        .audit-warning h4 { color: #c62828; }
+
+        /* 平台字段区 */
+        .platform-fields {
+            background: #e3f2fd;
+            padding: 18px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .platform-fields h4 {
+            margin-top: 0;
+            color: #1565c0;
+            font-size: 15px;
+        }
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #bbdefb;
+            font-size: 14px;
+        }
+        .field-row:last-child { border-bottom: none; }
+        .field-label { color: #424242; font-weight: 500; }
+        .field-value { color: #1565c0; font-weight: 600; }
+        .field-warn { color: #e53935; font-weight: 600; }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+        .best-time {
+            background: #e8eaf6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: #3949ab;
+            border-left: 4px solid #5c6bc0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="positioning"><h3>🎯 账号定位</h3><p><strong>一个面向泛知识、泛生活领域的通用型内容账号，致力于通过高信息密度、强实用性和适度娱乐化的内容，满足不同受众在知识拓展、生活优化与情绪共鸣上的多元需求，成为用户日常信息流中的‘轻盈补给站’。</strong></p><p>👥 目标受众：18-45 不限</p><p>📌 内容支柱：泛知识速递：用3-5分钟解析一个冷知识、社会现象或科技趋势，强调‘看完就能用’或‘看完能聊’, 生活优化指南：涵盖效率工具、时间管理、健康小习惯、家居整理等可操作性强的建议, 情绪轻疗愈：通过书影音推荐、金句解读、微故事或轻松话题，提供情绪价值与共鸣感</p></div>
+        
+        <h1>为什么你总觉得时间不够用？一个反直觉的真相</h1>
+        <div class="tags">
+            <span class="tag">#时间管理</span><span class="tag">#效率提升</span><span class="tag">#反焦虑</span><span class="tag">#生活优化</span><span class="tag">#知识速递</span><span class="tag">#碎片时间</span><span class="tag">#自律</span><span class="tag">#思维升级</span>
+        </div>
+        <article>你有没有发现，同样是24小时，有的人能完成工作、健身、读书、社交，而你却连刷手机的时间都不够？<br><br>今天聊一个被大多数人忽略的时间管理真相：**时间不是被“节省”出来的，而是被“创造”出来的。**<br><br>我们常陷入一个误区，以为时间管理就是“把日程排满”，然后用各种效率工具去填满每一分钟。结果呢？越填越累，越填越焦虑。<br><br>真正的解法是：**放弃“填满时间”的执念，转而“设计时间”。**<br><br>怎么做？给你一个立刻就能用的方法——**“时间块法则”。**<br><br>1. **每天只规划3个关键任务**（不是10个）。把它们放在你精力最充沛的时段（比如早起后2小时），这3件事做完，这一天就算成功。<br>2. **把剩余时间“留白”**。不规划具体内容，只留出“处理杂事”“休息”“意外事件”的缓冲。<br>3. **强制设置“关机时间”**。每天固定1小时完全不看手机，只做一件让你进入“心流”的事——比如读10页书、写一段日记、甚至只是发呆。<br><br>为什么有效？因为大脑在“填满”模式下会持续消耗意志力，而在“留白”模式下反而能恢复专注力。你不需要更自律，只需要更聪明地设计你的时间结构。<br><br>**记忆点**：时间不是挤出来的，是设计出来的。<br><br>今天试试：从明天开始，只规划3件最重要的事，剩下的时间，留给自己。<br><br>#时间管理 #效率提升 #反焦虑 #生活优化 #知识速递 #碎片时间 #自律 #思维升级</article>
+        <div class="cover-copy"><h4>📱 封面文案</h4><p>你缺的不是时间，是时间设计能力</p></div><div class="cta"><h4>👉 行动号召</h4><p>评论区聊聊：你每天最想完成的3件事是什么？</p></div>
+        
+        
+        <div class="compliance">✅ 合规检查通过，未发现违规词</div>
+        <footer>
+            由 Lumina 智能营销助手生成 · 母稿
+        </footer>
+    </div>
+</body>
+</html>

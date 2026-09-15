@@ -6,13 +6,28 @@ from datetime import date, timedelta
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, HTTPException, Query
+from pydantic import BaseModel, Field
 
 from services.usage_service import get_daily_stats, get_summary, get_unified_stats
 
 router = APIRouter(prefix="/api/v1/usage", tags=["usage"])
 
 
-@router.get("/stats")
+class UsageData(BaseModel):
+    total_prompt_tokens: Optional[int] = Field(None, description="累计 prompt tokens")
+    total_completion_tokens: Optional[int] = Field(None, description="累计 completion tokens")
+    total_tokens: Optional[int] = Field(None, description="累计总 tokens")
+    call_count: Optional[int] = Field(None, description="累计调用次数")
+    daily: Optional[list[dict[str, Any]]] = Field(None, description="按天明细（传入日期范围时）")
+
+
+class UsageResponse(BaseModel):
+    code: int = Field(..., description="业务状态码，0 表示成功")
+    message: str = Field(..., description="状态描述")
+    data: Any = Field(..., description="返回数据")
+
+
+@router.get("/stats", response_model=UsageResponse, summary="统一查询用户 token 用量")
 async def usage_stats(
     user_id: str = Query(..., min_length=1, description="用户唯一标识"),
     start_date: Optional[date] = Query(default=None, description="查询起始日期（YYYY-MM-DD），与 end_date 同时提供时返回按天明细"),
@@ -38,7 +53,7 @@ async def usage_stats(
     return {"code": 0, "message": "success", "data": result}
 
 
-@router.get("/summary")
+@router.get("/summary", response_model=UsageResponse, summary="获取用户累计 token 用量摘要")
 async def usage_summary(
     user_id: str = Query(..., min_length=1, description="用户唯一标识"),
 ) -> Dict[str, Any]:
@@ -47,7 +62,7 @@ async def usage_summary(
     return {"code": 0, "message": "success", "data": result}
 
 
-@router.get("/daily")
+@router.get("/daily", response_model=UsageResponse, summary="按天汇总用户的 token 用量")
 async def usage_daily(
     user_id: str = Query(..., min_length=1, description="用户唯一标识"),
     start_date: date = Query(..., description="查询起始日期（YYYY-MM-DD）"),

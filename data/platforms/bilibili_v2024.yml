@@ -11,18 +11,67 @@ content_formats:
     title:
       max_chars: 40
       default: "30以内"
+      required: true
     template_id:
       options: [3, 4, 5]
       default: 5
       description: "3=封面三图、4=封面单图/无封面、5=平台默认封面"
+      required: false
     summary:
       range: "250-300"
+      required: false
     content:
       min_chars: 200
       max_chars: 40000
+      required: true
     tags:
       max_count: 10
+      required: false
   图文:
-    note: "暂未配置详细规则"
+    title:
+      max_chars: 40
+      min_chars: 1
+      default: "20-30"
+      required: true
+    content:
+      min_chars: 100
+      max_chars: 5000
+      default: "500-1500"
+      required: true
+    tags:
+      max_count: 10
+      required: false
+    pic_num:
+      min: 1
+      max: 20
+      default: "3-9"
+      required: true
   视频:
-    note: "暂未配置详细规则"
+    title:
+      max_chars: 80
+      min_chars: 1
+      default: "30-50"
+      required: true
+    video:
+      required: true
+    video_size:
+      max: "20GB"
+      required: true
+    video_duration:
+      max: "10小时"
+      default: "1-10分钟"
+      required: true
+    video_format:
+      recommended: ["mp4", "mov", "flv"]
+      required: true
+    video_resolution:
+      recommended: "1080P(1920*1080)及以上"
+      required: false
+    content:
+      min_chars: 50
+      max_chars: 2000
+      default: "100-500"
+      required: true
+    tags:
+      max_count: 10
+      required: false

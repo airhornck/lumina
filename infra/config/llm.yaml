@@ -10,8 +10,8 @@ llm_pool:
 
   deepseek-v3:
     provider: deepseek
-    model: deepseek-chat
-    api_key: ${DEEPSEEK_API_KEY:sk-cef65d7e728d43d79a4a23d642faa6d0}
+    model: ${LUMINA_HERMES_MODEL:-deepseek-v4-flash}
+    api_key: ${DEEPSEEK_API_KEY:}
     api_base: ${DEEPSEEK_API_BASE:https://api.deepseek.com}
     temperature: 0.5
     max_tokens: 4096
@@ -50,6 +50,8 @@ skill_config:
   orchestra_chat:
     llm: deepseek-v3
   orchestra_nlg:
+    llm: deepseek-v3
+  cross_platform_content:
     llm: deepseek-v3
 
 fallback_enabled: true

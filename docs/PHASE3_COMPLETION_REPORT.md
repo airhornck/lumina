@@ -1,5 +1,7 @@
 # 第三阶段开发完成报告
 
+> **⚠️ 架构决策更新（2026-07-15）**：本文所述意图识别/规则编排相关内容已决策退役，聊天链路统一由 Hermes LLM planner 承担，详见 `docs/specs/phase4_unified_planner_deprecation_spec.md`。本文保留为历史记录，内容不再维护。
+
 ## 开发概览
 
 **阶段名称**: Orchestra 编排层 + OpenClaw Gateway 集成  

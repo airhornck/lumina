@@ -1,0 +1,61 @@
+# Lumina Pre-commit 配置
+# 安装：pre-commit install
+# 手动运行：pre-commit run --all-files
+
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: ruff check
+        language: system
+        types: [python]
+        files: ^(apps/api/src/services/hermes_|apps/api/src/chat_debug/router\.py|tests/hermes/|packages/lumina-skills/src/lumina_skills/llm_utils\.py)
+        pass_filenames: true
+
+      - id: mypy
+        name: mypy
+        entry: mypy
+        language: system
+        types: [python]
+        files: ^(apps/api/src/services/hermes_|apps/api/src/chat_debug/router\.py|tests/hermes/)
+        args:
+          - --ignore-missing-imports
+          - --follow-imports=skip
+        pass_filenames: true
+
+      - id: pytest
+        name: pytest
+        entry: python -m pytest
+        language: system
+        types: [python]
+        args:
+          - tests/chat_debug/test_memory_postgres.py
+          - tests/chat_debug/test_memory_postgres_mock.py
+          - tests/orchestra/test_progressive_generation.py
+          - tests/orchestra/test_task_state.py
+          - tests/orchestra/test_task_state_mock.py
+          - tests/interface_regression/test_debug_chat_stream.py
+          - -v
+        pass_filenames: false
+        always_run: true
+
+      - id: pytest-coverage
+        name: pytest-coverage
+        entry: python -m pytest
+        language: system
+        types: [python]
+        args:
+          - tests/chat_debug/test_memory_postgres.py
+          - tests/chat_debug/test_memory_postgres_mock.py
+          - tests/orchestra/test_progressive_generation.py
+          - tests/orchestra/test_task_state.py
+          - tests/orchestra/test_task_state_mock.py
+          - tests/interface_regression/test_debug_chat_stream.py
+          - --cov=chat_debug.memory_postgres
+          - --cov=orchestra.required_fields
+          - --cov=orchestra.intent_guards
+          - --cov=orchestra.task_state
+          - --cov-fail-under=85
+        pass_filenames: false
+        always_run: true

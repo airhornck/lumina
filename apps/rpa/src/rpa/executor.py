@@ -264,4 +264,4 @@ class RPAExecutor:
         return {"success": True, "data": data, "count": len(data)}
 
 
-import random  # 用于输入延迟
+import random  # noqa: E402 用于输入延迟

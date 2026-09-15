@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>为什么你越学越焦虑？因为你在用‘收藏’代替‘思考’ - 母稿</title>
+    <style>
+        body {
+            max-width: 720px;
+            margin: 40px auto;
+            padding: 0 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #fafafa;
+        }
+        .container {
+            background: #fff;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        h1 { font-size: 26px; margin-bottom: 12px; color: #1a1a1a; }
+        .tags { margin: 16px 0; }
+        .tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            margin-right: 8px;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        .positioning {
+            background: #f0f7ff;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #4a90d9;
+        }
+        .positioning h3 { margin-top: 0; color: #2c5aa0; font-size: 16px; }
+        article { font-size: 16px; margin-top: 24px; color: #444; }
+        .compliance {
+            color: #2e7d32;
+            font-size: 14px;
+            margin-top: 24px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        .compliance.warning {
+            color: #bf360c;
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+        .compliance.warning mark {
+            background: #ffcc80;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .cover-copy, .cta {
+            background: #f3e5f5;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin: 18px 0;
+            border-left: 4px solid #9c27b0;
+        }
+        .cover-copy h4, .cta h4 { margin-top: 0; color: #6a1b9a; font-size: 15px; }
+
+        /* 平台规范卡片 */
+        .platform-specs {
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 24px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .platform-specs h3 { margin-top: 0; color: #f57c00; font-size: 16px; }
+        .spec-section { margin: 14px 0; }
+        .spec-section h4 {
+            font-size: 14px;
+            color: #e65100;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .spec-section ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+        .spec-section li { margin: 4px 0; }
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .spec-table th, .spec-table td {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .spec-table th {
+            background: #fff3cd;
+            color: #856404;
+            font-weight: 600;
+            width: 30%;
+        }
+        .spec-table td { color: #555; }
+        .audit-warning {
+            background: #ffebee;
+            border-left-color: #ef5350;
+        }
+        .audit-warning h4 { color: #c62828; }
+
+        /* 平台字段区 */
+        .platform-fields {
+            background: #e3f2fd;
+            padding: 18px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .platform-fields h4 {
+            margin-top: 0;
+            color: #1565c0;
+            font-size: 15px;
+        }
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #bbdefb;
+            font-size: 14px;
+        }
+        .field-row:last-child { border-bottom: none; }
+        .field-label { color: #424242; font-weight: 500; }
+        .field-value { color: #1565c0; font-weight: 600; }
+        .field-warn { color: #e53935; font-weight: 600; }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+        .best-time {
+            background: #e8eaf6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: #3949ab;
+            border-left: 4px solid #5c6bc0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="positioning"><h3>🎯 账号定位</h3><p><strong>面向泛知识领域的高质量内容创作者，通过跨学科视角与深度洞察，为追求认知升级的受众提供兼具启发性与实用性的信息价值，打造理性与感性平衡的通用知识IP。</strong></p><p>👥 目标受众：22-40 男女不限</p><p>📌 内容支柱：认知升级：心理学、逻辑学、决策科学等底层思维模型解读, 跨学科洞察：将历史、科技、商业、人文等领域的知识进行关联分析, 实用方法论：提供可应用于学习、工作、生活的通用策略与工具</p></div>
+        
+        <h1>为什么你越学越焦虑？因为你在用‘收藏’代替‘思考’</h1>
+        <div class="tags">
+            <span class="tag">##认知升级</span><span class="tag">##信息过载</span><span class="tag">##思维模型</span><span class="tag">##知识管理</span><span class="tag">##深度学习</span><span class="tag">##费曼学习法</span><span class="tag">##跨学科思考</span><span class="tag">##反焦虑</span>
+        </div>
+        <article>你有没有这样的体验：收藏夹里躺着几十篇‘必读’文章，书架堆着没拆封的‘神作’，深夜刷到干货视频立刻点‘保存’，然后……再也没有打开过。<br><br>这不是懒惰，而是大脑在‘信息过载’下的自我保护机制。我们误以为‘拥有’知识就等于‘掌握’知识，于是疯狂囤积，却从未真正消化。<br><br>**问题的根源在于：我们缺少‘连接’的能力。**<br><br>认知科学告诉我们，孤立的知识点就像散落的珍珠，只有用‘思维框架’这根线串起来，才能形成项链。比如，当你学到一个心理学概念‘确认偏误’，如果只记住定义，它很快会被遗忘；但如果你把它和‘为什么我们总爱看支持自己观点的新闻’联系起来，再联想到‘如何用这个原理避免投资失误’，它就变成了可迁移的思维工具。<br><br>**如何打破‘收藏即学会’的幻觉？**<br><br>1. **‘费曼输出法’**：每学一个新概念，用一句话向一个外行解释清楚。说不明白，说明你没真懂。<br>2. **‘跨学科搭桥’**：刻意寻找不同领域间的相似结构。比如，生物学的‘进化论’可以解释商业的‘适者生存’，心理学的‘损失厌恶’能解释为什么人们更怕亏钱而非想赚钱。<br>3. **‘信息断食’**：每周固定一天不摄入新信息，只整理、反思、连接旧知识。<br><br>真正的高手，不是知道最多的，而是能把零散信息编织成网状认知的人。下次再遇到‘必读’内容，先问自己：这个知识点，能和我已有的哪个框架连接？如果不能，果断跳过。<br><br>**你的‘认知网络’，比你的‘收藏夹’重要一万倍。**</article>
+        <div class="cover-copy"><h4>📱 封面文案</h4><p>收藏不等于学会，连接才是关键。</p></div><div class="cta"><h4>👉 行动号召</h4><p>如果你也想从‘知识囤积者’变成‘思维连接者’，关注我，每周拆解一个跨学科思维工具。</p></div>
+        
+        
+        <div class="compliance">✅ 合规检查通过，未发现违规词</div>
+        <footer>
+            由 Lumina 智能营销助手生成 · 母稿
+        </footer>
+    </div>
+</body>
+</html>

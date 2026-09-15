@@ -5,6 +5,8 @@
 > **目的**: 明确项目中最稳定的核心层，指导后续需求在**不触碰核心架构**的前提下正确扩展  
 > **原则**: 核心层只修 bug，不承载业务变化；所有业务变化通过"扩展点"吸收
 
+> **⚠️ 架构决策更新（2026-07-15）**：聊天链路已决策统一为 Hermes LLM planner 架构，本文所述意图识别/规则编排体系将于 Phase 4 P2 阶段退役，详见 `docs/specs/phase4_unified_planner_deprecation_spec.md`。
+
 ---
 
 ## 1. 核心架构全景
@@ -47,6 +49,8 @@
 │  └──────────────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
+
+> **注（2026-07-15）**：图中"intent 引擎"、`config/intent_rules.yaml` 与 `config/agents.yaml` 已决策退役，将于 Phase 4 P2 移除（见 `docs/specs/phase4_unified_planner_deprecation_spec.md` §7）；图中其余分层为现行架构，目标架构以该 SPEC §3 为准。
 
 > **上图规则**：所有新增需求应该发生在"上层应用 / 业务扩展层"，通过核心层暴露的"扩展点"接入，**不应侵入核心层内部逻辑**。
 
@@ -255,11 +259,14 @@ class MarketingHubBody(BaseModel):
 
 **正确扩展方式**
 ```python
-# ✅ 正确：新增意图正则 → 在 orchestra/core.py 的 _classify_intent 中增加分支
+# ⚠️ 已弃用：新增意图正则 → 在 orchestra/core.py 的 _classify_intent 中增加分支
+#    （现行 _classify_intent 分支在 Phase 4 P2 前仅允许修复性维护，禁止新增分支）
+# ✅ 正确（目标态）：新增业务能力 → 注册 Hermes Tool
+#    （见 docs/specs/phase4_unified_planner_deprecation_spec.md §五 G5 与 §3.3）
 # ✅ 正确：新增矩阵意图 → 在 _resolve_matrix_intent 中增加正则匹配
 # ✅ 正确：新增 SOP → 在 data/methodologies/ 新增 YAML，通过 compile_methodology_dag 自动编译
 
-# ❌ 错误：修改 process() 的返回结构、删除 _classify_intent 中的现有分支
+# ❌ 错误：修改 process() 的返回结构、删除 _classify_intent 中的现有分支（P2 统一移除）
 ```
 
 ---
@@ -433,8 +440,8 @@ compile_methodology_dag(
 | 文件 | 职责 | 消费者 |
 |------|------|--------|
 | `llm.yaml` | LLM 池、Skill/Component 分配、策略优先级、Fallback 顺序 | `llm_hub.hub.LLMHub.from_config_file()` |
-| `intent_rules.yaml` | L1 规则引擎的纯数据配置（正则规则、动态阈值、意图切换检测） | `apps/intent/src/intent/l1_rules.py` |
-| `agents.yaml` | Agent 集群拓扑（单账号/矩阵/通用工具）、Skill 绑定、触发词、编排规则 | 设计契约（当前 orchestra 部分硬编码，但 YAML 是权威来源） |
+| `intent_rules.yaml` | L1 规则引擎的纯数据配置（正则规则、动态阈值、意图切换检测）（已决策退役，Phase 4 P2 移除，见 phase4 spec §7） | `apps/intent/src/intent/l1_rules.py` |
+| `agents.yaml` | Agent 集群拓扑（单账号/矩阵/通用工具）、Skill 绑定、触发词、编排规则（已决策退役，Phase 4 P2 移除，见 phase4 spec §7） | 设计契约（当前 orchestra 部分硬编码，但 YAML 是权威来源） |
 
 **为什么它是稳定核心**
 - `main.py` lifespan 加载 `llm.yaml`，失败则 Skill 层无 LLM
@@ -488,8 +495,9 @@ compile_methodology_dag(
 | **新增一个内容方法论** | 新建 `data/methodologies/xxx.yml`（零代码变更） | `MethodologyRegistry` 核心逻辑、`sop-engine/compiler.py` |
 | **新增一个平台规范** | 新建 `data/platforms/xxx.yml`（零代码变更） | `PlatformRegistry.load()` 逻辑、`PlatformSpec` 模型删除字段 |
 | **新增一个 LLM 模型** | 修改 `config/llm.yaml` 的 `llm_pool` / `skill_config` | `LLMClient` 类、`hub.py` 的 `_resolve_config()` |
-| **新增一个 Agent** | 修改 `config/agents.yaml` 定义拓扑 | `orchestra/core.py` 的硬编码路由（应尽量迁移到配置） |
-| **新增一个意图分类规则** | 修改 `config/intent_rules.yaml` 新增正则 | `L1RuleEngine` 的解析逻辑、`_classify_intent` 的正则删除 |
+| **新增业务能力**（目标态） | 注册 Hermes Tool（见 `docs/specs/phase4_unified_planner_deprecation_spec.md`），由 LLM planner 自主选用 | — |
+| ~~**新增一个 Agent**~~（已弃用） | ~~修改 `config/agents.yaml` 定义拓扑~~（Phase 4 P2 退役，目标态见上一行） | `orchestra/core.py` 的硬编码路由（应尽量迁移到配置） |
+| ~~**新增一个意图分类规则**~~（已弃用） | ~~修改 `config/intent_rules.yaml` 新增正则~~（Phase 4 P2 退役，目标态见首行） | `L1RuleEngine` 的解析逻辑、`_classify_intent` 的正则删除 |
 | **替换记忆存储后端** | 实现相同接口的新 backend 类，注入 `ServiceMemoryStore` | `ServiceMemoryStore` 方法签名、`ChatMemoryStore` 的 dict 结构 |
 | **新增多轮对话上下文** | 使用现有 `ServiceMemoryStore.append/list_messages` | 记忆隔离键格式 `{conversation_id}::{service}` |
 

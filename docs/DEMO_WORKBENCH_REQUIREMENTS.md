@@ -1,5 +1,7 @@
 # Demo 创作工作台需求文档
 
+> **⚠️ 架构决策更新（2026-07-15）**：本文约束的对象组件（`MarketingOrchestra.process()`/`_classify_intent()` 等）已决策于 Phase 4 P2 退役，相关约束条款届时自动失效，详见 `docs/specs/phase4_unified_planner_deprecation_spec.md`。
+
 > **状态**: 待评审  
 > **版本**: v3.1（开发完成 — RPA 真实数据 + LLM 增强，全部 4 Phase 已验证）  
 > **日期**: 2026-04-21  

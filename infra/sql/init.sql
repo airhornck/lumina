@@ -4,6 +4,7 @@
 -- 创建扩展
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pg_trgm";  -- 用于文本搜索
+CREATE EXTENSION IF NOT EXISTS "vector";   -- 阶段 2：向量记忆
 
 -- 用户表
 CREATE TABLE IF NOT EXISTS users (
@@ -106,6 +107,48 @@ CREATE TABLE IF NOT EXISTS knowledge_base (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 账号定位表（v2.0 新增）
+CREATE TABLE IF NOT EXISTS account_profiles (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id TEXT NOT NULL,
+    account_id TEXT,
+    platform VARCHAR(50),
+    content_types TEXT[],
+    style_tags TEXT[],
+    audience_sketch TEXT,
+    positioning_statement TEXT,
+    target_persona JSONB,
+    content_pillars TEXT[],
+    differentiation TEXT,
+    inferred_from TEXT[],
+    confidence FLOAT DEFAULT 0.8,
+    is_user_confirmed BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(user_id, platform)
+);
+
+CREATE INDEX IF NOT EXISTS idx_acc_profiles_user ON account_profiles(user_id, platform);
+
+-- HTML 导出元数据表（v2.0 新增）
+CREATE TABLE IF NOT EXISTS content_exports (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id TEXT NOT NULL,
+    conversation_id TEXT NOT NULL,
+    request_id TEXT NOT NULL,
+    content_id UUID REFERENCES contents(id) ON DELETE CASCADE,
+    export_type VARCHAR(50) NOT NULL,
+    article_title TEXT,
+    file_path TEXT NOT NULL,
+    file_size INTEGER,
+    raw_payload JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_exports_user ON content_exports(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_exports_conv ON content_exports(conversation_id);
+CREATE INDEX IF NOT EXISTS idx_exports_request ON content_exports(request_id);
+
 -- RPA 任务记录表
 CREATE TABLE IF NOT EXISTS rpa_tasks (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -189,3 +232,22 @@ CREATE TRIGGER update_contents_updated_at BEFORE UPDATE ON contents
 
 CREATE TRIGGER update_knowledge_base_updated_at BEFORE UPDATE ON knowledge_base
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- 阶段 2：向量记忆表
+CREATE TABLE IF NOT EXISTS memory_embeddings (
+    id BIGSERIAL PRIMARY KEY,
+    user_id VARCHAR(128) NOT NULL,
+    memory_type VARCHAR(64) NOT NULL,
+    content TEXT NOT NULL,
+    embedding VECTOR(1536),
+    metadata JSONB DEFAULT '{}',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_memory_embeddings_user_type
+    ON memory_embeddings (user_id, memory_type);
+
+CREATE INDEX IF NOT EXISTS idx_memory_embeddings_vector
+    ON memory_embeddings USING ivfflat (embedding vector_cosine_ops)
+    WITH (lists = 100);
+

@@ -9,7 +9,6 @@ Demo 工作台集成测试
 
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 
@@ -21,8 +20,8 @@ sys.path.insert(0, str(_repo_root / "packages" / "llm-hub" / "src"))
 sys.path.insert(0, str(_repo_root / "packages" / "knowledge-base" / "src"))
 sys.path.insert(0, str(_repo_root / "apps" / "rpa" / "src"))
 
-import pytest
-from fastapi.testclient import TestClient
+import pytest  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
 
 
 @pytest.fixture

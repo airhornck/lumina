@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import os
 import aiohttp
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 
 async def fetch_industry_news(
@@ -71,7 +71,7 @@ async def fetch_industry_news(
                 }
             ],
             "hot_keywords": [category, "增长", "内容", "营销"],
-            "trend_prediction": "需要真实数据支持",
+            "trend_prediction": "暂无实时趋势数据",
             "data_source": "placeholder"
         }
     

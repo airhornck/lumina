@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用物理学思维，30秒看透商业世界的底层逻辑 - 母稿</title>
+    <style>
+        body {
+            max-width: 720px;
+            margin: 40px auto;
+            padding: 0 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #fafafa;
+        }
+        .container {
+            background: #fff;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        h1 { font-size: 26px; margin-bottom: 12px; color: #1a1a1a; }
+        .tags { margin: 16px 0; }
+        .tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            margin-right: 8px;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        .positioning {
+            background: #f0f7ff;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #4a90d9;
+        }
+        .positioning h3 { margin-top: 0; color: #2c5aa0; font-size: 16px; }
+        article { font-size: 16px; margin-top: 24px; color: #444; }
+        .compliance {
+            color: #2e7d32;
+            font-size: 14px;
+            margin-top: 24px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        .compliance.warning {
+            color: #bf360c;
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+        .compliance.warning mark {
+            background: #ffcc80;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .cover-copy, .cta {
+            background: #f3e5f5;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin: 18px 0;
+            border-left: 4px solid #9c27b0;
+        }
+        .cover-copy h4, .cta h4 { margin-top: 0; color: #6a1b9a; font-size: 15px; }
+
+        /* 平台规范卡片 */
+        .platform-specs {
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 24px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .platform-specs h3 { margin-top: 0; color: #f57c00; font-size: 16px; }
+        .spec-section { margin: 14px 0; }
+        .spec-section h4 {
+            font-size: 14px;
+            color: #e65100;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .spec-section ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+        .spec-section li { margin: 4px 0; }
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .spec-table th, .spec-table td {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .spec-table th {
+            background: #fff3cd;
+            color: #856404;
+            font-weight: 600;
+            width: 30%;
+        }
+        .spec-table td { color: #555; }
+        .audit-warning {
+            background: #ffebee;
+            border-left-color: #ef5350;
+        }
+        .audit-warning h4 { color: #c62828; }
+
+        /* 平台字段区 */
+        .platform-fields {
+            background: #e3f2fd;
+            padding: 18px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .platform-fields h4 {
+            margin-top: 0;
+            color: #1565c0;
+            font-size: 15px;
+        }
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #bbdefb;
+            font-size: 14px;
+        }
+        .field-row:last-child { border-bottom: none; }
+        .field-label { color: #424242; font-weight: 500; }
+        .field-value { color: #1565c0; font-weight: 600; }
+        .field-warn { color: #e53935; font-weight: 600; }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+        .best-time {
+            background: #e8eaf6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: #3949ab;
+            border-left: 4px solid #5c6bc0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="positioning"><h3>🎯 账号定位</h3><p><strong>为泛知识探索者提供跨领域、高密度、可迁移的认知升级内容，帮助用户在碎片化时代建立系统化思维框架。</strong></p><p>👥 目标受众：20-40 不限</p><p>📌 内容支柱：跨学科思维模型（如物理学思维解释商业现象）, 高密度知识简报（5分钟掌握一个学科核心逻辑）, 认知升级工具（决策清单、批判性思维框架）</p></div>
+        
+        <h1>用物理学思维，30秒看透商业世界的底层逻辑</h1>
+        <div class="tags">
+            <span class="tag">##认知升级</span><span class="tag">##思维模型</span><span class="tag">##熵增定律</span><span class="tag">##物理学思维</span><span class="tag">##商业洞察</span><span class="tag">##跨学科思维</span><span class="tag">##职场进阶</span><span class="tag">##底层逻辑</span>
+        </div>
+        <article>为什么有些公司越做越累，而另一些却像开了挂？<br><br>答案可能不在管理书里，而在物理课本中。<br><br>今天用30秒，给你一个能直接套用的思维模型——「熵增定律」。<br><br>简单说：任何封闭系统，如果不输入能量，都会从有序走向无序，最终死掉。<br><br>公司也一样：<br>- 部门墙越厚，信息越封闭，熵增越快；<br>- 流程越僵化，反应越慢，死得越惨。<br><br>破局的方法很简单：开放 + 持续输入能量。<br><br>比如：<br>- 开放信息流（跨部门协作、透明数据）<br>- 开放人才流（引入外部视角、淘汰低效节点）<br>- 开放创新流（允许试错、快速迭代）<br><br>这就是为什么字节跳动用“飞书”打破信息孤岛，为什么亚马逊坚持“两个披萨团队”——都是在对抗熵增。<br><br>你看，一个物理学定律，就能帮你重新理解商业、组织甚至个人成长。<br><br>这就是跨学科思维的力量：用最少的概念，解释最复杂的现象。<br><br>下期用热力学第二定律，拆解为什么“躺平”其实是最累的状态。<br><br>关注我，每天30秒，用物理学升级你的认知系统。</article>
+        <div class="cover-copy"><h4>📱 封面文案</h4><p>30秒看懂：为什么公司越大越累？物理学早就给出了答案</p></div><div class="cta"><h4>👉 行动号召</h4><p>关注我，每天30秒，用跨学科思维升级认知系统。</p></div>
+        
+        
+        <div class="compliance">✅ 合规检查通过，未发现违规词</div>
+        <footer>
+            由 Lumina 智能营销助手生成 · 母稿
+        </footer>
+    </div>
+</body>
+</html>

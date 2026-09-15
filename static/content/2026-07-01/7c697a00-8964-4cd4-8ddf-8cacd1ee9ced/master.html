@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>为什么你总觉得时间不够用？一个模型帮你每天多出2小时 - 母稿</title>
+    <style>
+        body {
+            max-width: 720px;
+            margin: 40px auto;
+            padding: 0 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #fafafa;
+        }
+        .container {
+            background: #fff;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        h1 { font-size: 26px; margin-bottom: 12px; color: #1a1a1a; }
+        .tags { margin: 16px 0; }
+        .tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            margin-right: 8px;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        .positioning {
+            background: #f0f7ff;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #4a90d9;
+        }
+        .positioning h3 { margin-top: 0; color: #2c5aa0; font-size: 16px; }
+        article { font-size: 16px; margin-top: 24px; color: #444; }
+        .compliance {
+            color: #2e7d32;
+            font-size: 14px;
+            margin-top: 24px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        .compliance.warning {
+            color: #bf360c;
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+        .compliance.warning mark {
+            background: #ffcc80;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .cover-copy, .cta {
+            background: #f3e5f5;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin: 18px 0;
+            border-left: 4px solid #9c27b0;
+        }
+        .cover-copy h4, .cta h4 { margin-top: 0; color: #6a1b9a; font-size: 15px; }
+
+        /* 平台规范卡片 */
+        .platform-specs {
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 24px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .platform-specs h3 { margin-top: 0; color: #f57c00; font-size: 16px; }
+        .spec-section { margin: 14px 0; }
+        .spec-section h4 {
+            font-size: 14px;
+            color: #e65100;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .spec-section ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+        .spec-section li { margin: 4px 0; }
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .spec-table th, .spec-table td {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .spec-table th {
+            background: #fff3cd;
+            color: #856404;
+            font-weight: 600;
+            width: 30%;
+        }
+        .spec-table td { color: #555; }
+        .audit-warning {
+            background: #ffebee;
+            border-left-color: #ef5350;
+        }
+        .audit-warning h4 { color: #c62828; }
+
+        /* 平台字段区 */
+        .platform-fields {
+            background: #e3f2fd;
+            padding: 18px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .platform-fields h4 {
+            margin-top: 0;
+            color: #1565c0;
+            font-size: 15px;
+        }
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #bbdefb;
+            font-size: 14px;
+        }
+        .field-row:last-child { border-bottom: none; }
+        .field-label { color: #424242; font-weight: 500; }
+        .field-value { color: #1565c0; font-weight: 600; }
+        .field-warn { color: #e53935; font-weight: 600; }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+        .best-time {
+            background: #e8eaf6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: #3949ab;
+            border-left: 4px solid #5c6bc0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="positioning"><h3>🎯 账号定位</h3><p><strong>一个面向广泛用户、聚焦通用知识分享与生活洞察的内容账号，以清晰、易懂、有温度的方式提供跨领域实用信息，帮助用户提升认知效率与生活品质。</strong></p><p>👥 目标受众：18-45 不限</p><p>📌 内容支柱：通用知识科普：覆盖科学、历史、文化等基础领域，用通俗语言解释复杂概念, 生活效率技巧：时间管理、学习方法、工具推荐、实用小窍门, 思维模型与认知提升：逻辑思考、决策框架、批判性思维等通用能力</p></div>
+        
+        <h1>为什么你总觉得时间不够用？一个模型帮你每天多出2小时</h1>
+        <div class="tags">
+            <span class="tag">#时间管理</span><span class="tag">#效率提升</span><span class="tag">#思维模型</span><span class="tag">#认知升级</span><span class="tag">#艾森豪威尔矩阵</span><span class="tag">#四象限法则</span><span class="tag">#个人成长</span><span class="tag">#生活技巧</span>
+        </div>
+        <article>你是不是也这样？<br><br>每天忙得团团转，到晚上却发现最重要的事一件没做。<br><br>其实，问题不在时间不够，而在你的注意力分配方式错了。<br><br>这里分享一个经典且实用的认知模型——**艾森豪威尔矩阵**（也叫四象限法则）。<br><br>它把任务按“重要”和“紧急”两个维度分成四类：<br><br>1. **重要且紧急**（比如：今晚截止的汇报）→ 立刻做。<br>2. **重要不紧急**（比如：学习新技能、锻炼身体）→ 计划做。这是拉开人生差距的关键区。<br>3. **紧急不重要**（比如：无关紧要的会议、临时消息）→ 快速处理或委托他人。<br>4. **不重要不紧急**（比如：刷短视频、闲聊）→ 尽量不做。<br><br>**核心洞察：** 多数人把大量时间花在“紧急不重要”和“不重要不紧急”上，而真正决定生活品质的“重要不紧急”任务，却被一再拖延。<br><br>**实操建议：** 每天早晨花3分钟，把当天任务按这四个象限分类。优先完成前两类，你会发现不仅效率翻倍，焦虑感也大幅下降。<br><br>这个模型不仅适用于工作，还能用在家庭、学习、理财等几乎所有场景。<br><br>跨领域的通用思维工具，正是提升认知效率的关键。<br><br>如果你觉得这个技巧有用，点个赞收藏，下次遇到时间焦虑时翻出来看看。<br><br>关注我，每周分享一个让你生活更高效的认知模型。</article>
+        <div class="cover-copy"><h4>📱 封面文案</h4><p>每天多出2小时？这个模型值得收藏</p></div><div class="cta"><h4>👉 行动号召</h4><p>点赞+收藏，下次需要时直接翻出来用。关注我，每周一个高效模型。</p></div>
+        
+        
+        <div class="compliance">✅ 合规检查通过，未发现违规词</div>
+        <footer>
+            由 Lumina 智能营销助手生成 · 母稿
+        </footer>
+    </div>
+</body>
+</html>

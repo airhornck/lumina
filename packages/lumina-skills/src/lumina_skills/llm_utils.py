@@ -73,12 +73,10 @@ async def call_llm(
         )
     except Exception as e:
         print(f"[call_llm] litellm 直接调用失败: {e}")
-    
-    # 返回 fallback
-    if fallback_response:
-        return {**fallback_response, "_source": "fallback", "_error": str(e)}
-    
-    raise RuntimeError(f"LLM 调用失败且未提供 fallback: {e}")
+        # 返回 fallback
+        if fallback_response:
+            return {**fallback_response, "_source": "fallback", "_error": str(e)}
+        raise RuntimeError(f"LLM 调用失败且未提供 fallback: {e}")
 
 
 async def _call_litellm_direct(
@@ -120,9 +118,16 @@ async def _call_litellm_direct(
     
     resp = await litellm.acompletion(**kwargs)
     content = resp.choices[0].message.content or ""
-    
-    # 上报 token 用量
+
+    # 上报 token 用量 + 可选 SSE 聚合桶
     usage = getattr(resp, "usage", None)
+    if usage:
+        try:
+            from llm_hub.stream_usage import accumulate_completion_usage
+
+            accumulate_completion_usage(usage)
+        except Exception:
+            pass
     if usage and user_id:
         from llm_hub.usage_reporter import report_usage
         await report_usage(

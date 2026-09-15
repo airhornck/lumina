@@ -10,7 +10,6 @@ from lumina_skills.diagnosis import analyze_traffic, detect_risk, diagnose_accou
 from lumina_skills.tool_skills import fetch_industry_news, monitor_competitor, visualize_data, fetch_trending_topics
 
 # 导出工具函数
-from lumina_skills.llm_utils import call_llm, stream_llm, build_prompt, get_prompt_template
 
 TOOL_REGISTRY: Dict[str, Callable[..., Awaitable[Dict[str, Any]]]] = {
     "diagnose_account": diagnose_account,

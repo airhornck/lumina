@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>性价比的真相：你省下的不是钱，而是决策的认知税 - 母稿</title>
+    <style>
+        body {
+            max-width: 720px;
+            margin: 40px auto;
+            padding: 0 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #fafafa;
+        }
+        .container {
+            background: #fff;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        h1 { font-size: 26px; margin-bottom: 12px; color: #1a1a1a; }
+        .tags { margin: 16px 0; }
+        .tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            margin-right: 8px;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        .positioning {
+            background: #f0f7ff;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #4a90d9;
+        }
+        .positioning h3 { margin-top: 0; color: #2c5aa0; font-size: 16px; }
+        article { font-size: 16px; margin-top: 24px; color: #444; }
+        .compliance {
+            color: #2e7d32;
+            font-size: 14px;
+            margin-top: 24px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        .compliance.warning {
+            color: #bf360c;
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+        .compliance.warning mark {
+            background: #ffcc80;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .cover-copy, .cta {
+            background: #f3e5f5;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin: 18px 0;
+            border-left: 4px solid #9c27b0;
+        }
+        .cover-copy h4, .cta h4 { margin-top: 0; color: #6a1b9a; font-size: 15px; }
+
+        /* 平台规范卡片 */
+        .platform-specs {
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 24px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .platform-specs h3 { margin-top: 0; color: #f57c00; font-size: 16px; }
+        .spec-section { margin: 14px 0; }
+        .spec-section h4 {
+            font-size: 14px;
+            color: #e65100;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .spec-section ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+        .spec-section li { margin: 4px 0; }
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .spec-table th, .spec-table td {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .spec-table th {
+            background: #fff3cd;
+            color: #856404;
+            font-weight: 600;
+            width: 30%;
+        }
+        .spec-table td { color: #555; }
+        .audit-warning {
+            background: #ffebee;
+            border-left-color: #ef5350;
+        }
+        .audit-warning h4 { color: #c62828; }
+
+        /* 平台字段区 */
+        .platform-fields {
+            background: #e3f2fd;
+            padding: 18px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .platform-fields h4 {
+            margin-top: 0;
+            color: #1565c0;
+            font-size: 15px;
+        }
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #bbdefb;
+            font-size: 14px;
+        }
+        .field-row:last-child { border-bottom: none; }
+        .field-label { color: #424242; font-weight: 500; }
+        .field-value { color: #1565c0; font-weight: 600; }
+        .field-warn { color: #e53935; font-weight: 600; }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+        .best-time {
+            background: #e8eaf6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: #3949ab;
+            border-left: 4px solid #5c6bc0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="positioning"><h3>🎯 账号定位</h3><p><strong>为追求高效成长与深度认知的泛人群提供跨领域、可迁移的通用智慧与实用方法论，帮助用户在信息过载时代构建底层思维框架，实现个人与职业的持续进化。</strong></p><p>👥 目标受众：22-40 不限</p><p>📌 内容支柱：通用思维模型：系统思维、第一性原理、博弈论等跨学科框架的通俗解读与应用, 效率与决策方法论：时间管理、学习策略、信息处理、判断与选择工具, 认知升级与心理建设：元认知、心智模型、抗压与成长心态的深度内容</p></div>
+        
+        <h1>性价比的真相：你省下的不是钱，而是决策的认知税</h1>
+        <div class="tags">
+            <span class="tag">##性价比真相</span><span class="tag">##决策框架</span><span class="tag">##系统思维</span><span class="tag">##认知升级</span><span class="tag">##效率方法论</span><span class="tag">##底层逻辑</span><span class="tag">##时间管理</span><span class="tag">##思维模型</span>
+        </div>
+        <article>我们总在追求性价比，却很少追问：性价比到底在衡量什么？<br><br>多数人把性价比等同于“价格除以功能”，于是陷入两个陷阱：<br>1. 为低价牺牲长期价值，比如买便宜但易坏的工具，反复更换反而更贵；<br>2. 为“高配”支付过剩功能，比如为偶尔用到的专业软件买顶配版。<br><br>真正的性价比，是“单位认知成本带来的可持续效用”。<br><br>这里分享一个跨学科迁移的决策框架——**“性价比三棱镜”**，源自经济学、系统思维与行为设计：<br><br>**第一棱镜：时间贴现率**（经济学）<br>你愿意为未来节省多少时间？一件工具多花20%价格，但能节省50%的维护时间，其“时间回报率”远超差价。对高密度工作者，时薪背后的机会成本远比标价重要。<br><br>**第二棱镜：系统杠杆**（系统思维）<br>一个决策会撬动多少隐性成本？比如选择廉价课程，可能因内容低质导致重复学习、形成错误认知，最终付出数倍纠错成本。性价比高的选择，往往能“一次做对”，避免系统内的连锁浪费。<br><br>**第三棱镜：认知摩擦**（行为设计）<br>低认知摩擦=高可迁移性。一个工具或方法，如果学习成本低、能跨场景复用，其长期效用是指数级的。例如：掌握一套“信息筛选四象限”比记忆100个生活小技巧更有性价比。<br><br>**实操建议：**<br>下次购物或做决策前，先问自己三个问题：<br>- 这个选择会让我在未来多花时间吗？（时间贴现率）<br>- 它会不会引发后续的隐性成本？（系统杠杆）<br>- 我学一次能用多久、用在多少地方？（认知摩擦）<br><br>性价比不是算账，而是算认知账。省下决策的认知税，才是最高级的效率投资。</article>
+        <div class="cover-copy"><h4>📱 封面文案</h4><p>你省下的不是钱，是认知税</p></div><div class="cta"><h4>👉 行动号召</h4><p>收藏这份框架，下次做决策前看一眼。你有哪些被‘伪性价比’坑过的经历？评论区聊聊。</p></div>
+        
+        
+        <div class="compliance">✅ 合规检查通过，未发现违规词</div>
+        <footer>
+            由 Lumina 智能营销助手生成 · 母稿
+        </footer>
+    </div>
+</body>
+</html>

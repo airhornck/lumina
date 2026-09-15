@@ -13,10 +13,50 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from fastapi import APIRouter, Query
+from pydantic import BaseModel, ConfigDict, Field
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/demo", tags=["demo"])
+
+
+class PositionMatrixData(BaseModel):
+    x: int = Field(..., ge=0, le=100, description="专业独特性坐标（0-100）")
+    y: int = Field(..., ge=0, le=100, description="市场需求度坐标（0-100）")
+    feedback: str = Field(..., description="定位现状反馈")
+    suggestion: str = Field(..., description="下一步行动建议")
+
+
+class PositionMatrixResponse(BaseModel):
+    code: int = Field(..., description="业务状态码，0 表示成功")
+    message: str = Field(..., description="状态描述")
+    data: PositionMatrixData | None = Field(None, description="定位矩阵数据")
+
+
+class WeeklyRankingItem(BaseModel):
+    id: str = Field(..., description="选题唯一标识")
+    name: str = Field(..., description="选题名称")
+    source: str = Field(..., description="来源平台")
+    fit_score: int = Field(..., ge=0, le=100, description="用户匹配度")
+    heat: int = Field(..., ge=0, le=100, description="市场热度")
+    delta: int = Field(..., description="热度周环比变化")
+    risk_level: str = Field(..., description="风险等级：low / medium / high")
+    angles: list[str] = Field(..., description="推荐切入角度")
+    title_templates: list[str] = Field(..., description="推荐标题模板")
+    warnings: list[str] = Field(default_factory=list, description="风险提示")
+
+
+class WeeklyRankingsData(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    items: list[WeeklyRankingItem] = Field(..., alias="list", description="选题列表")
+    total: int = Field(..., description="总数量")
+    data_source: str = Field(default="llm_only", description="数据来源：rpa+llm / llm_only")
+
+
+class WeeklyRankingsResponse(BaseModel):
+    code: int = Field(..., description="业务状态码，0 表示成功")
+    message: str = Field(..., description="状态描述")
+    data: WeeklyRankingsData = Field(..., description="榜单数据")
 
 _PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
 
@@ -172,7 +212,7 @@ def _apply_sort_and_pagination(
     return items[offset : offset + limit]
 
 
-@router.get("/position-matrix")
+@router.get("/position-matrix", response_model=PositionMatrixResponse, summary="获取定位矩阵分析结果")
 async def get_position_matrix(
     user_id: str | None = Query(None),
     profile_id: str | None = Query(None),
@@ -229,12 +269,12 @@ async def get_position_matrix(
             },
         }
 
-    except Exception as e:
+    except Exception:
         logger.exception("position_matrix failed")
         return {"code": 0, "message": "success", "data": None}
 
 
-@router.get("/weekly-rankings")
+@router.get("/weekly-rankings", response_model=WeeklyRankingsResponse, summary="获取本周内容选题榜单")
 async def get_weekly_rankings(
     sort_by: str = Query("fit_score"),
     limit: int = Query(10, ge=1, le=50),
@@ -357,7 +397,7 @@ async def get_weekly_rankings(
 
         return {"code": 0, "message": "success", "data": data}
 
-    except Exception as e:
+    except Exception:
         logger.exception("weekly_rankings failed")
         return {
             "code": 0,

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import os
 import sys
 import traceback
 from pathlib import Path
@@ -58,7 +57,7 @@ async def diagnose_account(
         
         if actual_url or cookies:
             try:
-                print(f"[diagnose_account] 开始RPA抓取...")
+                print("[diagnose_account] 开始RPA抓取...")
                 crawled_data = await _try_crawl_account(
                     account_url=actual_url,
                     platform=platform,
@@ -82,7 +81,7 @@ async def diagnose_account(
                     
                     # 需要登录的情况
                     if crawled_data.get("requires_login") or not has_real_data:
-                        print(f"[diagnose_account] 需要登录或数据为空，返回提示")
+                        print("[diagnose_account] 需要登录或数据为空，返回提示")
                         return _generate_login_required_diagnosis(
                             platform=platform,
                             user_id=user_id,
@@ -93,7 +92,7 @@ async def diagnose_account(
                     
                     # 有真实数据，使用抓取的数据
                     if status in ["success", "partial"] and has_real_data:
-                        print(f"[diagnose_account] RPA抓取成功，使用真实数据")
+                        print("[diagnose_account] RPA抓取成功，使用真实数据")
                         return _generate_diagnosis_from_crawled(
                             crawled_data=crawled_data,
                             platform=platform,
@@ -102,7 +101,7 @@ async def diagnose_account(
                         )
                     
                     # 其他失败情况
-                    print(f"[diagnose_account] RPA未获取到有效数据")
+                    print("[diagnose_account] RPA未获取到有效数据")
                     return _generate_login_required_diagnosis(
                         platform=platform,
                         user_id=user_id,
@@ -122,10 +121,10 @@ async def diagnose_account(
                     error_msg=str(e),
                 )
         else:
-            print(f"[diagnose_account] 没有可用的URL或账号名，跳过RPA")
+            print("[diagnose_account] 没有可用的URL或账号名，跳过RPA")
     
     # 回退到基础诊断
-    print(f"[diagnose_account] 使用基础诊断")
+    print("[diagnose_account] 使用基础诊断")
     return _generate_basic_diagnosis(
         account_url=account_url,
         platform=platform,

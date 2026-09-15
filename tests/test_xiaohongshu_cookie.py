@@ -4,7 +4,6 @@
 """
 
 import asyncio
-import json
 import sys
 from pathlib import Path
 
@@ -87,7 +86,7 @@ async def test_with_cookie(url: str, name: str):
             if has_login_prompt:
                 print("WARNING: Cookie 可能已过期，页面仍要求登录")
                 # 打印前20行看看有什么
-                lines = [l.strip() for l in body_text.split('\n') if l.strip()]
+                lines = [line.strip() for line in body_text.split('\n') if line.strip()]
                 print("\n页面文本（前20行）:")
                 for i, line in enumerate(lines[:20]):
                     print(f"  [{i+1}] {line[:80]}")
@@ -103,7 +102,7 @@ async def test_with_cookie(url: str, name: str):
                     if text and 8 < len(text.strip()) < 80:
                         span_texts.append(text.strip())
                 if span_texts:
-                    print(f"有意义的span文本（前20条）:")
+                    print("有意义的span文本（前20条）:")
                     for i, t in enumerate(span_texts[:20]):
                         print(f"  [{i+1}] {t[:70]}")
                 
@@ -116,7 +115,7 @@ async def test_with_cookie(url: str, name: str):
                     if text and 8 < len(text.strip()) < 80:
                         div_texts.append(text.strip())
                 if div_texts:
-                    print(f"有意义的div文本（前20条）:")
+                    print("有意义的div文本（前20条）:")
                     for i, t in enumerate(div_texts[:20]):
                         print(f"  [{i+1}] {t[:70]}")
             

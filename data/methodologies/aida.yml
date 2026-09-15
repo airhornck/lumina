@@ -1,0 +1,48 @@
+methodology_id: "aida"
+name: "AIDA 模型"
+category: "Copywriting"
+description: "经典文案模型：吸引注意、激发兴趣、制造欲望、引导行动。"
+applicable_scenarios: ["ad_copy", "short_video_script", "landing_page", "conversion"]
+success_cases: ["高点击率广告标题", "高转化落地页"]
+prompt_templates:
+  attention: "用一个冲突、数字或反常识开头，让目标用户必须停下来看"
+  interest: "解释产品/服务如何满足用户兴趣，建立相关性"
+  desire: "描绘使用后的理想状态，放大收益和情感价值"
+  action: "给出明确、低摩擦的下一步行动指令"
+steps:
+  - step_id: "attention"
+    theory: "attention_grabbing"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "吸引注意的开头"
+        content_dna: {}
+        methodology_hint: "AIDA-Attention"
+  - step_id: "interest"
+    theory: "interest_building"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "激发兴趣的内容"
+        content_dna: {}
+        methodology_hint: "AIDA-Interest"
+  - step_id: "desire"
+    theory: "desire_creation"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "制造欲望的收益描述"
+        content_dna: {}
+        methodology_hint: "AIDA-Desire"
+  - step_id: "action"
+    theory: "call_to_action"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "引导行动的结尾"
+        content_dna: {}
+        methodology_hint: "AIDA-Action"

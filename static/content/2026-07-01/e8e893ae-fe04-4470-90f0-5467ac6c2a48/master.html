@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>为什么你总觉得自己在“假装努力”？大脑的奖励系统其实在骗你 - 母稿</title>
+    <style>
+        body {
+            max-width: 720px;
+            margin: 40px auto;
+            padding: 0 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #fafafa;
+        }
+        .container {
+            background: #fff;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        h1 { font-size: 26px; margin-bottom: 12px; color: #1a1a1a; }
+        .tags { margin: 16px 0; }
+        .tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            margin-right: 8px;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        .positioning {
+            background: #f0f7ff;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #4a90d9;
+        }
+        .positioning h3 { margin-top: 0; color: #2c5aa0; font-size: 16px; }
+        article { font-size: 16px; margin-top: 24px; color: #444; }
+        .compliance {
+            color: #2e7d32;
+            font-size: 14px;
+            margin-top: 24px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        .compliance.warning {
+            color: #bf360c;
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+        .compliance.warning mark {
+            background: #ffcc80;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .cover-copy, .cta {
+            background: #f3e5f5;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin: 18px 0;
+            border-left: 4px solid #9c27b0;
+        }
+        .cover-copy h4, .cta h4 { margin-top: 0; color: #6a1b9a; font-size: 15px; }
+
+        /* 平台规范卡片 */
+        .platform-specs {
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 24px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .platform-specs h3 { margin-top: 0; color: #f57c00; font-size: 16px; }
+        .spec-section { margin: 14px 0; }
+        .spec-section h4 {
+            font-size: 14px;
+            color: #e65100;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .spec-section ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+        .spec-section li { margin: 4px 0; }
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .spec-table th, .spec-table td {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .spec-table th {
+            background: #fff3cd;
+            color: #856404;
+            font-weight: 600;
+            width: 30%;
+        }
+        .spec-table td { color: #555; }
+        .audit-warning {
+            background: #ffebee;
+            border-left-color: #ef5350;
+        }
+        .audit-warning h4 { color: #c62828; }
+
+        /* 平台字段区 */
+        .platform-fields {
+            background: #e3f2fd;
+            padding: 18px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .platform-fields h4 {
+            margin-top: 0;
+            color: #1565c0;
+            font-size: 15px;
+        }
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #bbdefb;
+            font-size: 14px;
+        }
+        .field-row:last-child { border-bottom: none; }
+        .field-label { color: #424242; font-weight: 500; }
+        .field-value { color: #1565c0; font-weight: 600; }
+        .field-warn { color: #e53935; font-weight: 600; }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+        .best-time {
+            background: #e8eaf6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: #3949ab;
+            border-left: 4px solid #5c6bc0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="positioning"><h3>🎯 账号定位</h3><p><strong>面向泛兴趣人群，提供兼具深度与趣味性的通用知识内容，帮助用户高效拓宽认知边界、激发好奇心与思考力。</strong></p><p>👥 目标受众：18-45 不限</p><p>📌 内容支柱：冷知识/趣味科普：以反常识或冷门事实切入，解释背后的科学/历史/社会学原理, 跨界洞察：用经济学、心理学等视角解读生活现象或热点事件, 实用思维工具：分享可迁移的思考模型、决策框架或效率方法</p></div>
+        
+        <h1>为什么你总觉得自己在“假装努力”？大脑的奖励系统其实在骗你</h1>
+        <div class="tags">
+            <span class="tag">##伪努力</span><span class="tag">##认知心理学</span><span class="tag">##学习效率</span><span class="tag">##多巴胺陷阱</span><span class="tag">##思维工具</span><span class="tag">##注意力经济</span><span class="tag">##冷知识</span>
+        </div>
+        <article>你有没有过这样的时刻：花了一整天刷学习视频、整理笔记、收藏干货，晚上躺在床上却觉得什么都没学到？别急，这很可能不是因为你懒，而是你的大脑在“奖励你”而已。<br><br>**一个反直觉的真相**<br>2011年，神经科学家发现了一个有趣的现象：当人完成一个“看起来像学习”的动作（比如收藏一篇深度文章、整理一份精美笔记），大脑的伏隔核会释放多巴胺——这种神经递质通常与“获得奖励”相关。换句话说，你的大脑在奖励你“准备学习”这个行为，而不是真正学习本身。这就是为什么收藏=学会，买书=读完的错觉如此普遍。<br><br>**从心理学到经济学的跨界解释**<br>经济学家赫伯特·西蒙提出过一个概念叫“注意力经济”——在现代社会，信息不再是稀缺资源，注意力才是。当你的大脑选择“收藏”而不是“阅读”，本质上是选择了一种低能耗、高即时满足的行为。这种“伪努力”让你在短时间内获得了成就感，却牺牲了真正需要深度思考才能获得的认知提升。<br><br>**一个可迁移的思维工具：多巴胺审计**<br>下次当你感到“努力”但没收获时，不妨做一次“多巴胺审计”：<br>1. 列出你一天中完成的“学习动作”（刷视频、整理笔记、收藏等）。<br>2. 区分哪些是“输入型行为”（真正理解、消化、复述），哪些是“仪式型行为”（整理、收藏、标记）。<br>3. 尝试把后者的时间砍掉一半，直接进入“输出阶段”——比如看完一篇文章后，立刻用一句话总结核心观点，或者讲给朋友听。<br><br>**最后送你一个冷知识**：研究表明，在阅读后5分钟内进行回忆测试，记忆留存率能提升50%以上。而大多数人的“伪努力”行为，恰恰绕过了这个关键步骤。<br><br>下次再想收藏一篇干货时，先问自己一句：我是在准备学习，还是在假装学习？</article>
+        <div class="cover-copy"><h4>📱 封面文案</h4><p>收藏=学会？大脑在骗你。</p></div><div class="cta"><h4>👉 行动号召</h4><p>你中过“收藏即学会”的招吗？评论区聊聊你最想戒掉的“伪努力”行为。</p></div>
+        
+        
+        <div class="compliance">✅ 合规检查通过，未发现违规词</div>
+        <footer>
+            由 Lumina 智能营销助手生成 · 母稿
+        </footer>
+    </div>
+</body>
+</html>

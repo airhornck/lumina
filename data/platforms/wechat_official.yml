@@ -1,0 +1,130 @@
+platform_id: "wechat_official"
+content_dna:
+  - element: "opening"
+    value: "首段/前3行交代价值点或情绪钩子，决定打开率"
+  - element: "structure"
+    value: "导语hook + 结构化小标题 + 数据/案例支撑 + 总结升华与CTA"
+  - element: "tone"
+    value: "专业、深度、权威、结构化、数据驱动"
+  - element: "seo"
+    value: "标题含核心关键词，正文关键词密度2%-5%，适配搜一搜索引"
+  - element: "typography"
+    value: "正文字号14-16px，段落间距1.5-1.75倍，注释14px颜色#888888"
+
+audit_rules:
+  - category: "sensitive"
+    forbidden_terms: ["涉黄", "暴恐", "毒品", "谣言", "侵权素材"]
+  - category: "inducement"
+    forbidden_terms: ["强制分享", "诱导关注", "诱导点击", "特殊识别码", "口令类信息"]
+    examples: ["转发领红包", "不转不是中国人", "好友助力", "加速", "砍价"]
+  - category: "clickbait"
+    forbidden_terms: ["无依据夸大", "反常识健康恐吓", "假借官方名义", "隐藏关键信息"]
+  - category: "advertising_law"
+    forbidden_terms: ["最好", "最佳", "100%", "保证", "根治", "稳赚不赔", "日入过万"]
+    notes: ["非医疗用品不得暗示医疗功效", "禁止假借政府/科研/学术/专家/用户名义推荐产品", "金融理财禁止承诺保本收益"]
+
+content_formats:
+  图文消息:
+    title:
+      max_chars: 64
+      min_chars: 1
+      default: "16-20"
+      required: true
+    author:
+      max_chars: 8
+      required: false
+    summary:
+      max_chars: 120
+      auto_extract_chars: 54
+      default: "不填则自动提取正文前54字"
+      required: false
+    content:
+      min_chars: 0
+      max_chars: 50000
+      default: "1500-8000"
+      original_min_chars: 300
+      original_note: "标点符号不计入；含多媒体短内容也可尝试申请原创"
+      required: true
+    cover:
+      large:
+        ratio: "2.35:1"
+        recommended: "900x383"
+      small:
+        ratio: "1:1"
+        recommended: "500x500"
+        usage: "次条/分享卡片"
+      required: true
+    body_images:
+      max_count: 500
+      max_size_mb: 10
+      gif_max_size_mb: 5
+      recommended_width: 1080
+      recommended_ratios: ["16:9", "4:3"]
+      recommended_format: "PNG-24"
+      required: false
+    videos:
+      max_count: 10
+      max_duration: "1小时"
+      note: "超过1小时需上传腾讯视频"
+      required: false
+    audio:
+      max_count: 10
+      required: false
+    music:
+      max_count: 20
+      required: false
+    miniprogram_cards:
+      max_count: 50
+      max_accounts: 10
+      required: false
+    official_account_cards:
+      max_count: 10
+      required: false
+    tags:
+      max_count: 5
+      required: false
+    publishing:
+      subscription:
+        frequency: "1次/天"
+        max_articles_per_push: 8
+      service:
+        frequency: "4次/月"
+        max_articles_per_push: 8
+      required: false
+    post_edit:
+      max_rounds: 1
+      title_max_change: 3
+      body_max_change: 120
+      images_max_replace: 3
+      videos_max_replace: 1
+      cover_editable: true
+      required: false
+
+  图片消息:
+    title:
+      max_chars: 64
+      min_chars: 1
+      required: true
+    pic_num:
+      min: 1
+      max: 9
+      default: "3-9"
+      required: true
+    pic_ratio:
+      value: "3:4"
+      required: false
+    pic_recommended:
+      value: "1080x1440"
+      required: false
+    thumbnail_display:
+      gte_3: "前3张缩略图 2.35:1"
+      lt_3: "统一使用首图 16:9"
+      required: false
+    content:
+      min_chars: 0
+      max_chars: 1000
+      default: "100-300"
+      required: true
+    tags:
+      max_count: 5
+      required: false

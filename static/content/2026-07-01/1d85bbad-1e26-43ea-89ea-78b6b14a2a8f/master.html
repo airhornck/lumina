@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>为什么你越努力‘连接’，反而越孤独？ - 母稿</title>
+    <style>
+        body {
+            max-width: 720px;
+            margin: 40px auto;
+            padding: 0 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #fafafa;
+        }
+        .container {
+            background: #fff;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        h1 { font-size: 26px; margin-bottom: 12px; color: #1a1a1a; }
+        .tags { margin: 16px 0; }
+        .tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            margin-right: 8px;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        .positioning {
+            background: #f0f7ff;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #4a90d9;
+        }
+        .positioning h3 { margin-top: 0; color: #2c5aa0; font-size: 16px; }
+        article { font-size: 16px; margin-top: 24px; color: #444; }
+        .compliance {
+            color: #2e7d32;
+            font-size: 14px;
+            margin-top: 24px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        .compliance.warning {
+            color: #bf360c;
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+        .compliance.warning mark {
+            background: #ffcc80;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .cover-copy, .cta {
+            background: #f3e5f5;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin: 18px 0;
+            border-left: 4px solid #9c27b0;
+        }
+        .cover-copy h4, .cta h4 { margin-top: 0; color: #6a1b9a; font-size: 15px; }
+
+        /* 平台规范卡片 */
+        .platform-specs {
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 24px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .platform-specs h3 { margin-top: 0; color: #f57c00; font-size: 16px; }
+        .spec-section { margin: 14px 0; }
+        .spec-section h4 {
+            font-size: 14px;
+            color: #e65100;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .spec-section ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+        .spec-section li { margin: 4px 0; }
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .spec-table th, .spec-table td {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .spec-table th {
+            background: #fff3cd;
+            color: #856404;
+            font-weight: 600;
+            width: 30%;
+        }
+        .spec-table td { color: #555; }
+        .audit-warning {
+            background: #ffebee;
+            border-left-color: #ef5350;
+        }
+        .audit-warning h4 { color: #c62828; }
+
+        /* 平台字段区 */
+        .platform-fields {
+            background: #e3f2fd;
+            padding: 18px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .platform-fields h4 {
+            margin-top: 0;
+            color: #1565c0;
+            font-size: 15px;
+        }
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #bbdefb;
+            font-size: 14px;
+        }
+        .field-row:last-child { border-bottom: none; }
+        .field-label { color: #424242; font-weight: 500; }
+        .field-value { color: #1565c0; font-weight: 600; }
+        .field-warn { color: #e53935; font-weight: 600; }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+        .best-time {
+            background: #e8eaf6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: #3949ab;
+            border-left: 4px solid #5c6bc0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="positioning"><h3>🎯 账号定位</h3><p><strong>面向泛知识领域探索者，提供跨学科、去中心化的内容生态，帮助用户打破信息茧房，建立多元认知框架。</strong></p><p>👥 目标受众：18-45 不限</p><p>📌 内容支柱：跨学科冷知识：融合科学、人文、商业等领域的非常规选题，揭示事物底层逻辑, 反直觉现象解读：用新角度分析日常或热点，打破固有认知，提供思维增量, 方法论与思维工具：分享可迁移的思考模型（如第一性原理、系统思维），赋能用户自主学习</p></div>
+        
+        <h1>为什么你越努力‘连接’，反而越孤独？</h1>
+        <div class="tags">
+            <span class="tag">#信息茧房</span><span class="tag">#跨学科思维</span><span class="tag">#认知升级</span><span class="tag">#反直觉</span><span class="tag">#第一性原理</span><span class="tag">#系统思维</span><span class="tag">#深度内容</span><span class="tag">#打破认知</span>
+        </div>
+        <article>你以为社交媒体上点赞、评论、转发就是连接？错了。这恰恰是现代‘信息茧房’最隐蔽的陷阱——算法用‘你喜欢的’把你包裹起来，让你误以为世界就是朋友圈的样子。<br><br>真正高质量的信息连接，不是同类观点的重复，而是异质思想的碰撞。就像大脑需要不同神经元之间的‘长程连接’才能产生创造力，你的认知体系也需要跨学科、反直觉的养分来打破固化。<br><br>举个例子：为什么‘第一性原理’能颠覆行业？因为它把复杂现象拆解到最基础的物理定律，而不是在现有方案上修修补补。同样，当你用‘系统思维’看待日常决策，会发现很多‘理所应当’其实只是局部最优解。<br><br>这个30秒短视频，我想和你分享一个简单却反直觉的思维工具：‘认知地图扩展法’。每次获取新信息，问自己三个问题：<br>1. 这个观点来自哪个学科？<br>2. 如果换一个学科视角，会得出什么结论？<br>3. 这个结论能和我已有的哪个知识‘打架’？<br><br>当你开始主动寻找‘冲突’而非‘共鸣’，信息茧房就不攻自破。<br><br>我们不是要做一个‘什么都懂’的人，而是做一个‘愿意被打脸’的人——因为每一次认知颠覆，都是一次真正的连接。</article>
+        <div class="cover-copy"><h4>📱 封面文案</h4><p>你以为的‘连接’，其实在隔离你</p></div><div class="cta"><h4>👉 行动号召</h4><p>关注我，每天一个跨学科思维工具，帮你从信息洪流中打捞出真正的认知增量。</p></div>
+        
+        
+        <div class="compliance">✅ 合规检查通过，未发现违规词</div>
+        <footer>
+            由 Lumina 智能营销助手生成 · 母稿
+        </footer>
+    </div>
+</body>
+</html>

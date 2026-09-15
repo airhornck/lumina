@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一个模型，帮你从海量信息中挖出黄金：DIKW金字塔 - 母稿</title>
+    <style>
+        body {
+            max-width: 720px;
+            margin: 40px auto;
+            padding: 0 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #fafafa;
+        }
+        .container {
+            background: #fff;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        h1 { font-size: 26px; margin-bottom: 12px; color: #1a1a1a; }
+        .tags { margin: 16px 0; }
+        .tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            margin-right: 8px;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        .positioning {
+            background: #f0f7ff;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #4a90d9;
+        }
+        .positioning h3 { margin-top: 0; color: #2c5aa0; font-size: 16px; }
+        article { font-size: 16px; margin-top: 24px; color: #444; }
+        .compliance {
+            color: #2e7d32;
+            font-size: 14px;
+            margin-top: 24px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        .compliance.warning {
+            color: #bf360c;
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+        .compliance.warning mark {
+            background: #ffcc80;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .cover-copy, .cta {
+            background: #f3e5f5;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin: 18px 0;
+            border-left: 4px solid #9c27b0;
+        }
+        .cover-copy h4, .cta h4 { margin-top: 0; color: #6a1b9a; font-size: 15px; }
+
+        /* 平台规范卡片 */
+        .platform-specs {
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 24px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .platform-specs h3 { margin-top: 0; color: #f57c00; font-size: 16px; }
+        .spec-section { margin: 14px 0; }
+        .spec-section h4 {
+            font-size: 14px;
+            color: #e65100;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .spec-section ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+        .spec-section li { margin: 4px 0; }
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .spec-table th, .spec-table td {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .spec-table th {
+            background: #fff3cd;
+            color: #856404;
+            font-weight: 600;
+            width: 30%;
+        }
+        .spec-table td { color: #555; }
+        .audit-warning {
+            background: #ffebee;
+            border-left-color: #ef5350;
+        }
+        .audit-warning h4 { color: #c62828; }
+
+        /* 平台字段区 */
+        .platform-fields {
+            background: #e3f2fd;
+            padding: 18px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .platform-fields h4 {
+            margin-top: 0;
+            color: #1565c0;
+            font-size: 15px;
+        }
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #bbdefb;
+            font-size: 14px;
+        }
+        .field-row:last-child { border-bottom: none; }
+        .field-label { color: #424242; font-weight: 500; }
+        .field-value { color: #1565c0; font-weight: 600; }
+        .field-warn { color: #e53935; font-weight: 600; }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+        .best-time {
+            background: #e8eaf6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: #3949ab;
+            border-left: 4px solid #5c6bc0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="positioning"><h3>🎯 账号定位</h3><p><strong>为追求高效生活与深度思考的泛知识受众，提供跨领域的内容整合与洞察，助力其构建系统化认知与决策能力。</strong></p><p>👥 目标受众：25-45 不限</p><p>📌 内容支柱：认知升级：思维模型、决策科学、逻辑方法, 趋势洞察：科技、商业、文化前沿动态与底层逻辑, 技能工具：高效学习、时间管理、信息处理实用技巧</p></div>
+        
+        <h1>一个模型，帮你从海量信息中挖出黄金：DIKW金字塔</h1>
+        <div class="tags">
+            <span class="tag">##认知升级</span><span class="tag">##思维模型</span><span class="tag">##信息处理</span><span class="tag">##高效学习</span><span class="tag">##决策科学</span><span class="tag">##知识管理</span><span class="tag">##DIKW金字塔</span><span class="tag">##跨领域思维</span>
+        </div>
+        <article>信息过载？别急着收藏，先建立你的认知漏斗。今天分享一个跨领域通用的思维模型——DIKW金字塔，帮你把碎片信息炼成智慧，直接用于决策。<br><br>DIKW代表四个层级：Data（数据）、Information（信息）、Knowledge（知识）、Wisdom（智慧）。<br><br>1. **数据**：原始、无关联的事实。比如“昨天气温30度”。这是噪音，别停留。<br>2. **信息**：数据+上下文。比如“昨天30度，比往年高5度”。开始有结构，但仍是二手。<br>3. **知识**：信息+规律+经验。比如“高温持续3天会引发热浪，热浪导致用电高峰”。这是可复用的模式。<br>4. **智慧**：知识+价值判断+行动。比如“未来一周高温，建议提前部署储能方案，避开下午高峰”。这才是决策力。<br><br>**如何应用？**<br>- 刷到一篇“AI改变教育”的文章：别只收藏（数据）。<br>- 提炼出“AI可个性化出题，提升效率30%”（信息）。<br>- 关联你所在行业的培训痛点，总结出“AI可替代基础教学，释放人力做创意辅导”（知识）。<br>- 最后行动：下周试点用AI生成3道测试题，观察学员反馈（智慧）。<br><br>**核心洞察**：大多数人只停留在信息层，而真正的高手通过“提问+连接”快速跃迁到智慧层。每次获取信息时，问自己：这能解释什么规律？能推动什么决策？<br><br>用DIKW做你的认知筛子，告别无效囤积，从今天起只囤智慧。</article>
+        <div class="cover-copy"><h4>📱 封面文案</h4><p>信息囤积症的解药：一个模型让你从数据到智慧</p></div><div class="cta"><h4>👉 行动号召</h4><p>下次刷到干货，试试用DIKW拆解一遍，评论区分享你的发现。</p></div>
+        
+        
+        <div class="compliance">✅ 合规检查通过，未发现违规词</div>
+        <footer>
+            由 Lumina 智能营销助手生成 · 母稿
+        </footer>
+    </div>
+</body>
+</html>

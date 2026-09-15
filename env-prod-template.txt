@@ -1,0 +1,21 @@
+# Lumina 生产环境配置模板
+# 复制为 .env.prod 后上传到服务器，不要提交到 git
+
+# Lumina 镜像标签（与 docker build -t 时一致）
+LUMINA_IMAGE=lumina720:1.0
+LUMINA_PORT=8080
+
+# PostgreSQL 连接（当前使用宿主机上 yum 安装的 PostgreSQL）
+# 如果 Docker 升级到 20.10+ 且支持 host.docker.internal，可改为：
+# DATABASE_URL=postgresql://lumina:lumina123@host.docker.internal:5432/lumina
+DATABASE_URL=postgresql://lumina:lumina123@172.29.146.189:5432/lumina
+CHAT_MEMORY_BACKEND=postgres
+
+# Hermes Agent 模型配置（DeepSeek 已废弃 deepseek-chat）
+LUMINA_HERMES_MODEL=deepseek-v4-flash
+LUMINA_HERMES_PROVIDER=deepseek
+
+# LLM API Keys（至少填一个，优先使用 DeepSeek）
+DEEPSEEK_API_KEY=你的_DEEPSEEK_API_KEY
+# OPENAI_API_KEY=
+# ANTHROPIC_API_KEY=

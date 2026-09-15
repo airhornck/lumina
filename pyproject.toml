@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "lumina"
 version = "0.2.0"
-description = "Lumina AI 营销助手 — OpenClaw 基座 + 多 Agent 中枢 + MCP Skill Hub + 双库（Development_plan_v2）"
+description = "Lumina AI 营销助手 — 多 Agent 中枢 + MCP Skill Hub + 统一对话入口"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
@@ -28,12 +28,20 @@ dependencies = [
 dev = [
     "pytest>=7.4.0",
     "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "pre-commit>=3.5.0",
 ]
+# Hermes Agent 为唯一执行引擎。
+# 底座已 vendor 钉版本于 vendor/hermes-agent/（0.16.0，见 LUMINA_PIN.md），
+# 运行时由 apps/api/src/services/hermes_adapter.py 自动加入 sys.path，无需安装。
+# Docker 环境通过 docker-compose 挂载 + PYTHONPATH 加载。
+# hermes = [
+#     "hermes-agent @ file:///path/to/hermes-agent",
+# ]
 
 [tool.setuptools.packages.find]
 where = [
     "apps/api/src",
-    "apps/intent/src",
     "apps/orchestra/src",
     "apps/skill-hub/src",
     "apps/rpa/src",
@@ -48,13 +56,14 @@ where = [
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+markers = [
+    "real_llm: 需要调用真实 LLM API，消耗 token",
+]
 pythonpath = [
     "apps/api/src",
-    "apps/intent/src",
     "apps/orchestra/src",
     "apps/skill-hub/src",
     "apps/rpa/src",
-    "skills/skill-rpa-executor/src",
     "packages/llm-hub/src",
     "packages/knowledge-base/src",
     "packages/lumina-skills/src",

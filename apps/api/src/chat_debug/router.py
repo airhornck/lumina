@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 from typing import Any, AsyncIterator, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from chat_debug.memory import get_memory_store
 from chat_debug.prompts import CAPABILITIES, system_prompt_for
@@ -17,7 +16,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/debug", tags=["debug-chat"])
 
 SYSTEM_CHAT_ID = "system_chat"
-STREAM_CHUNK = 96
 
 
 class ChatStreamBody(BaseModel):
@@ -25,14 +23,48 @@ class ChatStreamBody(BaseModel):
         ...,
         description="system_chat | content_direction_ranking | ...",
     )
-    user_id: str = Field(default="debug-user", min_length=1, max_length=128)
-    conversation_id: str = Field(default="debug-conv", min_length=1, max_length=128)
-    message: str = Field(..., min_length=1, max_length=32000)
+    user_id: str = Field(default="debug-user", min_length=1, max_length=128, description="用户唯一标识")
+    conversation_id: str = Field(default="debug-conv", min_length=1, max_length=128, description="对话唯一标识")
+    message: str = Field(..., min_length=1, max_length=32000, description="用户当前输入")
     platform: Optional[str] = Field(default=None, description="可选：xiaohongshu / douyin 等")
     hub_context: Dict[str, Any] = Field(
         default_factory=dict,
-        description="与 POST /api/v1/marketing/hub 的 context 一致，传入 MarketingOrchestra（仅 system_chat 使用）",
+        description="附加业务上下文，透传至 Hermes 引擎与工具层（仅 system_chat 使用）",
     )
+    stream_format: Optional[int] = Field(
+        default=None,
+        description="1=v1 SSE；2=v2（仅 system_chat）。缺省可读 X-Lumina-Stream-Format",
+    )
+
+    @field_validator("stream_format")
+    @classmethod
+    def _validate_stream_format(cls, v: Optional[int]) -> Optional[int]:
+        if v is None:
+            return v
+        if v not in (1, 2):
+            raise ValueError("stream_format must be 1 or 2")
+        return v
+
+
+class CapabilityItem(BaseModel):
+    id: str = Field(..., description="能力标识")
+    label: str = Field(..., description="能力名称")
+
+
+class CapabilitiesResponse(BaseModel):
+    capabilities: list[CapabilityItem] = Field(..., description="可用能力列表")
+
+
+class MemoryResponse(BaseModel):
+    user_id: str = Field(..., description="用户唯一标识")
+    conversation_id: str = Field(..., description="对话唯一标识")
+    count: int = Field(..., description="消息数量")
+    messages: list[Any] = Field(..., description="消息列表")
+
+
+class DeleteMemoryResponse(BaseModel):
+    ok: bool = Field(..., description="操作是否成功")
+    cleared: bool = Field(..., description="是否已清除")
 
 
 ALLOWED_CAPS = frozenset(CAPABILITIES.keys())
@@ -54,8 +86,9 @@ def _memory_rows_to_session(rows: List[dict[str, Any]], limit: int = 24) -> List
     return out[-limit:]
 
 
-@router.get("/chat/capabilities")
+@router.get("/chat/capabilities", response_model=CapabilitiesResponse, summary="列出调试可用的 capabilities")
 async def list_capabilities() -> dict[str, Any]:
+    """列出 debug chat 支持的所有 capability 类型。"""
     # 系统对话放首位，便于调试主流程
     ordered = [SYSTEM_CHAT_ID] + [k for k in CAPABILITIES if k != SYSTEM_CHAT_ID]
     return {
@@ -65,11 +98,12 @@ async def list_capabilities() -> dict[str, Any]:
     }
 
 
-@router.get("/chat/memory")
+@router.get("/chat/memory", response_model=MemoryResponse, summary="查询 debug 对话记忆")
 async def get_memory(
-    user_id: str = Query(..., min_length=1),
-    conversation_id: str = Query(..., min_length=1),
+    user_id: str = Query(..., min_length=1, description="用户唯一标识"),
+    conversation_id: str = Query(..., min_length=1, description="对话唯一标识"),
 ) -> dict[str, Any]:
+    """查询指定 debug 对话的记忆列表。"""
     store = get_memory_store()
     messages = await store.list_messages(user_id, conversation_id)
     return {
@@ -80,24 +114,40 @@ async def get_memory(
     }
 
 
-@router.delete("/chat/memory")
+@router.delete("/chat/memory", response_model=DeleteMemoryResponse, summary="清除 debug 对话记忆")
 async def delete_memory(
-    user_id: str = Query(..., min_length=1),
-    conversation_id: str = Query(..., min_length=1),
+    user_id: str = Query(..., min_length=1, description="用户唯一标识"),
+    conversation_id: str = Query(..., min_length=1, description="对话唯一标识"),
 ) -> dict[str, Any]:
+    """清除指定 debug 对话的全部记忆。"""
     store = get_memory_store()
     await store.clear(user_id, conversation_id)
     return {"ok": True, "cleared": True}
 
 
-async def _stream_orchestra_result(text: str) -> AsyncIterator[str]:
-    for i in range(0, len(text), STREAM_CHUNK):
-        yield text[i : i + STREAM_CHUNK]
-        await asyncio.sleep(0)
+@router.get("/chat-logs", summary="查询对话日志（意图/工具调用排查）")
+async def get_chat_logs(
+    date: Optional[str] = Query(default=None, description="日期 YYYY-MM-DD，缺省今天"),
+    user_id: Optional[str] = Query(default=None, description="按用户过滤"),
+    conversation_id: Optional[str] = Query(default=None, description="按会话过滤"),
+    limit: int = Query(default=200, ge=1, le=1000, description="返回最近 N 条"),
+) -> dict[str, Any]:
+    """查询 data/logs/chat/ 下的对话日志（每轮一条：路径/工具调用/thinking/回复/用量）。"""
+    from services.conversation_log import query_logs
+
+    records = query_logs(
+        date=date, user_id=user_id, conversation_id=conversation_id, limit=limit
+    )
+    return {"count": len(records), "records": records}
 
 
-@router.post("/chat/stream")
+@router.post(
+    "/chat/stream",
+    summary="Debug Chat 流式对话",
+    response_class=StreamingResponse,
+)
 async def chat_stream(body: ChatStreamBody) -> StreamingResponse:
+    """Debug Chat SSE 流式对话入口，system_chat 走 Hermes 引擎。"""
     if body.capability not in ALLOWED_CAPS:
         raise HTTPException(
             status_code=400,
@@ -105,7 +155,8 @@ async def chat_stream(body: ChatStreamBody) -> StreamingResponse:
         )
 
     store = get_memory_store()
-    history_before = await store.list_messages(body.user_id, body.conversation_id)
+    # 只取最近 34 条（system_chat 切 24、其余 capability 切 34，取大者覆盖），读取量与历史总量脱钩
+    history_before = await store.list_messages(body.user_id, body.conversation_id, limit=34)
     await store.append(
         body.user_id,
         body.conversation_id,
@@ -123,45 +174,22 @@ async def chat_stream(body: ChatStreamBody) -> StreamingResponse:
         ]
         session_history = _memory_rows_to_session(hist_rows)
 
-        async def orchestra_gen() -> AsyncIterator[str]:
-            yield _sse({"type": "start", "capability": SYSTEM_CHAT_ID, "via": "marketing_orchestra"})
-            try:
-                from orchestra.core import MarketingOrchestra
+        # Hermes Agent 为唯一执行引擎
+        from services.hermes_adapter import HermesEngineAdapter
 
-                orch = MarketingOrchestra()
-                result = await orch.process(
-                    body.message,
-                    body.user_id,
-                    session_history,
-                    body.platform,
-                    body.hub_context,
-                )
-                payload = {"ok": True, **result}
-                text = json.dumps(payload, ensure_ascii=False, indent=2)
-            except Exception as e:
-                logger.exception("system_chat orchestra failed")
-                yield _sse({"type": "error", "message": str(e)[:800]})
-                return
-            full_chunks: list[str] = []
-            try:
-                async for piece in _stream_orchestra_result(text):
-                    full_chunks.append(piece)
-                    yield _sse({"type": "delta", "text": piece})
-            except Exception as e:
-                logger.exception("system_chat stream chunk failed")
-                yield _sse({"type": "error", "message": str(e)[:800]})
-                return
-            full = "".join(full_chunks)
-            await store.append(
-                body.user_id,
-                body.conversation_id,
-                "assistant",
-                full,
-                capability=body.capability,
-            )
-            yield _sse({"type": "done", "full_length": len(full)})
+        async def hermes_gen() -> AsyncIterator[str]:
+            adapter = HermesEngineAdapter()
+            async for line in adapter.chat_stream(
+                user_message=body.message,
+                user_id=body.user_id,
+                conversation_id=body.conversation_id,
+                session_history=session_history,
+                platform=body.platform,
+                context=body.hub_context,
+            ):
+                yield line
 
-        return StreamingResponse(orchestra_gen(), media_type="text/event-stream")
+        return StreamingResponse(hermes_gen(), media_type="text/event-stream")
 
     from llm_hub import get_client, get_hub
 

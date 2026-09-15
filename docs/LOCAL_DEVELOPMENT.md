@@ -31,6 +31,8 @@ python -m skill_hub_app
 - 编排 API `POST /api/v1/marketing/hub` 与 `system_chat` 流式结果中，除 `hub` / `sop` 外新增顶层 **`reply`**：面向用户的自然语言说明（NLG）；无 LLM Key 时为模板兜底。
 - **意图**：默认落到 **`conversation`**（自然对话），只有显式「方法论库/框架/AIDA/增长黑客…」等才走 **`general`→方法论检索**；天气/闲聊等会走对话并拒答无关话题（无 Key 时有模板兜底）。
 
+> ⚠️ 2026-07-15：上述意图与 NLG 行为描述对应现行 orchestra 链路，已决策退役；Hermes 全量切换后本小节将按 planner 行为重写（phase4 spec）
+
 ### OpenClaw 侧「意图过滤」如何实现？
 
 OpenClaw **没有**示例里的 `shouldActivate` / `intent.category` 钩子；实际做法是 **工具描述 +（可选）扩展内前置判断**。

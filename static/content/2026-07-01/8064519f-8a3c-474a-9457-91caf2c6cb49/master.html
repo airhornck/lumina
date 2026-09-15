@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>30秒短视频脚本：用“策略框架”替代“灵感碰运气” - 母稿</title>
+    <style>
+        body {
+            max-width: 720px;
+            margin: 40px auto;
+            padding: 0 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #fafafa;
+        }
+        .container {
+            background: #fff;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        h1 { font-size: 26px; margin-bottom: 12px; color: #1a1a1a; }
+        .tags { margin: 16px 0; }
+        .tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            margin-right: 8px;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        .positioning {
+            background: #f0f7ff;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #4a90d9;
+        }
+        .positioning h3 { margin-top: 0; color: #2c5aa0; font-size: 16px; }
+        article { font-size: 16px; margin-top: 24px; color: #444; }
+        .compliance {
+            color: #2e7d32;
+            font-size: 14px;
+            margin-top: 24px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        .compliance.warning {
+            color: #bf360c;
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+        .compliance.warning mark {
+            background: #ffcc80;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .cover-copy, .cta {
+            background: #f3e5f5;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin: 18px 0;
+            border-left: 4px solid #9c27b0;
+        }
+        .cover-copy h4, .cta h4 { margin-top: 0; color: #6a1b9a; font-size: 15px; }
+
+        /* 平台规范卡片 */
+        .platform-specs {
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 24px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .platform-specs h3 { margin-top: 0; color: #f57c00; font-size: 16px; }
+        .spec-section { margin: 14px 0; }
+        .spec-section h4 {
+            font-size: 14px;
+            color: #e65100;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .spec-section ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+        .spec-section li { margin: 4px 0; }
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .spec-table th, .spec-table td {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .spec-table th {
+            background: #fff3cd;
+            color: #856404;
+            font-weight: 600;
+            width: 30%;
+        }
+        .spec-table td { color: #555; }
+        .audit-warning {
+            background: #ffebee;
+            border-left-color: #ef5350;
+        }
+        .audit-warning h4 { color: #c62828; }
+
+        /* 平台字段区 */
+        .platform-fields {
+            background: #e3f2fd;
+            padding: 18px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .platform-fields h4 {
+            margin-top: 0;
+            color: #1565c0;
+            font-size: 15px;
+        }
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #bbdefb;
+            font-size: 14px;
+        }
+        .field-row:last-child { border-bottom: none; }
+        .field-label { color: #424242; font-weight: 500; }
+        .field-value { color: #1565c0; font-weight: 600; }
+        .field-warn { color: #e53935; font-weight: 600; }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+        .best-time {
+            background: #e8eaf6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: #3949ab;
+            border-left: 4px solid #5c6bc0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="positioning"><h3>🎯 账号定位</h3><p><strong>面向泛知识领域的内容创作者，提供系统化、可落地的策略框架与洞察，帮助其在信息过载的赛道中建立差异化认知与持续增长路径。</strong></p><p>👥 目标受众：25-40 不限</p><p>📌 内容支柱：定位与策略：帮助创作者建立差异化账号定位、内容矩阵与长期规划, 创作与优化：提供选题、标题、结构、视觉等方面的高效创作方法, 增长与变现：分析平台算法、粉丝运营、商业合作与多渠道变现路径, 趋势与案例：解读行业动态、平台变化及头部账号的成长逻辑</p></div>
+        
+        <h1>30秒短视频脚本：用“策略框架”替代“灵感碰运气”</h1>
+        <div class="tags">
+            <span class="tag">##短视频脚本</span><span class="tag">##内容策略</span><span class="tag">##创作者成长</span><span class="tag">##短视频运营</span><span class="tag">##选题技巧</span><span class="tag">##知识博主</span><span class="tag">##内容创作</span><span class="tag">##账号定位</span>
+        </div>
+        <article>很多创作者做短视频，还在靠灵感、靠运气、靠刷热点。今天分享一个30秒短视频的“策略脚本框架”，帮你从“凭感觉”升级到“依据策略”。<br><br>**第一步：前3秒——锚定痛点+制造悬念**<br>话术示例：“你还在为短视频没流量焦虑吗？问题不在你不够努力，而在你的内容没有‘策略锚点’。”<br>视觉：对比画面——左边是杂乱无章的选题列表，右边是一个清晰的三角框架。<br><br>**第二步：中15秒——给出框架+拆解逻辑**<br>话术示例：“用‘用户痛点-场景切入-解决方案’三角模型。比如：你教职场沟通，不要只讲‘如何说话’，而是‘和老板汇报3分钟，如何让他点头？’——痛点明确、场景具体、解决方案直接。”<br>视觉：动画展示三角模型，并配一个实际案例的拆解。<br><br>**第三步：后12秒——强化价值+行动号召**<br>话术示例：“这套框架，让你的内容从‘自嗨’变成‘对用户有用’。想获得更多可复用的策略模板？关注我，每周拆解一个头部账号的成长逻辑。”<br>视觉：结尾弹出关注引导和“下周预告”。<br><br>这套框架的核心是：用策略替代直觉，用结构替代随机。你学会了吗？</article>
+        <div class="cover-copy"><h4>📱 封面文案</h4><p>30秒短视频脚本：别再碰运气，用这个框架直接套用</p></div><div class="cta"><h4>👉 行动号召</h4><p>关注我，每周拆解一个头部账号的成长逻辑，帮你从凭感觉做内容转向依据策略做内容。</p></div>
+        
+        
+        <div class="compliance">✅ 合规检查通过，未发现违规词</div>
+        <footer>
+            由 Lumina 智能营销助手生成 · 母稿
+        </footer>
+    </div>
+</body>
+</html>

@@ -32,8 +32,9 @@ services:
       REDIS_URL: redis://redis:6379/0
       # LLM 配置路径
       LLM_CONFIG_PATH: /app/config/llm.yaml
-      INTENT_RULES_PATH: /app/config/intent_rules.yaml
-      AGENTS_CONFIG_PATH: /app/config/agents.yaml
+      # Hermes Agent 默认模型（DeepSeek 已废弃 deepseek-chat）
+      LUMINA_HERMES_MODEL: "${LUMINA_HERMES_MODEL:-deepseek-v4-flash}"
+      LUMINA_HERMES_PROVIDER: "${LUMINA_HERMES_PROVIDER:-deepseek}"
       # 开发模式
       DEBUG: "true"
       LOG_LEVEL: INFO

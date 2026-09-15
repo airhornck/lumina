@@ -5,6 +5,8 @@ from __future__ import annotations
 from typing import Any, AsyncIterator, Dict, List, Optional
 
 from llm_hub.config_models import LLMConfig
+from llm_hub.cost_optimizer import CostOptimizedCompletion, _cache_key
+from llm_hub.stream_usage import accumulate_completion_usage
 from llm_hub.usage_reporter import report_usage
 
 
@@ -23,6 +25,7 @@ def litellm_model_id(cfg: LLMConfig) -> str:
 class LLMClient:
     def __init__(self, config: LLMConfig):
         self.config = config
+        self._cost_optimizer = CostOptimizedCompletion()
 
     async def complete(
         self,
@@ -51,12 +54,22 @@ class LLMClient:
             kwargs["api_base"] = self.config.api_base
         if response_format and self.config.provider == "openai":
             kwargs["response_format"] = response_format
+
+        # 阶段 2：响应缓存
+        messages = [{"role": "user", "content": prompt}]
+        cache_key = _cache_key(model, messages, temp)
+        cached = self._cost_optimizer.cache_get(cache_key)
+        if cached is not None:
+            return cached
+
         resp = await litellm.acompletion(**kwargs)
         choice = resp.choices[0]
         content = (choice.message.content or "").strip()
 
         # 若调用方提供了 user_id 等元数据，则上报 token 用量
         usage = getattr(resp, "usage", None)
+        if usage:
+            accumulate_completion_usage(usage)
         if usage and _usage_meta:
             user_id = _usage_meta.get("user_id")
             if user_id:
@@ -69,6 +82,7 @@ class LLMClient:
                     skill_name=_usage_meta.get("skill_name"),
                 )
 
+        self._cost_optimizer.cache_set(cache_key, content)
         return content
 
     async def stream_completion(
@@ -96,8 +110,14 @@ class LLMClient:
             kwargs["api_key"] = self.config.api_key
         if self.config.api_base:
             kwargs["api_base"] = self.config.api_base
+        # OpenAI 兼容流式末尾返回 usage，便于聚合到 SSE done.usage
+        if self.config.provider == "openai":
+            kwargs["stream_options"] = {"include_usage": True}
         stream = await litellm.acompletion(**kwargs)
         async for chunk in stream:
+            usage = getattr(chunk, "usage", None)
+            if usage:
+                accumulate_completion_usage(usage)
             if not chunk.choices:
                 continue
             delta = chunk.choices[0].delta

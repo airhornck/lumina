@@ -4,7 +4,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-00a393.svg)](https://fastapi.tiangolo.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Lumina 是一个面向小红书、抖音、B站等内容平台的 AI 营销助手，采用**四层架构 + 双库驱动 + 多 Agent 编排**设计（OpenClaw 基座 → 多 Agent 中枢 → MCP Skill Hub → 平台规范库/方法论库），提供账号诊断、流量分析、内容生成、选题策略、合规预检、SOP 编排等核心能力。
+Lumina 是一个面向小红书、抖音、B站等内容平台的 AI 营销助手，目标架构为**四层架构 + Hermes LLM planner 统一编排**（所有对话经 LLM 自主规划，技能以 Hermes Tool 形式挂载；现行链路仍为 orchestra 编排，Phase 4 P2 完成切换），提供账号诊断、流量分析、内容生成、选题策略、合规预检、SOP 编排等核心能力。原 OpenClaw/意图规则编排已于 Phase 4 决策退役，详见 `docs/specs/phase4_unified_planner_deprecation_spec.md`。
 
 **核心升级**：
 - **Agent 编排层**：`AgentOrchestrator` 支持 PARALLEL/SERIAL/MIXED 三种执行模式，14 个 Agent 根据意图自动组队协作
@@ -30,7 +30,12 @@ Lumina 是一个面向小红书、抖音、B站等内容平台的 AI 营销助�
 
 ---
 
-## 系统架构（最新）
+## 系统架构（历史快照）
+
+> ⚠️ **本节的架构图与下方「项目结构」为历史快照**（对应 Orchestra / Agent 编排时代，其中
+> OpenClaw 闸机、MarketingOrchestra、AgentOrchestrator、意图分类器等多数组件已随 Phase 4 退役）。
+> **现行 as-built 架构以 [`docs/ARCHITECTURE_CURRENT.md`](docs/ARCHITECTURE_CURRENT.md) 为准**
+> （Hermes LLM planner 唯一执行引擎 + lumina_* 工具集 + SSE v2 契约）。
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
@@ -38,7 +43,7 @@ Lumina 是一个面向小红书、抖音、B站等内容平台的 AI 营销助�
 │  ┌────────────────────────────────┐  ┌───────────────────────────────────────────┐  │
 │  │  OpenClaw Layer1 (intent-gate) │  │  packages/mcp-bridge (Node.js)            │  │
 │  │  • 营销意图闸机过滤            │  │  • IntentAwareBridge                      │  │
-│  │  • 非营销闲聊拦截              │  │  • 调用 /intent/recognize + /skill/execute│  │
+│  │  • 非营销闲聊拦截              │  │  • 调用 /skill/execute│  │
 │  └────────────────────────────────┘  └───────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────────────────────────┘
                                           │
@@ -174,6 +179,12 @@ Lumina 是一个面向小红书、抖音、B站等内容平台的 AI 营销助�
 │  └─────────────────────────────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────────────────────────┘
 ```
+
+> **⚠️ 架构决策注记（2026-07-15）**：
+> - 图中「OpenClaw Layer1 (intent-gate)」（接入层 / 插件层）整段已放弃，见 `docs/LUMINA_OPENCLAW_RENOVATION_PLAN.md`；
+> - 图中 Layer 2 的 MarketingOrchestra 意图分类器、AgentOrchestrator 意图→Agent 映射、NLG 层（format_orchestra_reply / format_sop_summary）均已决策退役（Phase 4 P2 移除，由 Hermes planner 取代），P2 前仍为现行链路。
+>
+> **目标架构**：单入口 Hermes LLM planner 统一编排——所有对话经 LLM 自主规划（思考 / 反问澄清 / 工具调用 / todo 多步分解），技能以 Hermes Tool 形式挂载（工具层复用现有 lumina-skills 等业务资产），记忆层为 Hermes SessionDB + MemoryProvider。详见 `docs/specs/phase4_unified_planner_deprecation_spec.md`。
 
 ---
 
@@ -320,57 +331,30 @@ docker compose -f docker-compose.local.yml up --build
 ```
 lumina/
 ├── apps/
-│   ├── api/                 # FastAPI 主服务（接入层）
-│   ├── orchestra/           # Layer2 编排中枢
-│   │   ├── core.py          # MarketingOrchestra（意图路由 + SOP DAG + AgentTeam 调用）
-│   │   ├── agent_orchestrator.py  # AgentOrchestrator（14 Agent + 3 种执行模式）
-│   │   └── nlg.py           # 结构化结果转自然语言
-│   ├── skill-hub/           # Layer3 MCP Skill Hub（streamable-http）
-│   ├── intent/              # 意图识别引擎（纯逻辑库）
-│   └── rpa/                 # 浏览器自动化（Playwright）
+│   ├── api/                 # FastAPI 主服务（唯一进程，v0.4.0）
+│   │   ├── src/api/main.py  # 统一入口：路由 + /mcp Skill Hub 挂载 + 静态
+│   │   └── src/services/    # handlers / hermes_adapter|tools|security / content_engine
+│   ├── orchestra/           # 旧 Layer2 残留：仅 skills/（榜单/定位矩阵/周报）被工具化复用
+│   ├── skill-hub/           # FastMCP Skill Hub（复用 lumina-skills 工具表）
+│   └── rpa/                 # Playwright 浏览器自动化
 ├── packages/
-│   ├── lumina-skills/       # 原子 Skill 实现 + methodology_utils
-│   │   ├── content.py       # generate_text / generate_script / select_topic（已接入LLM）
-│   │   ├── diagnosis.py     # diagnose_account / analyze_traffic / detect_risk
-│   │   ├── assets.py        # retrieve_methodology / match_cases / qa_knowledge（已接入LLM）
-│   │   └── registry.py      # TOOL_REGISTRY（12 个工具注册）
+│   ├── lumina-skills/       # 13 个原子 Skill（TOOL_REGISTRY：诊断/内容/资产/工具）
+│   ├── llm-hub/             # LLM 池唯一入口（多模型切换 + 成本策略 + 用量上报）
 │   ├── knowledge-base/      # PlatformRegistry + MethodologyRegistry
-│   ├── llm-hub/             # LLM 池管理（多模型切换）
-│   ├── skill-hub-client/    # Skill 调用客户端
-│   ├── sop-engine/          # SOP DAG 编译器
-│   ├── mcp-bridge/          # Node.js Bridge（OpenClaw 对接）
-│   └── agent-core/          # Agent 基类与上下文
-├── skills/                  # 13 个独立 SSE MCP Skill Server
-│   ├── skill-creative-studio/
-│   ├── skill-content-strategist/
-│   ├── skill-bulk-creative/
-│   ├── skill-compliance-officer/
-│   ├── skill-data-analyst/
-│   ├── skill-account-keeper/
-│   ├── skill-matrix-commander/
-│   ├── skill-growth-hacker/
-│   ├── skill-knowledge-miner/
-│   ├── skill-community-manager/
-│   ├── skill-sop-evolver/
-│   ├── skill-traffic-broker/
-│   └── skill-rpa-executor/
-├── config/
-│   ├── agents.yaml          # 14 个 Agent 定义 + 编排规则 + 执行模式配置
-│   ├── llm.yaml             # LLM 池与技能-模型分配
-│   └── intent_rules.yaml    # 意图匹配规则
+│   ├── skill-hub-client/    # Skill 调用客户端（同进程直连工具表）
+│   ├── sop-engine/          # 历史遗留：SOP DAG 编译器
+│   └── agent-core/          # 历史遗留：Agent 基类
+├── vendor/hermes-agent/     # Hermes Agent 0.16.0（唯一执行引擎，钉版 vendor）
+├── config/ infra/config/    # llm.yaml：LLM 池与技能-模型分配；infra/sql：DDL
 ├── data/
-│   ├── methodologies/       # 8 套方法论 YAML 配置
-│   ├── platforms/           # 平台规范 YAML 配置
-│   ├── credentials/         # 登录凭证存储
-│   └── sessions/            # 会话数据
-├── tests/                   # 测试套件
-│   ├── integration/         # 端到端集成测试
-│   │   └── test_e2e_agent_skill_llm.py  # Agent→Skill→LLM 完整链路测试
-│   ├── test_agent_team.py   # AgentOrchestrator 单元测试
-│   └── skills/              # Skill 单元测试
-├── docs/                    # 架构文档
+│   ├── methodologies/       # 11 套方法论 YAML（AIDA/PAS/定位/StoryArc/…）
+│   ├── platforms/           # 平台规范 YAML（小红书/抖音/B站/公众号）
+│   ├── hermes/              # HERMES_HOME（config.yaml / personas / sessions）
+│   ├── credentials/ sessions/ logs/chat/
+├── tests/                   # 测试套件（chat_debug/hermes/integration/services/skills/…）
+├── docs/                    # 架构文档（现行架构见 docs/ARCHITECTURE_CURRENT.md）
 ├── scripts/                 # 启动脚本
-└── static/debug_chat/       # Web 调试界面
+└── static/                  # debug_chat UI / sdk / content 导出物
 ```
 
 ---
@@ -405,24 +389,8 @@ skill_config:
 
 ### Agent 编排配置
 
-编辑 `config/agents.yaml` 调整 Agent 定义和编排规则：
-
-```yaml
-single_account_agents:
-  data_analyst:
-    skills: [skill-data-analyst]
-    triggers: [diagnosis, data_analysis, traffic_analysis]
-    priority: 1
-
-orchestration:
-  intent_agent_map:
-    diagnosis: [data_analyst, content_strategist]
-    content_creation: [creative_studio, compliance_officer]
-  execution_modes:
-    parallel: [diagnosis, traffic_analysis]
-    sequential: [content_creation, script_creation]
-    mixed: [matrix_setup]
-```
+> ⚠️ **已移除**：`config/agents.yaml` 与意图→Agent 组队机制已随 Phase 4 P2 退役删除。
+> 统一规划由 Hermes Agent 承担，能力扩展方式改为注册 Hermes Tool（见下文"开发指南"）。
 
 ### 环境变量
 
@@ -508,7 +476,7 @@ pytest tests/integration/test_e2e_agent_skill_llm.py::TestAgentOrchestrationE2E:
 
 1. 在 `packages/lumina-skills/src/lumina_skills/` 实现原子 Skill 函数
 2. 在 `packages/lumina-skills/src/lumina_skills/registry.py` 注册到 TOOL_REGISTRY
-3. 如需独立 SSE 服务，在 `skills/skill-<name>/` 新建 FastMCP 应用
+3. 如需对 Hermes 引擎暴露能力，在 `apps/api/src/services/hermes_tools.py` 注册 `lumina_*` 工具
 4. 如需 LLM 支持，使用 `from llm_hub import get_client` 获取客户端并调用 `complete()`
 
 ### 添加新方法论
@@ -525,20 +493,22 @@ pytest tests/integration/test_e2e_agent_skill_llm.py::TestAgentOrchestrationE2E:
 
 ### 添加新 Agent
 
-1. 在 `config/agents.yaml` 的 `single_account_agents` / `matrix_agents` / `utility_agents` 中添加定义
-2. 在 `orchestration.intent_agent_map` 中配置意图映射
-3. 在 `orchestration.execution_modes` 中配置执行模式
-4. 如需新的 Skill→Tool 映射，在 `AgentOrchestrator.SKILL_TOOL_MAP` 中添加
+> ⚠️ **已弃用**：基于 `config/agents.yaml` + `intent_agent_map` 的意图→Agent 组队方式已决策退役（Phase 4 P2 移除），P2 前仅允许修复性维护。
+>
+> **目标态**：新增能力 = 在 `apps/api/src/services/hermes_tools.py` 注册 Hermes Tool（schema + handler），由 LLM 自主选用，无需配置意图映射。详见 `docs/specs/phase4_unified_planner_deprecation_spec.md`。
 
 ---
 
 ## 相关文档
 
-- [架构文档](docs/ARCHITECTURE.md) - 系统架构设计
+- [现行架构梳理](docs/ARCHITECTURE_CURRENT.md) - 当前 as-built 架构（唯一入口，推荐先读）
+- [架构文档](docs/ARCHITECTURE.md) - 系统架构设计（历史）
 - [开发计划](Development_plan_v2.md) - 详细开发规划
-- [Docker 部署](docs/DOCKER_DEPLOYMENT.md) - 生产部署指南
+- [本地 Docker 部署](docs/DOCKER_DEPLOYMENT.md) - 本地开发环境 Docker 部署指南
+- [生产环境部署](docs/PRODUCTION_DEPLOYMENT.md) - 服务器生产环境部署与数据持久化指南
 - [OpenClaw 集成](docs/INTEGRATION_OPENCLAW.md) - 与 OpenClaw 集成
 - [本地测试指南](LOCAL_SETUP_GUIDE.md) - 保姆级本地环境搭建与测试
+- [Phase 4 统一 LLM Planner 与旧体系退役 SPEC](docs/specs/phase4_unified_planner_deprecation_spec.md)
 
 ## 技术栈
 

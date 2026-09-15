@@ -4,7 +4,6 @@
 """
 
 import asyncio
-import json
 import sys
 from pathlib import Path
 
@@ -83,7 +82,7 @@ async def debug_platform_page(platform: str, url: str, name: str):
                             print(f"\n[{selector}] -> 匹配 {len(elements)} 个元素")
                             for i, t in enumerate(texts[:3]):
                                 print(f"  [{i+1}] {t}")
-                except Exception as e:
+                except Exception:
                     pass
 
             # 3. 获取页面 body 中的文本内容（前2000字符）

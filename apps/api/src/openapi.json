@@ -1,0 +1,2075 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Lumina API",
+    "description": "Lumina 营销智能助手统一 API。涵盖意图识别、Skill 调用、Marketing Orchestra 编排、Token 用量查询、Demo 工作台等能力层接口。",
+    "version": "0.3.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "健康检查",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/marketing/hub": {
+      "post": {
+        "tags": [
+          "marketing-hub"
+        ],
+        "summary": "Marketing Intelligence Hub 编排入口",
+        "description": "Marketing Intelligence Hub 统一编排入口。\n\n接收用户输入，由 MarketingOrchestra 完成意图识别、Skill 路由与结果编排。",
+        "operationId": "marketing_intelligence_hub_api_v1_marketing_hub_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarketingHubBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Marketing Intelligence Hub Api V1 Marketing Hub Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/debug/chat/capabilities": {
+      "get": {
+        "tags": [
+          "debug-chat"
+        ],
+        "summary": "列出调试可用的 capabilities",
+        "description": "列出 debug chat 支持的所有 capability 类型。",
+        "operationId": "list_capabilities_api_v1_debug_chat_capabilities_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapabilitiesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/debug/chat/memory": {
+      "get": {
+        "tags": [
+          "debug-chat"
+        ],
+        "summary": "查询 debug 对话记忆",
+        "description": "查询指定 debug 对话的记忆列表。",
+        "operationId": "get_memory_api_v1_debug_chat_memory_get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "用户唯一标识",
+              "title": "User Id"
+            },
+            "description": "用户唯一标识"
+          },
+          {
+            "name": "conversation_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "对话唯一标识",
+              "title": "Conversation Id"
+            },
+            "description": "对话唯一标识"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemoryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "debug-chat"
+        ],
+        "summary": "清除 debug 对话记忆",
+        "description": "清除指定 debug 对话的全部记忆。",
+        "operationId": "delete_memory_api_v1_debug_chat_memory_delete",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "用户唯一标识",
+              "title": "User Id"
+            },
+            "description": "用户唯一标识"
+          },
+          {
+            "name": "conversation_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "对话唯一标识",
+              "title": "Conversation Id"
+            },
+            "description": "对话唯一标识"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteMemoryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/debug/chat/stream": {
+      "post": {
+        "tags": [
+          "debug-chat"
+        ],
+        "summary": "Debug Chat 流式对话",
+        "description": "Debug Chat SSE 流式对话入口，支持 system_chat 走 MarketingOrchestra 编排。",
+        "operationId": "chat_stream_api_v1_debug_chat_stream_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatStreamBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/services/{service}/stream": {
+      "post": {
+        "tags": [
+          "services"
+        ],
+        "summary": "服务流式对话",
+        "description": "按服务进行 SSE 流式对话。",
+        "operationId": "service_stream_api_v1_services__service__stream_post",
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Service"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServiceStreamRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/services/{service}/memory": {
+      "get": {
+        "tags": [
+          "services"
+        ],
+        "summary": "查询服务对话记忆",
+        "description": "查询指定服务的对话记忆列表。",
+        "operationId": "get_memory_api_v1_services__service__memory_get",
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Service"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "用户唯一标识",
+              "title": "User Id"
+            },
+            "description": "用户唯一标识"
+          },
+          {
+            "name": "conversation_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "对话唯一标识",
+              "title": "Conversation Id"
+            },
+            "description": "对话唯一标识"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/services__router__MemoryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "services"
+        ],
+        "summary": "清除服务对话记忆",
+        "description": "清除指定服务的对话记忆。",
+        "operationId": "delete_memory_api_v1_services__service__memory_delete",
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Service"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "用户唯一标识",
+              "title": "User Id"
+            },
+            "description": "用户唯一标识"
+          },
+          {
+            "name": "conversation_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "对话唯一标识",
+              "title": "Conversation Id"
+            },
+            "description": "对话唯一标识"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/services__router__DeleteMemoryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/intent/recognize": {
+      "post": {
+        "tags": [
+          "intent"
+        ],
+        "summary": "识别用户意图",
+        "description": "识别用户意图\n\n四级架构：L1规则 -> L2记忆 -> L2.5分类器 -> L3 LLM",
+        "operationId": "recognize_intent_intent_recognize_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IntentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/intent/clarify": {
+      "post": {
+        "tags": [
+          "intent"
+        ],
+        "summary": "处理澄清响应",
+        "description": "处理澄清响应\n\n用户在多轮澄清后给出回答，返回最终确定的意图。",
+        "operationId": "handle_clarification_intent_clarify_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClarifyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClarifyResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/skill/execute": {
+      "post": {
+        "tags": [
+          "skill"
+        ],
+        "summary": "执行 Skill 方法",
+        "description": "执行 Skill 方法\n\n通过 SkillHubClient 调用对应的 Skill 工具",
+        "operationId": "execute_skill_skill_execute_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SkillExecuteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillExecuteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/skill/list": {
+      "get": {
+        "tags": [
+          "skill"
+        ],
+        "summary": "列出所有可用 Skills",
+        "description": "列出所有可用 Skills",
+        "operationId": "list_skills_skill_list_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/demo/position-matrix": {
+      "get": {
+        "tags": [
+          "demo"
+        ],
+        "summary": "获取定位矩阵分析结果",
+        "description": "获取定位矩阵分析结果\n\n返回用户在「专业独特性 × 市场需求度」矩阵中的坐标与建议",
+        "operationId": "get_position_matrix_api_v1_demo_position_matrix_get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "profile_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Profile Id"
+            }
+          },
+          {
+            "name": "industry",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Industry"
+            }
+          },
+          {
+            "name": "stage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Stage"
+            }
+          },
+          {
+            "name": "platform",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Platform"
+            }
+          },
+          {
+            "name": "goal",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Goal"
+            }
+          },
+          {
+            "name": "pain_point",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Pain Point"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PositionMatrixResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/demo/weekly-rankings": {
+      "get": {
+        "tags": [
+          "demo"
+        ],
+        "summary": "获取本周内容选题榜单",
+        "description": "获取本周内容选题榜单\n\n采用「RPA 真实抓取 + LLM 增强」混合策略：\n1. 先通过 fetch_trending_topics 抓取各平台真实热门话题\n2. 再用 LLM 基于真实话题 + 用户画像生成结构化榜单\n3. 服务端对结果做二次排序与分页\n4. 若 RPA 失败，自动降级为纯 LLM 生成",
+        "operationId": "get_weekly_rankings_api_v1_demo_weekly_rankings_get",
+        "parameters": [
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "fit_score",
+              "title": "Sort By"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 10,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "profile_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Profile Id"
+            }
+          },
+          {
+            "name": "industry",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Industry"
+            }
+          },
+          {
+            "name": "stage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Stage"
+            }
+          },
+          {
+            "name": "platform",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Platform"
+            }
+          },
+          {
+            "name": "goal",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Goal"
+            }
+          },
+          {
+            "name": "pain_point",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Pain Point"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeeklyRankingsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/usage/stats": {
+      "get": {
+        "tags": [
+          "usage"
+        ],
+        "summary": "统一查询用户 token 用量",
+        "description": "统一查询用户 token 用量。\n\n- 仅传 user_id：返回累计摘要（summary）\n- 同时传 start_date + end_date：返回 summary + 按天明细（daily）",
+        "operationId": "usage_stats_api_v1_usage_stats_get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "用户唯一标识",
+              "title": "User Id"
+            },
+            "description": "用户唯一标识"
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "查询起始日期（YYYY-MM-DD），与 end_date 同时提供时返回按天明细",
+              "title": "Start Date"
+            },
+            "description": "查询起始日期（YYYY-MM-DD），与 end_date 同时提供时返回按天明细"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "查询结束日期（YYYY-MM-DD），与 start_date 同时提供时返回按天明细",
+              "title": "End Date"
+            },
+            "description": "查询结束日期（YYYY-MM-DD），与 start_date 同时提供时返回按天明细"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/usage/summary": {
+      "get": {
+        "tags": [
+          "usage"
+        ],
+        "summary": "获取用户累计 token 用量摘要",
+        "description": "获取用户累计 token 用量摘要。（兼容接口，推荐使用 /stats）",
+        "operationId": "usage_summary_api_v1_usage_summary_get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "用户唯一标识",
+              "title": "User Id"
+            },
+            "description": "用户唯一标识"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/usage/daily": {
+      "get": {
+        "tags": [
+          "usage"
+        ],
+        "summary": "按天汇总用户的 token 用量",
+        "description": "按天汇总用户的 token 用量。（兼容接口，推荐使用 /stats）",
+        "operationId": "usage_daily_api_v1_usage_daily_get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "用户唯一标识",
+              "title": "User Id"
+            },
+            "description": "用户唯一标识"
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "description": "查询起始日期（YYYY-MM-DD）",
+              "title": "Start Date"
+            },
+            "description": "查询起始日期（YYYY-MM-DD）"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "description": "查询结束日期（YYYY-MM-DD）",
+              "title": "End Date"
+            },
+            "description": "查询结束日期（YYYY-MM-DD）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/exports/{export_id}": {
+      "get": {
+        "tags": [
+          "exports"
+        ],
+        "summary": "获取 HTML 导出文件",
+        "description": "通过 export_id 获取 HTML 导出文件。\n\nexport_id 格式支持两种：\n1. UUID 格式：从数据库查询文件路径\n2. 相对路径格式：直接拼接 static/content/ 路径",
+        "operationId": "get_export_api_v1_exports__export_id__get",
+        "parameters": [
+          {
+            "name": "export_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Export Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CapabilitiesResponse": {
+        "properties": {
+          "capabilities": {
+            "items": {
+              "$ref": "#/components/schemas/CapabilityItem"
+            },
+            "type": "array",
+            "title": "Capabilities",
+            "description": "可用能力列表"
+          }
+        },
+        "type": "object",
+        "required": [
+          "capabilities"
+        ],
+        "title": "CapabilitiesResponse"
+      },
+      "CapabilityItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "能力标识"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "能力名称"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label"
+        ],
+        "title": "CapabilityItem"
+      },
+      "ChatStreamBody": {
+        "properties": {
+          "capability": {
+            "type": "string",
+            "title": "Capability",
+            "description": "system_chat | content_direction_ranking | ..."
+          },
+          "user_id": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "User Id",
+            "description": "用户唯一标识",
+            "default": "debug-user"
+          },
+          "conversation_id": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Conversation Id",
+            "description": "对话唯一标识",
+            "default": "debug-conv"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 32000,
+            "minLength": 1,
+            "title": "Message",
+            "description": "用户当前输入"
+          },
+          "platform": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform",
+            "description": "可选：xiaohongshu / douyin 等"
+          },
+          "hub_context": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Hub Context",
+            "description": "与 POST /api/v1/marketing/hub 的 context 一致，传入 MarketingOrchestra（仅 system_chat 使用）"
+          },
+          "stream_format": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stream Format",
+            "description": "1=v1 SSE；2=v2（仅 system_chat）。缺省可读 X-Lumina-Stream-Format"
+          }
+        },
+        "type": "object",
+        "required": [
+          "capability",
+          "message"
+        ],
+        "title": "ChatStreamBody"
+      },
+      "ClarifyRequest": {
+        "properties": {
+          "user_response": {
+            "type": "string",
+            "minLength": 1,
+            "title": "User Response",
+            "description": "用户对澄清问题的回答"
+          },
+          "original_text": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Original Text",
+            "description": "原始用户输入文本"
+          },
+          "possible_intents": {
+            "items": {},
+            "type": "array",
+            "title": "Possible Intents",
+            "description": "可能的意图列表"
+          },
+          "user_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "User Id",
+            "description": "用户唯一标识"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_response",
+          "original_text",
+          "possible_intents",
+          "user_id"
+        ],
+        "title": "ClarifyRequest"
+      },
+      "ClarifyResponse": {
+        "properties": {
+          "intent_type": {
+            "type": "string",
+            "title": "Intent Type",
+            "description": "澄清后确定的主意图类型"
+          },
+          "subtype": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subtype",
+            "description": "意图子类型"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "description": "置信度（0-1）"
+          }
+        },
+        "type": "object",
+        "required": [
+          "intent_type",
+          "confidence"
+        ],
+        "title": "ClarifyResponse"
+      },
+      "DeleteMemoryResponse": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok",
+            "description": "操作是否成功"
+          },
+          "cleared": {
+            "type": "boolean",
+            "title": "Cleared",
+            "description": "是否已清除"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "cleared"
+        ],
+        "title": "DeleteMemoryResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "IntentRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Text",
+            "description": "用户输入文本"
+          },
+          "user_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "User Id",
+            "description": "用户唯一标识"
+          },
+          "session_context": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Context",
+            "description": "会话上下文信息"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "user_id"
+        ],
+        "title": "IntentRequest"
+      },
+      "IntentResponse": {
+        "properties": {
+          "intent_type": {
+            "type": "string",
+            "title": "Intent Type",
+            "description": "识别出的主意图类型"
+          },
+          "subtype": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subtype",
+            "description": "意图子类型"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "description": "置信度（0-1）"
+          },
+          "requires_clarification": {
+            "type": "boolean",
+            "title": "Requires Clarification",
+            "description": "是否需要澄清"
+          },
+          "questions": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Questions",
+            "description": "澄清问题列表"
+          },
+          "suggestions": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggestions",
+            "description": "建议选项列表"
+          }
+        },
+        "type": "object",
+        "required": [
+          "intent_type",
+          "confidence",
+          "requires_clarification"
+        ],
+        "title": "IntentResponse"
+      },
+      "MarketingHubBody": {
+        "properties": {
+          "user_input": {
+            "type": "string",
+            "minLength": 1,
+            "title": "User Input",
+            "description": "用户当前输入文本"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "用户唯一标识",
+            "default": "anonymous"
+          },
+          "session_history": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Session History",
+            "description": "历史会话消息列表"
+          },
+          "platform": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform",
+            "description": "平台上下文，如 xiaohongshu / douyin"
+          },
+          "context": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Context",
+            "description": "业务上下文（行业、指标、DNA 等）"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_input"
+        ],
+        "title": "MarketingHubBody"
+      },
+      "MemoryResponse": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "用户唯一标识"
+          },
+          "conversation_id": {
+            "type": "string",
+            "title": "Conversation Id",
+            "description": "对话唯一标识"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count",
+            "description": "消息数量"
+          },
+          "messages": {
+            "items": {},
+            "type": "array",
+            "title": "Messages",
+            "description": "消息列表"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "conversation_id",
+          "count",
+          "messages"
+        ],
+        "title": "MemoryResponse"
+      },
+      "PositionMatrixData": {
+        "properties": {
+          "x": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "X",
+            "description": "专业独特性坐标（0-100）"
+          },
+          "y": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Y",
+            "description": "市场需求度坐标（0-100）"
+          },
+          "feedback": {
+            "type": "string",
+            "title": "Feedback",
+            "description": "定位现状反馈"
+          },
+          "suggestion": {
+            "type": "string",
+            "title": "Suggestion",
+            "description": "下一步行动建议"
+          }
+        },
+        "type": "object",
+        "required": [
+          "x",
+          "y",
+          "feedback",
+          "suggestion"
+        ],
+        "title": "PositionMatrixData"
+      },
+      "PositionMatrixResponse": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "业务状态码，0 表示成功"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "状态描述"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PositionMatrixData"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "定位矩阵数据"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "PositionMatrixResponse"
+      },
+      "ServiceStreamRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "User Id",
+            "description": "用户唯一标识"
+          },
+          "conversation_id": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Conversation Id",
+            "description": "对话唯一标识"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 32000,
+            "minLength": 1,
+            "title": "Message",
+            "description": "用户当前输入"
+          },
+          "platform": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform",
+            "description": "可选平台上下文，如 xiaohongshu / douyin"
+          },
+          "context": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Context",
+            "description": "业务上下文（行业、指标、DNA 等）"
+          },
+          "mode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mode",
+            "description": "子模式，仅定位服务使用：case / matrix"
+          },
+          "stream_format": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stream Format",
+            "description": "1=v1 SSE；2=v2（仅 system-chat 生效）。缺省时可读 X-Lumina-Stream-Format；均未指定则 1"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "conversation_id",
+          "message"
+        ],
+        "title": "ServiceStreamRequest"
+      },
+      "SkillExecuteRequest": {
+        "properties": {
+          "skill_name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Skill Name",
+            "description": "Skill 名称，如 content_strategist / data_analyst"
+          },
+          "method": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Method",
+            "description": "要调用的具体方法名"
+          },
+          "params": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Params",
+            "description": "方法参数"
+          },
+          "user_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "User Id",
+            "description": "用户唯一标识"
+          }
+        },
+        "type": "object",
+        "required": [
+          "skill_name",
+          "method",
+          "user_id"
+        ],
+        "title": "SkillExecuteRequest"
+      },
+      "SkillExecuteResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "是否执行成功"
+          },
+          "skill": {
+            "type": "string",
+            "title": "Skill",
+            "description": "Skill 名称"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method",
+            "description": "调用的方法名"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result",
+            "description": "执行结果"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error",
+            "description": "错误信息（失败时）"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "skill",
+          "method"
+        ],
+        "title": "SkillExecuteResponse"
+      },
+      "SkillInfo": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Skill 唯一标识"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Skill 中文名称"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "SkillInfo"
+      },
+      "SkillListResponse": {
+        "properties": {
+          "single_account_agents": {
+            "items": {
+              "$ref": "#/components/schemas/SkillInfo"
+            },
+            "type": "array",
+            "title": "Single Account Agents",
+            "description": "单账号代理"
+          },
+          "matrix_agents": {
+            "items": {
+              "$ref": "#/components/schemas/SkillInfo"
+            },
+            "type": "array",
+            "title": "Matrix Agents",
+            "description": "矩阵代理"
+          },
+          "utility_agents": {
+            "items": {
+              "$ref": "#/components/schemas/SkillInfo"
+            },
+            "type": "array",
+            "title": "Utility Agents",
+            "description": "工具代理"
+          }
+        },
+        "type": "object",
+        "required": [
+          "single_account_agents",
+          "matrix_agents",
+          "utility_agents"
+        ],
+        "title": "SkillListResponse"
+      },
+      "UsageResponse": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "业务状态码，0 表示成功"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "状态描述"
+          },
+          "data": {
+            "title": "Data",
+            "description": "返回数据"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "title": "UsageResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WeeklyRankingItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "选题唯一标识"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "选题名称"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "来源平台"
+          },
+          "fit_score": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Fit Score",
+            "description": "用户匹配度"
+          },
+          "heat": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Heat",
+            "description": "市场热度"
+          },
+          "delta": {
+            "type": "integer",
+            "title": "Delta",
+            "description": "热度周环比变化"
+          },
+          "risk_level": {
+            "type": "string",
+            "title": "Risk Level",
+            "description": "风险等级：low / medium / high"
+          },
+          "angles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Angles",
+            "description": "推荐切入角度"
+          },
+          "title_templates": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Title Templates",
+            "description": "推荐标题模板"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings",
+            "description": "风险提示"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "source",
+          "fit_score",
+          "heat",
+          "delta",
+          "risk_level",
+          "angles",
+          "title_templates"
+        ],
+        "title": "WeeklyRankingItem"
+      },
+      "WeeklyRankingsData": {
+        "properties": {
+          "list": {
+            "items": {
+              "$ref": "#/components/schemas/WeeklyRankingItem"
+            },
+            "type": "array",
+            "title": "List",
+            "description": "选题列表"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "总数量"
+          },
+          "data_source": {
+            "type": "string",
+            "title": "Data Source",
+            "description": "数据来源：rpa+llm / llm_only",
+            "default": "llm_only"
+          }
+        },
+        "type": "object",
+        "required": [
+          "list",
+          "total"
+        ],
+        "title": "WeeklyRankingsData"
+      },
+      "WeeklyRankingsResponse": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "业务状态码，0 表示成功"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "状态描述"
+          },
+          "data": {
+            "$ref": "#/components/schemas/WeeklyRankingsData",
+            "description": "榜单数据"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "data"
+        ],
+        "title": "WeeklyRankingsResponse"
+      },
+      "services__router__DeleteMemoryResponse": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok",
+            "description": "操作是否成功"
+          },
+          "cleared": {
+            "type": "boolean",
+            "title": "Cleared",
+            "description": "是否已清除"
+          },
+          "service": {
+            "type": "string",
+            "title": "Service",
+            "description": "服务名称"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "cleared",
+          "service"
+        ],
+        "title": "DeleteMemoryResponse"
+      },
+      "services__router__MemoryResponse": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "用户唯一标识"
+          },
+          "conversation_id": {
+            "type": "string",
+            "title": "Conversation Id",
+            "description": "对话唯一标识"
+          },
+          "service": {
+            "type": "string",
+            "title": "Service",
+            "description": "服务名称"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count",
+            "description": "消息数量"
+          },
+          "messages": {
+            "items": {},
+            "type": "array",
+            "title": "Messages",
+            "description": "消息列表"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "conversation_id",
+          "service",
+          "count",
+          "messages"
+        ],
+        "title": "MemoryResponse"
+      }
+    }
+  }
+}

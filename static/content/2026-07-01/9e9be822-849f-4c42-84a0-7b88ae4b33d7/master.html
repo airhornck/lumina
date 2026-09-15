@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>为什么你总是觉得累？3个反直觉的精力管理真相 - 母稿</title>
+    <style>
+        body {
+            max-width: 720px;
+            margin: 40px auto;
+            padding: 0 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #fafafa;
+        }
+        .container {
+            background: #fff;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        h1 { font-size: 26px; margin-bottom: 12px; color: #1a1a1a; }
+        .tags { margin: 16px 0; }
+        .tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            margin-right: 8px;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        .positioning {
+            background: #f0f7ff;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #4a90d9;
+        }
+        .positioning h3 { margin-top: 0; color: #2c5aa0; font-size: 16px; }
+        article { font-size: 16px; margin-top: 24px; color: #444; }
+        .compliance {
+            color: #2e7d32;
+            font-size: 14px;
+            margin-top: 24px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        .compliance.warning {
+            color: #bf360c;
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+        .compliance.warning mark {
+            background: #ffcc80;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .cover-copy, .cta {
+            background: #f3e5f5;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin: 18px 0;
+            border-left: 4px solid #9c27b0;
+        }
+        .cover-copy h4, .cta h4 { margin-top: 0; color: #6a1b9a; font-size: 15px; }
+
+        /* 平台规范卡片 */
+        .platform-specs {
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 24px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .platform-specs h3 { margin-top: 0; color: #f57c00; font-size: 16px; }
+        .spec-section { margin: 14px 0; }
+        .spec-section h4 {
+            font-size: 14px;
+            color: #e65100;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .spec-section ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+        .spec-section li { margin: 4px 0; }
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .spec-table th, .spec-table td {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .spec-table th {
+            background: #fff3cd;
+            color: #856404;
+            font-weight: 600;
+            width: 30%;
+        }
+        .spec-table td { color: #555; }
+        .audit-warning {
+            background: #ffebee;
+            border-left-color: #ef5350;
+        }
+        .audit-warning h4 { color: #c62828; }
+
+        /* 平台字段区 */
+        .platform-fields {
+            background: #e3f2fd;
+            padding: 18px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .platform-fields h4 {
+            margin-top: 0;
+            color: #1565c0;
+            font-size: 15px;
+        }
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #bbdefb;
+            font-size: 14px;
+        }
+        .field-row:last-child { border-bottom: none; }
+        .field-label { color: #424242; font-weight: 500; }
+        .field-value { color: #1565c0; font-weight: 600; }
+        .field-warn { color: #e53935; font-weight: 600; }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+        .best-time {
+            background: #e8eaf6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: #3949ab;
+            border-left: 4px solid #5c6bc0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="positioning"><h3>🎯 账号定位</h3><p><strong>面向泛人群的通用内容账号，聚焦于提供高信息密度、强情绪共鸣或实用价值的多元内容，成为用户日常信息获取与休闲娱乐的可靠选择。</strong></p><p>👥 目标受众：18-45 不限</p><p>📌 内容支柱：泛知识科普：覆盖生活常识、冷知识、社会现象解析等，满足好奇心与实用需求, 情绪价值内容：包括轻松幽默段子、治愈系故事、正能量短评，提供精神放松与共鸣</p></div>
+        
+        <h1>为什么你总是觉得累？3个反直觉的精力管理真相</h1>
+        <div class="tags">
+            <span class="tag">#精力管理</span><span class="tag">#反常识</span><span class="tag">#生活百科</span><span class="tag">#解压小技巧</span><span class="tag">#自我提升</span><span class="tag">#极简生活</span><span class="tag">#冷知识</span><span class="tag">#健康科普</span>
+        </div>
+        <article>你是不是每天刷手机刷到凌晨两点，明明没干什么正事，却感觉身体被掏空？<br><br>别急着怪自己懒，真相可能让你大跌眼镜。<br><br>1. “休息”不等于“不动”。<br>很多人下班回家就瘫沙发刷短视频，以为在放松。但大脑其实还在高速处理碎片信息，反而更累。真正有效的休息是“切换活动”——比如散步、整理房间，甚至做几个深蹲，让大脑换挡，才能恢复精力。<br><br>2. 情绪消耗比体力消耗更可怕。<br>你焦虑、纠结、生闷气时，身体会分泌大量皮质醇，这种压力激素会让你像跑了马拉松一样累。所以，与其硬扛，不如给自己5分钟“放空时间”——闭眼深呼吸，或者听一首喜欢的歌，强制切断情绪回路。<br><br>3. 你的“充电”方式可能错了。<br>你以为周末补觉能回血？错！生物钟被打乱后，反而会加重疲劳。更高效的方法是：每天固定时间睡7-8小时，午休控制在20分钟以内。如果必须熬夜，第二天早上喝杯淡盐水，比咖啡管用。<br><br>所以，下次再觉得累，先别急着躺平。试试换个姿势刷手机（比如站着看），或者直接起身倒杯水。你可能会发现，原来精力不是省出来的，是“切换”出来的。<br><br>#精力管理 #反常识 #生活百科 #解压小技巧 #自我提升 #极简生活 #冷知识 #健康科普</article>
+        <div class="cover-copy"><h4>📱 封面文案</h4><p>别再躺平了！3个反常识真相让你精力爆棚</p></div><div class="cta"><h4>👉 行动号召</h4><p>点赞收藏，下次累的时候翻出来看看</p></div>
+        
+        
+        <div class="compliance">✅ 合规检查通过，未发现违规词</div>
+        <footer>
+            由 Lumina 智能营销助手生成 · 母稿
+        </footer>
+    </div>
+</body>
+</html>

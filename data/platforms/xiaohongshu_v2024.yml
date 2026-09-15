@@ -18,49 +18,70 @@ content_formats:
       max: 18
       min: 1
       default: "6-9"
+      required: true
     title:
       max_chars: 20
       min_chars: 1
       default: "15-20"
+      required: true
     content:
       max_chars: 1000
       min_chars: 1
       default: "300-800"
+      required: true
     tags:
       max_count: 10
+      required: false
     pic_size:
       max: "32MB"
+      required: true
     pic_format:
       supported: ["png", "jpg", "jpeg", "webp"]
+      required: true
     pic_resolution:
       ratio: "3:4至2:1之间"
       min: "720*960"
+      required: false
   视频:
     title:
       max_chars: 64
       min_chars: 1
       default: "15-20"
+      required: true
+    video:
+      required: true
     video_size:
       max: "20GB"
+      required: true
     video_duration:
       max: "60分钟"
       default: "30秒-1分钟"
+      required: true
     video_format:
       recommended: ["mp4", "mov"]
+      required: true
     video_resolution:
       recommended: "720P(1280*720)及以上"
+      required: false
     content:
       default: "100-300"
+      required: true
     tags:
       max_count: 10
+      required: false
   仅文字:
     content_all:
       max_chars: 10000
       default: "1500-3000"
+      required: true
     title:
       default: "20-30"
+      max_chars: 10000
+      required: true
     content_layout:
       paragraphs: "5-8"
       lines_per_paragraph: 8
+      required: false
     tags:
       max_count: 10
+      required: false

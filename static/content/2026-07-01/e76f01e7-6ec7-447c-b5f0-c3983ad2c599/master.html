@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>为什么你总是忍不住刷手机？用经济学解释你的“拖延症” - 母稿</title>
+    <style>
+        body {
+            max-width: 720px;
+            margin: 40px auto;
+            padding: 0 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #fafafa;
+        }
+        .container {
+            background: #fff;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        h1 { font-size: 26px; margin-bottom: 12px; color: #1a1a1a; }
+        .tags { margin: 16px 0; }
+        .tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            margin-right: 8px;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        .positioning {
+            background: #f0f7ff;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #4a90d9;
+        }
+        .positioning h3 { margin-top: 0; color: #2c5aa0; font-size: 16px; }
+        article { font-size: 16px; margin-top: 24px; color: #444; }
+        .compliance {
+            color: #2e7d32;
+            font-size: 14px;
+            margin-top: 24px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        .compliance.warning {
+            color: #bf360c;
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+        .compliance.warning mark {
+            background: #ffcc80;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .cover-copy, .cta {
+            background: #f3e5f5;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin: 18px 0;
+            border-left: 4px solid #9c27b0;
+        }
+        .cover-copy h4, .cta h4 { margin-top: 0; color: #6a1b9a; font-size: 15px; }
+
+        /* 平台规范卡片 */
+        .platform-specs {
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 24px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .platform-specs h3 { margin-top: 0; color: #f57c00; font-size: 16px; }
+        .spec-section { margin: 14px 0; }
+        .spec-section h4 {
+            font-size: 14px;
+            color: #e65100;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .spec-section ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+        .spec-section li { margin: 4px 0; }
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .spec-table th, .spec-table td {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .spec-table th {
+            background: #fff3cd;
+            color: #856404;
+            font-weight: 600;
+            width: 30%;
+        }
+        .spec-table td { color: #555; }
+        .audit-warning {
+            background: #ffebee;
+            border-left-color: #ef5350;
+        }
+        .audit-warning h4 { color: #c62828; }
+
+        /* 平台字段区 */
+        .platform-fields {
+            background: #e3f2fd;
+            padding: 18px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .platform-fields h4 {
+            margin-top: 0;
+            color: #1565c0;
+            font-size: 15px;
+        }
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #bbdefb;
+            font-size: 14px;
+        }
+        .field-row:last-child { border-bottom: none; }
+        .field-label { color: #424242; font-weight: 500; }
+        .field-value { color: #1565c0; font-weight: 600; }
+        .field-warn { color: #e53935; font-weight: 600; }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+        .best-time {
+            background: #e8eaf6;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 14px;
+            color: #3949ab;
+            border-left: 4px solid #5c6bc0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="positioning"><h3>🎯 账号定位</h3><p><strong>面向泛知识、泛生活兴趣人群的通用内容账号，以高信息密度、跨领域视角和实用价值为核心，提供覆盖科技、人文、生活技巧、趋势解读的多元内容，帮助用户高效获取新知并优化日常决策。</strong></p><p>👥 目标受众：18-45 不限</p><p>📌 内容支柱：跨领域知识解析：用通俗语言拆解科技、心理学、经济学等硬核话题，降低理解门槛, 生活优化指南：分享高效学习、时间管理、消费决策等可落地的实用技巧与工具, 趋势与冷知识：解读社会热点、新兴技术背后的逻辑，或挖掘反常识、有趣的历史/科学冷门</p></div>
+        
+        <h1>为什么你总是忍不住刷手机？用经济学解释你的“拖延症”</h1>
+        <div class="tags">
+            <span class="tag">##时间贴现</span><span class="tag">##拖延症</span><span class="tag">##经济学</span><span class="tag">##行为心理学</span><span class="tag">##效率提升</span><span class="tag">##认知升级</span><span class="tag">##生活优化</span><span class="tag">##跨领域知识</span>
+        </div>
+        <article>你是否有过这样的经历：明明计划好要完成一项重要任务，却总是忍不住先刷5分钟手机，结果半小时过去了？这种行为看似不理性，但用经济学中的“时间贴现”理论就能完美解释。<br><br>时间贴现（Temporal Discounting）指的是，人们倾向于低估未来奖励的价值，而高估眼前即时满足的价值。简单来说，大脑会把未来的收益“打折”——比如，完成工作后的成就感（未来奖励）在当下被严重低估，而刷手机带来的即时快感（比如一条搞笑视频）却被过度放大。<br><br>更扎心的是，这一理论还揭示了为什么“拖延症”会恶性循环：你越拖延，未来的奖励就会被“贴现”得越厉害，导致你更倾向于选择当下的轻松。而破解方法很简单：<br>1. **增加即时成本**：把手机放在另一个房间，或者用App限制使用时间，让刷手机的行为变得“昂贵”。<br>2. **将未来奖励“提前”**：把大目标拆解成小任务，每完成一个就给自己一个小奖励（比如看一集短剧），让大脑的“贴现率”下降。<br>3. **利用“承诺机制”**：提前设定一个公开的截止时间或惩罚（比如，完不成任务就捐100元给讨厌的团体），增加拖延的代价。<br><br>最后，记住一个公式：**行动力 = 未来价值 / 时间距离**。距离越近，价值越高。所以，别等“明天”，现在就开始。</article>
+        <div class="cover-copy"><h4>📱 封面文案</h4><p>刷手机停不下来？经济学解释你的“拖延症”</p></div><div class="cta"><h4>👉 行动号召</h4><p>收藏这份行动清单，下次拖延时拿出来看看。关注我，每天一个跨领域新知，帮你高效决策。</p></div>
+        
+        
+        <div class="compliance">✅ 合规检查通过，未发现违规词</div>
+        <footer>
+            由 Lumina 智能营销助手生成 · 母稿
+        </footer>
+    </div>
+</body>
+</html>

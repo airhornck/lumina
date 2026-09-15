@@ -1,0 +1,38 @@
+methodology_id: "pas"
+name: "PAS 公式"
+category: "Copywriting"
+description: "痛点-激化-解决公式，通过共鸣痛点再给出解决方案驱动转化。"
+applicable_scenarios: ["pain_point_content", "knowledge_payment", "product_launch", "conversion"]
+success_cases: ["知识付费引流笔记", "痛点型短视频"]
+prompt_templates:
+  problem: "精准描述目标用户正在经历的具体痛点，让用户感到被理解"
+  agitation: "放大痛点后果和紧迫感，让用户意识到不解决会带来的损失"
+  solution: "介绍产品/方法如何解决痛点，给出可量化的收益和信任背书"
+steps:
+  - step_id: "problem"
+    theory: "pain_point_identification"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "痛点描述"
+        content_dna: {}
+        methodology_hint: "PAS-Problem"
+  - step_id: "agitation"
+    theory: "pain_amplification"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "激化痛点"
+        content_dna: {}
+        methodology_hint: "PAS-Agitation"
+  - step_id: "solution"
+    theory: "solution_presentation"
+    agent_role: "creative"
+    skill_call:
+      name: "generate_text"
+      params:
+        topic: "解决方案"
+        content_dna: {}
+        methodology_hint: "PAS-Solution"

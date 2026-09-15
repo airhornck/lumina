@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-import uuid
 import base64
 import hashlib
 from datetime import datetime, timedelta

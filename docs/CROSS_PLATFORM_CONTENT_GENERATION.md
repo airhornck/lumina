@@ -36,7 +36,7 @@
 
 | 模块 | 已有能力 | 位置 |
 |------|---------|------|
-| **意图识别** | 已支持识别"一稿多改/改写多平台/适配平台"意图，归类为 `bulk_creation` / `content_variation` | `apps/intent/` + `config/intent_rules.yaml` |
+| **意图识别** | 已支持识别"一稿多改/改写多平台/适配平台"意图，归类为 `bulk_creation` / `content_variation` | `apps/intent/` + `config/intent_rules.yaml`（已决策退役，Phase 4 起由 Hermes planner 承担，见 phase4 spec） |
 | **编排路由** | `MarketingOrchestra._resolve_matrix_intent()` 已能识别多平台意图并调用 `skill-bulk-creative` | `apps/orchestra/src/orchestra/core.py:502-534` |
 | **内容变体** | `skill-bulk-creative.generate_variations()` 支持按账号定位生成细分领域/场景化/地域化变体 | `skills/skill-bulk-creative/src/skill_bulk_creative/main.py:67-118` |
 | **平台适配** | `skill-bulk-creative.adapt_platform()` 能读取 `PlatformRegistry` 规范库，获取长度限制、标签上限、审核规则 | `skills/skill-bulk-creative/src/skill_bulk_creative/main.py:193-242` |

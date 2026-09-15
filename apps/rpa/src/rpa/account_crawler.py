@@ -7,12 +7,10 @@
 from __future__ import annotations
 
 import re
-import json
 import asyncio
 from dataclasses import dataclass, field
 from typing import Dict, Any, List, Optional, Callable
 from datetime import datetime
-from urllib.parse import urljoin, urlparse
 
 
 @dataclass

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-# system_chat 走 MarketingOrchestra，不使用下方 system 文案
+# system_chat 走 Hermes Agent 引擎，不使用下方 system 文案
 CAPABILITIES: dict[str, dict[str, str]] = {
     "system_chat": {
         "label": "系统对话（编排 API）",

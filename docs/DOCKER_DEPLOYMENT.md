@@ -288,7 +288,7 @@ playwright install chromium
 
 | 文件 | 说明 | 热加载 |
 |------|------|--------|
-| config/intent_rules.yaml | Intent 识别规则 | ✅ 是 |
+| config/intent_rules.yaml | Intent 识别规则 ⚠️（该配置随 apps/intent 于 Phase 4 P2 退役，届时本节将更新为 Hermes 链路验证方式，见 phase4 spec §7、§8） | ✅ 是 |
 | config/llm.yaml | LLM 配置 | ❌ 否 |
 | config/agents.yaml | Agent 编排配置 | ❌ 否 |
 
@@ -306,6 +306,7 @@ curl http://localhost:8000/health
 curl -X POST http://localhost:8000/intent/recognize \
   -H "Content-Type: application/json" \
   -d '{"text": "帮我诊断账号", "user_id": "test_001"}'
+# ⚠️ 该接口随 apps/intent 于 Phase 4 P2 退役，届时本节将更新为 Hermes 链路验证方式（phase4 spec §7、§8）
 
 # Skill 列表
 curl http://localhost:8000/skill/list
@@ -410,6 +411,7 @@ docker compose -f docker-compose.local.yml up --build
      -d '{"text": "你好", "user_id": "test"}'
    ```
    - 应返回 Intent 识别结果
+   - ⚠️ 该接口随 apps/intent 于 Phase 4 P2 退役，届时本节将更新为 Hermes 链路验证方式（phase4 spec §7、§8）
 
 ---
 

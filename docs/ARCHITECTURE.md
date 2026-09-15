@@ -5,6 +5,8 @@
 - 日期: 2026-03-28
 - 变更: 调整为微服务架构，当前服务专注于 AI 能力
 
+> ⚠️ 2026-07-15：本文 V3.1 中 Orchestra Core（Router/Planner/Executor/Critic）的编排层描述已被 Hermes LLM planner 架构取代，现行与目标架构见 docs/specs/phase4_unified_planner_deprecation_spec.md
+
 ## 架构概览
 
 ```

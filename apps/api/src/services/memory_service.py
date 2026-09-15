@@ -8,14 +8,13 @@ from chat_debug.memory import ChatMemoryStore, get_memory_store
 class ServiceMemoryStore:
     """基于现有 ChatMemoryStore 的服务级别记忆隔离封装。
 
-    隔离维度：(user_id, conversation_id, service)
+    隔离维度：(user_id, conversation_id)
+    注：不再按 service 拼接 conversation_id 后缀，统一使用 bare conversation_id
+        存库/查询，避免 debug-chat 与 system-chat 两套接口数据隔离。
     """
 
     def __init__(self, backend: ChatMemoryStore | None = None) -> None:
         self._backend = backend or get_memory_store()
-
-    def _build_conv_id(self, conversation_id: str, service: str) -> str:
-        return f"{conversation_id}::{service}"
 
     async def append(
         self,
@@ -25,18 +24,27 @@ class ServiceMemoryStore:
         role: str,
         content: str,
     ) -> None:
-        conv = self._build_conv_id(conversation_id, service)
-        await self._backend.append(user_id, conv, role, content)
+        # service 参数保留签名兼容，不再参与 conversation_id 构建
+        await self._backend.append(user_id, conversation_id, role, content)
 
     async def list_messages(
-        self, user_id: str, conversation_id: str, service: str
+        self,
+        user_id: str,
+        conversation_id: str,
+        service: str,
+        limit: int | None = None,
+        offset: int = 0,
+        order: str = "asc",
     ) -> List[Dict[str, Any]]:
-        conv = self._build_conv_id(conversation_id, service)
-        return await self._backend.list_messages(user_id, conv)
+        return await self._backend.list_messages(
+            user_id, conversation_id, limit=limit, offset=offset, order=order
+        )
+
+    async def count_messages(self, user_id: str, conversation_id: str, service: str) -> int:
+        return await self._backend.count_messages(user_id, conversation_id)
 
     async def clear(self, user_id: str, conversation_id: str, service: str) -> None:
-        conv = self._build_conv_id(conversation_id, service)
-        await self._backend.clear(user_id, conv)
+        await self._backend.clear(user_id, conversation_id)
 
 
 _mem_store: ServiceMemoryStore | None = None

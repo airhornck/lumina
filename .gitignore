@@ -59,3 +59,28 @@ yarn-error.log*
 .data/
 temp/
 tmp/
+
+# 对话日志（含用户内容，勿提交）
+data/logs/
+
+# ── 仓库根目录卫生（一次性产物，根锚定，防止再次提交污染）──
+/lumina*.tar                    # docker 镜像导出包（deploy 用 docker save 重新生成）
+/pytest_*.txt                   # pytest 输出重定向
+/final*_sse.txt                 # SSE 流式调试抓包
+/test_oss*.txt                  # MCP/OSS SSE 调试
+/test_output*.txt
+/test_output.html
+/prod_verify*                   # 生产验证抓包/事件
+/done_event.json
+/test_real_response.json
+/aida_test_output.txt
+/matrix_test_output.txt
+/chatgpt.txt                    # 模型对话记录
+/deepseek.txt
+/gemini.txt
+/tongyi.txt
+/bili_verify*.html              # 平台登录验证残留页
+/wechat_verify*.html
+/xhs_verify*.html
+/.mypy_cache/
+/.ruff_cache/
